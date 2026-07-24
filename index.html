@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pssycco — AI Studios</title>
+<style>
+  :root{
+    --bg:#f4f2ec; --bg2:#ece8df; --ink:#4b4d45; --deep:#33352f;
+    --muted:#9a9d90; --line:rgba(51,53,47,0.12);
+    --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{background:var(--bg); scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  img{display:block; max-width:100%;}
+  ::selection{background:var(--ink); color:var(--bg);}
+
+  nav.topnav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 5%; background:rgba(244,242,236,0.9); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line); font-size:12px; letter-spacing:0.06em;
+  }
+  nav.topnav .brand-logo{height:20px; width:auto; display:block;}
+  nav.topnav .links{display:flex; align-items:center;}
+  nav.topnav .links a{margin-left:24px; text-decoration:none; color:var(--muted); text-transform:lowercase;}
+  nav.topnav .links a:hover{color:var(--ink);}
+  nav.topnav .nav-cta{
+    margin-left:24px; background:var(--ink); color:var(--bg); padding:9px 18px; border-radius:16px;
+    text-decoration:none; text-transform:lowercase; letter-spacing:0.04em; font-size:12px;
+  }
+  nav.topnav .nav-cta:hover{background:var(--deep); color:var(--bg);}
+  @media (max-width:900px){ nav.topnav .links a:not(.nav-cta){display:none;} }
+
+  section{padding:150px 8% 110px;}
+  .narrow{max-width:760px; margin:0 auto;}
+  .center{text-align:center;}
+
+  .kicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:20px;}
+  h1,h2,h3{font-weight:400; text-transform:lowercase; line-height:1.15; letter-spacing:-0.01em;}
+  h1{font-size:clamp(38px,6.5vw,76px);}
+  h2{font-size:clamp(30px,5vw,54px);}
+  h3{font-size:22px;}
+  p{font-size:17px; line-height:1.85; color:var(--ink);}
+  p.muted{color:var(--muted);}
+  .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
+  .signature b{color:var(--ink); font-weight:700;}
+
+  .fade{opacity:0; transform:translateY(24px); transition:opacity 1s ease, transform 1s ease;}
+  .fade.visible{opacity:1; transform:translateY(0);}
+
+  /* HERO */
+  #hero{
+    min-height:96vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding-top:120px;
+  }
+  #hero img.glyph{max-width:460px; width:62%; margin:0 auto 6px;}
+  #hero .tagline{font-size:19px; color:var(--muted); margin-top:26px;}
+  #hero h1.value{font-size:clamp(24px,3.4vw,34px); margin-top:18px; max-width:640px; color:var(--ink);}
+  .badge-pill{
+    display:inline-block; margin-top:30px; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase;
+    border:1px solid var(--ink); color:var(--ink); padding:9px 18px; border-radius:20px;
+  }
+  #hero .scrolldown{margin-top:64px; font-size:11px; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase;}
+
+  /* PROOF / SHOWREEL */
+  #proof{padding-top:120px;}
+  .proof-main{
+    margin-top:44px; border:1px solid var(--line); border-radius:4px; overflow:hidden; background:#000;
+  }
+  .proof-main video{width:100%; display:block; aspect-ratio:16/9; object-fit:cover;}
+  .proof-main-cap{padding:14px 18px; font-size:12.5px; color:var(--muted); background:var(--bg2); border-top:1px solid var(--line);}
+
+  /* TEAM */
+  .team-row{display:flex; gap:60px; flex-wrap:wrap; margin-top:50px;}
+  .team-card{flex:1; min-width:260px;}
+  .team-card .tname{font-size:22px; text-transform:lowercase;}
+  .team-card .trole{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin:8px 0 14px;}
+  .team-card p{font-size:15px; line-height:1.8;}
+
+  /* PHILOSOPHY GALLERY */
+  #filosofia{padding-left:0; padding-right:0;}
+  #filosofia .intro{padding:0 8% 90px;}
+  .quote-stack{margin-top:10px;}
+  .qrow{
+    display:flex; align-items:baseline; gap:28px; padding:34px 0; border-bottom:1px solid var(--line);
+    opacity:0; transform:translateX(-16px); transition:opacity .8s ease, transform .8s ease;
+  }
+  .qrow.visible{opacity:1; transform:translateX(0);}
+  .qrow:nth-child(even){flex-direction:row-reverse; text-align:right;}
+  .qrow:nth-child(even).visible{transform:translateX(0);}
+  .qrow:nth-child(even):not(.visible){transform:translateX(16px);}
+  .qrow:last-child{border-bottom:none;}
+  .qnum{font-size:12px; letter-spacing:0.1em; color:var(--line); font-weight:700; flex:0 0 auto; padding-top:6px;}
+  .qtext{font-size:clamp(19px,2.6vw,27px); line-height:1.4;}
+  .qtext .lead{color:var(--muted); display:block;}
+  .qtext .strong{color:var(--ink); font-weight:700; display:block; margin-top:2px;}
+
+  .video-embed{margin-top:44px; border:1px solid var(--line); border-radius:4px; overflow:hidden; background:#000;}
+  .video-embed video{width:100%; display:block; aspect-ratio:16/9; object-fit:cover;}
+  .video-embed-cap{padding:14px 18px; font-size:12.5px; color:var(--muted); background:var(--bg2); border-top:1px solid var(--line);}
+
+  /* TEXT + PROSE SECTIONS (workflow, sistema) */
+  .prose-block{margin-bottom:56px;}
+  .prose-block h3{margin-bottom:14px;}
+  .tags{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;}
+  .tag{
+    font-size:12px; letter-spacing:0.03em; color:var(--ink); border:1px solid var(--line);
+    padding:8px 16px; border-radius:20px; text-transform:lowercase;
+  }
+
+  .stat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:30px; margin-top:60px;}
+  @media (max-width:800px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+  .stat-grid .v{font-size:clamp(28px,4vw,42px); color:var(--ink);}
+  .stat-grid .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:8px;}
+
+  .category-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-top:40px;}
+  @media (max-width:800px){.category-grid{grid-template-columns:repeat(2,1fr);}}
+  .category-card{border:1px solid var(--line); background:var(--bg); padding:26px 16px; text-align:center; border-radius:2px;}
+  .category-card .cname{font-size:19px; text-transform:lowercase;}
+  .category-card .cdesc{font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6;}
+
+  .format-detail{display:flex; gap:32px; align-items:flex-start; padding:40px 0; border-top:1px solid var(--line);}
+  .format-detail:first-of-type{border-top:none; padding-top:50px;}
+  .format-detail .ficon{width:56px; height:56px; flex:0 0 auto; object-fit:contain; margin-top:4px;}
+  .format-detail .fbody{flex:1;}
+  .format-detail .ftitle{font-size:26px; text-transform:lowercase; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;}
+  .format-detail .ffreq{font-size:13px; color:var(--muted); font-family:var(--sans); letter-spacing:0.04em;}
+  .format-detail .fsub{font-size:13px; color:var(--muted); font-style:italic; margin:8px 0 14px;}
+  .format-detail p{font-size:15px; line-height:1.75;}
+  @media (max-width:640px){ .format-detail{flex-direction:column; gap:16px;} }
+
+  .value-anchor{
+    margin-top:40px; padding:24px 28px; border:1px dashed var(--ink); border-radius:4px;
+    font-size:15px; line-height:1.7; color:var(--ink);
+  }
+
+  /* MEMBERSHIPS */
+  .compare-wrap{overflow-x:auto; margin-top:56px;}
+  table.compare{width:100%; border-collapse:collapse; min-width:640px; font-size:13.5px;}
+  table.compare th, table.compare td{padding:14px 16px; border-bottom:1px solid var(--line); text-align:left;}
+  table.compare th{text-transform:lowercase; font-weight:700; font-size:15px;}
+  table.compare td.rowlabel{color:var(--muted); white-space:nowrap;}
+  table.compare td.center, table.compare th.center{text-align:center;}
+  table.compare tr:last-child td{border-bottom:none;}
+
+  .plans{display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin-top:56px; border-top:1px solid var(--line); border-left:1px solid var(--line);}
+  @media (max-width:900px){.plans{grid-template-columns:1fr;}}
+  .plan{
+    border-right:1px solid var(--line); border-bottom:1px solid var(--line); padding:48px 36px;
+    display:flex; flex-direction:column; cursor:pointer; transition:background .25s ease, transform .25s ease;
+    position:relative;
+  }
+  .plan:hover{background:var(--bg2); transform:translateY(-4px);}
+  .plan:focus{outline:none; background:var(--bg2);}
+  .plan.mid{background:var(--bg2);}
+  .plan.mid:hover{background:#e2ddd0;}
+  .plan-tag{
+    position:absolute; top:-1px; right:24px; background:var(--ink); color:var(--bg); font-size:10.5px;
+    letter-spacing:0.08em; text-transform:uppercase; padding:6px 12px; border-radius:0 0 6px 6px;
+  }
+  .plan-more{
+    margin-top:30px; display:inline-flex; align-items:center; gap:8px; align-self:flex-start;
+    font-size:12px; letter-spacing:0.08em; text-transform:lowercase; color:var(--ink);
+    border:1px solid var(--ink); padding:10px 18px; border-radius:20px; transition:.25s;
+  }
+  .plan-more i{font-style:normal; transition:transform .25s ease;}
+  .plan:hover .plan-more{background:var(--ink); color:var(--bg);}
+  .plan:hover .plan-more i{transform:translateX(4px);}
+  .plan .pname{font-size:26px; text-transform:lowercase;}
+  .plan .psub{font-size:12.5px; color:var(--muted); margin:10px 0 28px; line-height:1.6;}
+  .plan .price{font-size:40px; letter-spacing:-0.02em;}
+  .plan .price small{font-size:13px; color:var(--muted); font-family:var(--sans);}
+  .plan .founder{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin:10px 0 28px;}
+  .plan ul{list-style:none; flex:1;}
+  .plan li{font-size:14px; color:var(--ink); padding:12px 0; border-top:1px solid var(--line);}
+  .plan li:first-child{border-top:none;}
+  .deadline{margin-top:50px; text-align:center; font-size:14px; color:var(--muted);}
+
+  /* PLAN DETAIL MODAL */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:300; background:rgba(51,53,47,0.55); backdrop-filter:blur(3px);
+    display:flex; align-items:flex-start; justify-content:center; padding:60px 20px;
+    opacity:0; pointer-events:none; transition:opacity .3s ease; overflow-y:auto;
+  }
+  .modal-overlay.open{opacity:1; pointer-events:auto;}
+  .modal-panel{
+    background:var(--bg); max-width:760px; width:100%; border-radius:8px; position:relative;
+    padding:56px 48px 60px; transform:translateY(24px); transition:transform .3s ease;
+    box-shadow:0 30px 80px rgba(0,0,0,0.25);
+  }
+  .modal-overlay.open .modal-panel{transform:translateY(0);}
+  @media (max-width:700px){.modal-panel{padding:42px 24px 48px;}}
+  .modal-close{
+    position:absolute; top:20px; right:24px; background:none; border:none; font-size:28px; line-height:1;
+    color:var(--muted); cursor:pointer; font-family:var(--sans);
+  }
+  .modal-close:hover{color:var(--ink);}
+  .modal-body .mkicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:10px;}
+  .modal-body h2{font-size:clamp(30px,4.5vw,44px); margin-bottom:6px;}
+  .modal-body .msub{color:var(--muted); font-size:14px; margin-bottom:22px;}
+  .modal-body .mprice{font-size:30px; margin-bottom:4px;}
+  .modal-body .mprice small{font-size:13px; color:var(--muted); font-family:var(--sans);}
+  .modal-body .mfounder{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:36px;}
+  .modal-body h3{font-size:16px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; color:var(--ink); margin:36px 0 14px;}
+  .modal-body h3:first-of-type{margin-top:0;}
+  .modal-body p{font-size:15px; line-height:1.8; color:var(--ink);}
+  .modal-body ul.mlist{list-style:none;}
+  .modal-body ul.mlist li{font-size:14.5px; padding:11px 0; border-top:1px solid var(--line); color:var(--ink);}
+  .modal-body ul.mlist li:first-child{border-top:none;}
+  .modal-body .mtags{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .modal-body .mtags span{font-size:11.5px; border:1px solid var(--line); padding:6px 12px; border-radius:16px; color:var(--muted);}
+  .modal-body .mnote{font-size:13px; color:var(--muted); margin-top:10px; font-style:italic;}
+
+  /* VIDEOS (proof grid, reused) */
+  .video-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:26px;}
+  @media (max-width:800px){.video-grid{grid-template-columns:1fr 1fr;}}
+  .video-card figure{margin:0; border:1px solid var(--line); overflow:hidden;}
+  .video-card img{width:100%; aspect-ratio:16/10; object-fit:cover; filter:grayscale(15%);}
+  .video-card .t{font-size:13px; margin-top:10px; text-transform:lowercase;}
+  .video-card .d{font-size:11.5px; color:var(--muted); margin-top:2px;}
+
+  /* FAQ */
+  .faq-item{border-top:1px solid var(--line); padding:26px 0;}
+  .faq-item:last-child{border-bottom:1px solid var(--line);}
+  .faq-item summary{
+    cursor:pointer; font-size:18px; text-transform:lowercase; list-style:none; display:flex;
+    justify-content:space-between; align-items:center;
+  }
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-item summary::after{content:'+'; font-size:22px; color:var(--muted);}
+  .faq-item[open] summary::after{content:'–';}
+  .faq-item p{margin-top:16px; color:var(--muted); font-size:15px;}
+
+  /* CTA / FOOTER */
+  #cta{text-align:center; padding-bottom:60px;}
+  .cta-buttons{display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:34px;}
+  .btn{
+    display:inline-block; border:1px solid var(--ink); color:var(--ink);
+    padding:16px 38px; text-decoration:none; letter-spacing:0.08em; text-transform:lowercase; font-size:13px;
+    transition:.25s;
+  }
+  .btn:hover{background:var(--ink); color:var(--bg);}
+  .btn.solid{background:var(--ink); color:var(--bg);}
+  .btn.solid:hover{background:var(--deep);}
+  footer{padding:60px 5% 50px; text-align:center; border-top:1px solid var(--line);}
+  footer img{max-width:220px; margin:0 auto 38px; opacity:.85;}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <img class="brand-logo" src="assets/logo_glyph.png" alt="pssycco">
+  <span class="links">
+    <a href="#proof">work</a>
+    <a href="#filosofia">philosophy</a>
+    <a href="#workflow">workflow</a>
+    <a href="#sistema">system</a>
+    <a href="#membresias">memberships</a>
+    <a href="#faq">faq</a>
+    <a class="nav-cta" href="#cta">book a call</a>
+  </span>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <img class="glyph" src="assets/logo_glyph.png" alt="pssycco">
+  <p class="tagline">engineers of perception.</p>
+  <h1 class="value">AI-powered brand content, delivered every month — built and directed by pssycco.</h1>
+  <div class="badge-pill">pre-launch founder pricing · closes july 30, 2026</div>
+  <div class="scrolldown">scroll ↓</div>
+</section>
+
+<!-- PROOF / SHOWREEL -->
+<section id="proof">
+  <div class="narrow" style="max-width:1000px;">
+    <div class="kicker">see the work</div>
+    <h2 class="fade">this is what we build.</h2>
+    <div class="proof-main fade">
+      <video src="assets/video/formula.mp4" muted loop playsinline autoplay preload="metadata"></video>
+      <div class="proof-main-cap">pssycco / formula — how existing brand assets become an ever-expanding content ecosystem</div>
+    </div>
+    <div class="video-grid fade">
+      <div class="video-card">
+        <figure><img src="assets/thumbs/framework.jpg" loading="lazy" alt=""></figure>
+        <div class="t">pssycco / framework</div>
+        <div class="d">the structure of the creative system</div>
+      </div>
+      <div class="video-card">
+        <figure><img src="assets/thumbs/dictionary.jpg" loading="lazy" alt=""></figure>
+        <div class="t">pssycco / dictionary</div>
+        <div class="d">the glossary of our formats</div>
+      </div>
+      <div class="video-card">
+        <figure><img src="assets/thumbs/brandfilm.jpg" loading="lazy" alt=""></figure>
+        <div class="t">brand film</div>
+        <div class="d">work in progress</div>
+      </div>
+      <div class="video-card">
+        <figure><img src="assets/thumbs/shorts.jpg" loading="lazy" alt=""></figure>
+        <div class="t">shorts · clips · carousels</div>
+        <div class="d">format examples</div>
+      </div>
+    </div>
+    <p class="muted fade" style="margin-top:22px; font-size:13px;">more references available in your project folder.</p>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team" style="background:var(--bg2);">
+  <div class="narrow" style="max-width:900px;">
+    <div class="kicker">led by</div>
+    <h2 class="fade">the people behind pssycco.</h2>
+    <div class="team-row fade">
+      <div class="team-card">
+        <div class="tname">Mateo de Mossaicco</div>
+        <div class="trole">Founder, pssycco AI Studios</div>
+        <p>Leads the creative direction and client relationships personally, escorting every brand's campaigns
+        and the construction of its visual universe from day one.</p>
+      </div>
+      <div class="team-card">
+        <div class="tname">Pedro Ermoso</div>
+        <div class="trole">Head of Production</div>
+        <p>In-house producer for Spotify Studios and director of <i>Made in Medellín</i>, J Balvin's podcast —
+        leading the development of assets, narratives, and AI systems alongside the full pssycco studio.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FILOSOFIA -->
+<section id="filosofia">
+  <div class="intro fade">
+    <div class="kicker narrow" style="margin:0 auto;">the pssycco philosophy</div>
+    <h2 class="narrow" style="margin:0 auto;">the authority theory.</h2>
+  </div>
+  <div class="narrow" style="padding:0 8%;">
+    <div class="quote-stack">
+      <div class="qrow"><span class="qnum">01</span><span class="qtext"><span class="lead">luxury brands don't sell objects.</span><span class="strong">they sell aspiration.</span></span></div>
+      <div class="qrow"><span class="qnum">02</span><span class="qtext"><span class="lead">the product is never the product.</span><span class="strong">the brand is the product.</span></span></div>
+      <div class="qrow"><span class="qnum">03</span><span class="qtext"><span class="lead">the most valuable part of a brand can't be touched.</span><span class="strong">it can only be perceived.</span></span></div>
+      <div class="qrow"><span class="qnum">04</span><span class="qtext"><span class="lead">recognition · prestige · admiration.</span><span class="strong">that's what we build.</span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFLOW -->
+<section id="workflow">
+  <div class="narrow">
+    <div class="kicker">the workflow · 13 months</div>
+    <h2 class="fade">our methodology is multiplication.</h2>
+
+    <div class="prose-block fade" style="margin-top:60px;">
+      <h3>month one — ensemble</h3>
+      <p>Month one is dedicated to designing the next twelve: scripts, campaign concepts, visual references,
+      prompt libraries, narrative systems, production documentation, and every creative foundation required to
+      execute the year's storytelling.</p>
+    </div>
+
+    <div class="prose-block fade">
+      <h3>twelve months — uninterrupted production</h3>
+      <p>Once the foundation is set, the following twelve months run as a single continuous production cycle —
+      no gaps, no pauses. A non-stopping stream of campaigns, assets, and storytelling built on top of the
+      system designed in month one.</p>
+    </div>
+
+    <div class="prose-block fade">
+      <h3>gathering</h3>
+      <p>During the first month, we gather everything your brand has built over the years: products, spaces,
+      people, stories, archives, identity.</p>
+    </div>
+
+    <div class="prose-block fade">
+      <h3>multiplication</h3>
+      <p>Every AI production is an asset. Content stops being an expense — it becomes part of your brand's
+      equity. One production, multiple destinations.</p>
+      <div class="tags">
+        <span class="tag">social media</span><span class="tag">advertising</span><span class="tag">websites</span>
+        <span class="tag">investor presentations</span><span class="tag">community management</span>
+        <span class="tag">events & showrooms</span><span class="tag">press & pr</span>
+        <span class="tag">digital screens</span><span class="tag">trade fairs</span>
+        <span class="tag">future campaigns</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SISTEMA -->
+<section id="sistema" style="background:var(--bg2);">
+  <div class="narrow" style="max-width:900px;">
+    <div class="kicker">production system</div>
+    <h2 class="fade">5 campaign categories.</h2>
+    <p class="fade" style="margin-top:22px;">
+      Every campaign is built around one of five narrative categories — each one designed to reach your
+      audience through a different emotional register.
+    </p>
+    <div class="category-grid fade">
+      <div class="category-card"><div class="cname">human</div><div class="cdesc">message / emotion / meaning / reflection</div></div>
+      <div class="category-card"><div class="cname">spaces</div><div class="cdesc">showrooms / events / experiences</div></div>
+      <div class="category-card"><div class="cname">product</div><div class="cdesc">showcase / service / details / craftsmanship</div></div>
+      <div class="category-card"><div class="cname">lifestyle</div><div class="cdesc">aspiration / status / taste / desire</div></div>
+      <div class="category-card"><div class="cname">art</div><div class="cdesc">expression / symbolism / cinema / prestige</div></div>
+    </div>
+  </div>
+
+  <div class="narrow" style="max-width:900px; margin-top:110px;">
+    <div class="kicker">production system</div>
+    <h2 class="fade">5 formats.</h2>
+    <p class="fade" style="margin-top:22px;">
+      Every campaign is delivered through one of five production formats — distributed strategically across
+      your annual communication system.
+    </p>
+
+    <div class="format-detail fade">
+      <img class="ficon" src="assets/icons/brandfilms.png" alt="">
+      <div class="fbody">
+        <div class="ftitle">ai brand films <span class="ffreq">4 / year</span></div>
+        <div class="fsub">multiple shots / immersive storytelling</div>
+        <p>The most ambitious expression of your brand. A cinematic production designed to communicate vision,
+        emotion, and identity through stories that define how your company is remembered.</p>
+      </div>
+    </div>
+
+    <div class="format-detail fade">
+      <img class="ficon" src="assets/icons/shorts.png" alt="">
+      <div class="fbody">
+        <div class="ftitle">ai shorts <span class="ffreq">4 / month</span></div>
+        <div class="fsub">4 shots / compact storytelling</div>
+        <p>A condensed cinematic experience, designed to communicate meaningful stories through concise,
+        carefully crafted cinematic language.</p>
+      </div>
+    </div>
+
+    <div class="format-detail fade">
+      <img class="ficon" src="assets/icons/clips.png" alt="">
+      <div class="fbody">
+        <div class="ftitle">ai clips <span class="ffreq">4 / month</span></div>
+        <div class="fsub">editorial standard · 10 seconds · 2 shots / one idea</div>
+        <p>The shortest format in the system. Not every story needs a beginning and an end — sometimes a
+        single moment is enough to define an entire campaign.</p>
+      </div>
+    </div>
+
+    <div class="format-detail fade">
+      <img class="ficon" src="assets/icons/carrousels.png" alt="">
+      <div class="fbody">
+        <div class="ftitle">ai carousels <span class="ffreq">2 / month</span></div>
+        <div class="fsub">the editorial-standard photo essay</div>
+        <p>Ideas transformed into memorable visuals. Carousels combine art direction, typography, and
+        composition to communicate concepts that photography alone cannot express.</p>
+      </div>
+    </div>
+
+    <div class="format-detail fade">
+      <img class="ficon" src="assets/icons/graphics.png" alt="">
+      <div class="fbody">
+        <div class="ftitle">ai graphics <span class="ffreq">1 / month</span></div>
+        <div class="fsub">visual stories / artboards / editorial posters</div>
+        <p>Ideas transformed into memorable visuals — concepts that photography alone cannot express,
+        combining art direction, typography, and composition into a single striking image.</p>
+      </div>
+    </div>
+
+    <div class="stat-grid fade">
+      <div><div class="v">208</div><div class="l">assets / year</div></div>
+      <div><div class="v">100</div><div class="l">final pieces</div></div>
+      <div><div class="v">102</div><div class="l">soundtracks</div></div>
+      <div><div class="v">318</div><div class="l">sfx references</div></div>
+      <div><div class="v">180</div><div class="l">soundtrack refs.</div></div>
+    </div>
+    <div class="value-anchor fade">
+      That's the equivalent of a full in-house creative team — strategy, scripting, production, sound design,
+      and archiving — running every month, without the overhead of hiring, managing, or scaling one yourself.
+    </div>
+    <p class="fade" style="margin-top:40px;">
+      Beyond the ongoing production, every engagement culminates in a complete <b>annual brand archive</b> and
+      the <b>AI Brand Identity System</b>: a comprehensive documentation of your brand's artificial intelligence
+      methodology, creative standards, visual language, prompting style, character consistency, and production
+      workflows.
+    </p>
+  </div>
+</section>
+
+<!-- MEMBRESIAS -->
+<section id="membresias">
+  <div class="narrow" style="max-width:1000px;">
+    <div class="kicker center">memberships</div>
+    <h2 class="center fade">three ways to work together.</h2>
+
+    <div class="compare-wrap fade">
+      <table class="compare">
+        <tr>
+          <th></th>
+          <th class="center">leaders</th>
+          <th class="center">ultimate</th>
+          <th class="center">signature</th>
+        </tr>
+        <tr>
+          <td class="rowlabel">monthly price</td>
+          <td class="center">$1,500</td>
+          <td class="center">$2,500</td>
+          <td class="center">$3,500</td>
+        </tr>
+        <tr>
+          <td class="rowlabel">creative direction, scripts & prompts</td>
+          <td class="center">✓</td>
+          <td class="center">✓</td>
+          <td class="center">✓</td>
+        </tr>
+        <tr>
+          <td class="rowlabel">who executes ai production</td>
+          <td class="center">your agency</td>
+          <td class="center">pssycco</td>
+          <td class="center">pssycco</td>
+        </tr>
+        <tr>
+          <td class="rowlabel">non-ai production</td>
+          <td class="center">—</td>
+          <td class="center">—</td>
+          <td class="center">12 commercials / yr</td>
+        </tr>
+        <tr>
+          <td class="rowlabel">brand films / shorts / carousels / graphics / clips</td>
+          <td class="center">by request</td>
+          <td class="center">4 / 48 / 24 / 12 / 48</td>
+          <td class="center">4 / 48 / 24 / 12 / 48</td>
+        </tr>
+        <tr>
+          <td class="rowlabel">ai brand identity system + annual archive</td>
+          <td class="center">✓</td>
+          <td class="center">✓</td>
+          <td class="center">✓</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="plans fade" style="max-width:1000px; margin:56px auto 0;">
+    <div class="plan" data-plan="leaders" tabindex="0" role="button">
+      <div class="pname">leaders</div>
+      <div class="psub">production by request · creative strategy & pre-production</div>
+      <div class="price">$1,500 <small>usd/month</small></div>
+      <div class="founder">pre-launch founder pricing</div>
+      <ul>
+        <li>annual narrative</li>
+        <li>quarterly, monthly and weekly campaigns</li>
+        <li>ai brand identity system</li>
+        <li>annual brand archive</li>
+        <li>your ai agency executes the production</li>
+      </ul>
+      <span class="plan-more">view full plan <i>→</i></span>
+    </div>
+    <div class="plan mid" data-plan="ultimate" tabindex="0" role="button">
+      <div class="plan-tag">most popular</div>
+      <div class="pname">ultimate</div>
+      <div class="psub">leaders + end-to-end ai production</div>
+      <div class="price">$2,500 <small>usd/month</small></div>
+      <div class="founder">pre-launch founder pricing</div>
+      <ul>
+        <li>everything included in leaders</li>
+        <li>48 shorts · 24 carousels / year</li>
+        <li>4 brand films / year</li>
+        <li>12 graphics + 48 clips / year</li>
+        <li>integrated ai and non-ai production</li>
+      </ul>
+      <span class="plan-more">view full plan <i>→</i></span>
+    </div>
+    <div class="plan" data-plan="signature" tabindex="0" role="button">
+      <div class="pname">signature</div>
+      <div class="psub">leaders + ultimate + end-to-end non-ai production</div>
+      <div class="price">$3,500 <small>usd/month</small></div>
+      <div class="founder">pre-launch founder pricing</div>
+      <ul>
+        <li>everything included in leaders and ultimate</li>
+        <li>12 non-ai "signature" commercials / year</li>
+        <li>one dedicated filming day per month</li>
+        <li>interviews, testimonials, events, bts</li>
+        <li>production expenses covered by the brand</li>
+      </ul>
+      <span class="plan-more">view full plan <i>→</i></span>
+    </div>
+  </div>
+  <p class="deadline fade">access to pre-launch founder pricing closes july 30, 2026. applicable taxes calculated separately.</p>
+</section>
+
+<!-- PLAN DETAIL MODAL -->
+<div id="plan-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-panel">
+    <button class="modal-close" id="modal-close" aria-label="close">×</button>
+    <div class="modal-body" id="modal-body"><!-- injected --></div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section id="faq" style="background:var(--bg2);">
+  <div class="narrow">
+    <div class="kicker">good questions</div>
+    <h2 class="fade">before you reach out.</h2>
+    <div class="fade" style="margin-top:40px;">
+      <details class="faq-item">
+        <summary>Is AI-generated content actually good enough for a premium brand?</summary>
+        <p>That's the entire premise of pssycco: we don't produce content, we build premium brand assets
+        designed to reinforce your company's market authority through exceptional storytelling, cinematic
+        execution, and enduring brand perception. If your brand also needs traditional, non-AI production, the
+        Signature membership blends both under one creative direction.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How fast do we start seeing content?</summary>
+        <p>Month one — Ensemble — is dedicated entirely to building your year: scripts, concepts, visual
+        references, prompt libraries, and narrative systems. From month two, production runs as a continuous,
+        non-stopping cycle for the remaining twelve months.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Do I need my own AI production agency?</summary>
+        <p>Only for the Leaders membership, where pssycco handles strategy and creative direction while your
+        existing AI agency executes production. Ultimate and Signature are end-to-end: pssycco directs and
+        produces everything in-house.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What happens with my brand's assets after the engagement?</summary>
+        <p>Every membership includes an annual brand archive and the AI Brand Identity System — a structured,
+        proprietary archive of prompts, narrative frameworks, visual references, and production guidelines, so
+        the work continues guiding future teams and agencies, not just the current campaign.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What's the next step?</summary>
+        <p>Reach out below and we'll schedule a short call to scope your brand's engagement and confirm
+        founder pricing before it closes on July 30, 2026.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="narrow fade">
+    <div class="kicker">next step</div>
+    <h2>let's build your brand's<br>perception system.</h2>
+    <p class="muted" style="margin-top:18px;">pre-launch founder pricing closes july 30, 2026 — book a short call, no commitment required.</p>
+    <div class="cta-buttons">
+      <a class="btn solid" href="mailto:mossaicco@gmail.com?subject=Book%20a%20call%20-%20pssycco">book a call</a>
+      <a class="btn" href="mailto:mossaicco@gmail.com">email us instead</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <img src="assets/logo_glyph.png" alt="pssycco">
+  <div class="signature" style="color:var(--muted);">a mossaicco company / kingdom of shapes</div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+  },{threshold:0.15});
+  document.querySelectorAll('.fade').forEach(el=>io.observe(el));
+
+  document.querySelectorAll('.qrow').forEach((el,i)=>{
+    el.style.transitionDelay = (i*0.12)+'s';
+    io.observe(el);
+  });
+
+  // ---- plan detail modal ----
+  const PLAN_DETAILS = {
+    leaders: `
+      <div class="mkicker">memberships</div>
+      <h2>leaders</h2>
+      <div class="msub">production by request · creative strategy & pre-production</div>
+      <div class="mprice">$1,500 <small>usd/month</small></div>
+      <div class="mfounder">pre-launch founder pricing</div>
+
+      <h3>annual deliverables</h3>
+      <ul class="mlist">
+        <li>annual narrative</li>
+        <li>quarterly campaigns</li>
+        <li>monthly campaigns</li>
+        <li>weekly campaigns</li>
+        <li>the ai brand identity system</li>
+        <li>annual brand archive</li>
+      </ul>
+      <p class="mnote">production available by request.</p>
+
+      <h3>how it works</h3>
+      <p>The Leaders Membership delivers the same strategic foundation as our production memberships. Pssycco
+      develops the creative direction, campaign concepts, scripts, storyboards, visual references, and AI
+      prompts — while your existing AI agency executes the production. Through weekly, monthly, and quarterly
+      strategy sessions, we coordinate your annual communication system and ensure every campaign follows a
+      single creative vision.</p>
+      <p style="margin-top:16px;">Each month pssycco delivers the complete creative package — including
+      scripts, prompts, and visual references — ready for your existing AI agency to produce, post-produce,
+      and publish each campaign.</p>
+
+      <h3>the ai brand identity system</h3>
+      <p>Your brand's proprietary AI system: a comprehensive documentation of the brand's artificial
+      intelligence methodology, creative standards, visual language, prompting system, character consistency,
+      and production workflows.</p>
+
+      <h3>the annual brand archive</h3>
+      <p>Beyond the ongoing deliverables, this engagement concludes with the transfer of the brand's complete
+      creative archive. Throughout the annual planning cycles, pssycco develops and delivers four original
+      Brand Film screenplays, together with the complete AI Brand Operating System — a structured archive
+      containing prompts, narrative frameworks, visual references, storytelling systems, narrator profiles,
+      production guidelines, original soundtrack references, and every strategic asset created during the
+      engagement. The objective is not simply to deliver content, but to leave the company with a fully
+      documented creative system that can continue guiding future teams, agencies, and internal departments.</p>
+    `,
+    ultimate: `
+      <div class="mkicker">memberships</div>
+      <h2>ultimate</h2>
+      <div class="msub">leaders + end-to-end ai production</div>
+      <div class="mprice">$2,500 <small>usd/month</small></div>
+      <div class="mfounder">pre-launch founder pricing</div>
+
+      <h3>annual deliverables</h3>
+      <ul class="mlist">
+        <li>everything included in leaders</li>
+        <li>48 shorts / year</li>
+        <li>24 carousels / year</li>
+        <li>4 brand films / year</li>
+        <li>12 graphics / year</li>
+        <li>48 clips / year</li>
+      </ul>
+
+      <h3>ai brand films — 4 / year</h3>
+      <p><i>multiple shots / immersive storytelling.</i> The most ambitious expression of your brand. A
+      cinematic production designed to communicate vision, emotion, and identity through stories that define
+      how your company is remembered.</p>
+
+      <h3>ai shorts — 4 / month</h3>
+      <p><i>4 shots / compact storytelling.</i> A condensed cinematic experience, designed to communicate
+      meaningful stories through concise, carefully crafted cinematic language.</p>
+
+      <h3>ai clips — 4 / month</h3>
+      <p><i>editorial standard, 10 seconds / 2 shots, one idea.</i> The shortest format in the system. Not
+      every story needs a beginning and an end — sometimes a single moment is enough to define an entire
+      campaign.</p>
+
+      <h3>ai carousels — 2 / month</h3>
+      <p><i>the editorial-standard photo essay.</i> Ideas transformed into memorable visuals, combining art
+      direction, typography, and composition to communicate concepts that photography alone cannot express.</p>
+
+      <h3>ai graphics — 1 / month</h3>
+      <p><i>visual stories / artboards / editorial posters.</i> Ideas transformed into memorable visuals —
+      concepts photography alone cannot express.</p>
+    `,
+    signature: `
+      <div class="mkicker">memberships</div>
+      <h2>signature</h2>
+      <div class="msub">leaders + ultimate + end-to-end non-ai production</div>
+      <div class="mprice">$3,500 <small>usd/month</small></div>
+      <div class="mfounder">pre-launch founder pricing</div>
+
+      <h3>annual deliverables</h3>
+      <ul class="mlist">
+        <li>everything included in leaders and ultimate</li>
+        <li>12 non-ai signature commercials / year</li>
+      </ul>
+
+      <h3>non-ai signature commercials — 12 / year</h3>
+      <p>Interviews, teams, projects, events, testimonials — one dedicated filming day per month. Every
+      non-AI signature commercial production day becomes a full-scale content capture session, designed to be
+      released throughout the following 30-day campaign.</p>
+
+      <h3>choose a theme</h3>
+      <p>Each of the following themes can become one non-AI signature commercial. Your membership includes 12
+      per year — make each one count.</p>
+      <div class="mtags">
+        <span>founder interviews</span><span>on-site visits</span><span>award announcements</span>
+        <span>customer success stories</span><span>project walkthroughs</span><span>live events</span>
+        <span>day-in-the-life</span><span>behind-the-scenes</span><span>product launches</span>
+        <span>team spotlights</span><span>educational talks</span><span>founder stories</span>
+        <span>milestone celebrations</span><span>factory & workshop tours</span><span>client testimonials</span>
+        <span>industry commentary</span><span>office life</span><span>csr & philanthropic initiatives</span>
+        <span>podcast appearances</span><span>trade shows</span><span>q&a sessions</span>
+        <span>creator partnerships</span><span>employee stories</span><span>client visits</span>
+        <span>design process</span><span>maker stories</span><span>expert insights</span>
+        <span>industry trends</span><span>brand documentary</span><span>executive conversations</span>
+        <span>conferences</span><span>unscripted moments</span><span>awards & recognition</span>
+        <span>networking events</span><span>open house events</span><span>collaborations</span>
+        <span>community events</span>
+      </div>
+
+      <h3>we'll make it bigger</h3>
+      <p>The content produced by pssycco can be strategically amplified through non-core initiatives such as
+      public relations, web development, CRM & email marketing, brand ambassador programs, live events,
+      experiential marketing, and paid media (Meta, Google & programmatic advertising).</p>
+      <p class="mnote">These initiatives are not part of pssycco's core production services, but are highly
+      recommended to amplify the impact of the work we create.</p>
+
+      <h3>production policy</h3>
+      <p>One dedicated filming day is included each month for the production of the monthly Signature
+      Commercial. Filming may take place anywhere within Colombia, according to the creative concept and
+      production requirements of each campaign. If a production requires additional filming days, these will
+      be quoted and agreed upon separately before production begins. International productions will be quoted
+      independently. All production expenses shall be covered by the brand. Pssycco will be responsible for
+      the creative direction, production planning, and execution of the Signature Video according to the scope
+      defined for the membership.</p>
+    `
+  };
+
+  const modal = document.getElementById('plan-modal');
+  const modalBody = document.getElementById('modal-body');
+  const modalClose = document.getElementById('modal-close');
+
+  function openPlan(key){
+    modalBody.innerHTML = PLAN_DETAILS[key] || '';
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    modal.scrollTop = 0;
+  }
+  function closePlan(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.plan[data-plan]').forEach(card=>{
+    card.addEventListener('click', ()=>openPlan(card.dataset.plan));
+    card.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openPlan(card.dataset.plan); });
+  });
+  modalClose.addEventListener('click', closePlan);
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) closePlan(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closePlan(); });
+</script>
+
+</body>
+</html>
