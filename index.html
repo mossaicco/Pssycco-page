@@ -9,13 +9,27 @@
     --bg:#f4f2ec; --bg2:#ece8df; --ink:#4b4d45; --deep:#33352f;
     --muted:#9a9d90; --line:rgba(51,53,47,0.12);
     --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    --c-human:#b5674a; --c-spaces:#7089a0; --c-product:#748049; --c-lifestyle:#c2897e; --c-art:#c79a3d;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{background:var(--bg); scroll-behavior:smooth;}
   body{
-    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    background:transparent; color:var(--ink); font-family:var(--sans);
     -webkit-font-smoothing:antialiased;
   }
+
+  /* AMBIENT SCROLL-DRIVEN VIDEO BACKGROUND — chapters 1-5 play behind the page tinted and softened,
+     so foreground content reads as the "official" layer. Chapters 6-8 (from #workflow onward) drop
+     that veil entirely and play at full clarity — see body.bg-clear below. */
+  #bg-canvas-wrap{position:fixed; inset:0; z-index:-2; overflow:hidden; background:var(--bg);}
+  #bg-canvas-wrap canvas{
+    width:100%; height:100%; display:block;
+    filter:grayscale(35%) contrast(0.94) brightness(1.08) saturate(0.9);
+    transition:filter 1s ease;
+  }
+  #bg-tint{position:fixed; inset:0; z-index:-1; background:var(--bg); opacity:0.86; pointer-events:none; transition:opacity 1s ease;}
+  body.bg-clear #bg-canvas-wrap canvas{ filter:none; }
+  body.bg-clear #bg-tint{ opacity:0; }
   a{color:inherit;}
   img{display:block; max-width:100%;}
   ::selection{background:var(--ink); color:var(--bg);}
@@ -54,19 +68,76 @@
   .fade{opacity:0; transform:translateY(24px); transition:opacity 1s ease, transform 1s ease;}
   .fade.visible{opacity:1; transform:translateY(0);}
 
-  /* HERO */
+  /* HERO — tall enough to hold both the video/text intro AND a genuine pause of blank scroll
+     afterward, so "this is what we build" never appears while the intro is still winding down */
   #hero{
-    min-height:96vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    position:relative;
+    min-height:220vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
     text-align:center; padding-top:120px;
   }
-  #hero img.glyph{max-width:460px; width:62%; margin:0 auto 6px;}
+  /* the glyph is pinned exactly over the ink mark the background film forms — positioned
+     independent of the rest of the hero stack, using the video frame's own measured mark
+     position (~50% / ~49% of viewport, scaling with viewport height, same as the cover-fit canvas) */
+  /* fixed (not absolute) so it centers on the actual viewport — same reference frame as the
+     full-viewport background canvas — and stays locked over the video's mark through the scroll,
+     instead of drifting away with the hero section's own box. */
+  #hero img.glyph{
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1;
+    width:clamp(220px, 50vh, 640px); max-width:none; margin:0;
+  }
+  .pending-reveal{display:none;}
+  /* the tagline is repositioned to the same fixed spot the glyph occupied — once the glyph rises
+     away on scroll, this phrase takes its place, so the video-1→2 explosion lands right on top of it */
+  #hero .tagline.phrase-fixed{
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:max-content; max-width:80vw; z-index:1; opacity:0; pointer-events:none;
+    margin-top:0;
+  }
   #hero .tagline{font-size:19px; color:var(--muted); margin-top:26px;}
-  #hero h1.value{font-size:clamp(24px,3.4vw,34px); margin-top:18px; max-width:640px; color:var(--ink);}
+  /* the value line lands right over video 2's explosion, then dissolves before "this is what we build" */
+  #hero p.value.phrase-fixed{
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:1; opacity:0; pointer-events:none; margin-top:0;
+  }
+  #hero p.value{font-size:clamp(20px,2.4vw,28px); margin-top:40px; max-width:640px; color:var(--muted); font-weight:400; line-height:1.5;}
+  #hero p.value .value-em{font-size:1em; color:var(--muted);}
   .badge-pill{
     display:inline-block; margin-top:30px; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase;
     border:1px solid var(--ink); color:var(--ink); padding:9px 18px; border-radius:20px;
   }
   #hero .scrolldown{margin-top:64px; font-size:11px; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase;}
+  #hero .threshold{
+    margin-top:32px; font-size:12.5px; letter-spacing:0.08em; color:var(--muted); font-style:italic;
+    max-width:420px;
+  }
+
+  /* ARRIVAL — the hero reveals itself on load, like stepping through a threshold */
+  @keyframes arrive{
+    from{ opacity:0; transform:translateY(16px) scale(1.015); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  .arrive{ animation:arrive 1.3s cubic-bezier(.16,1,.3,1) both; }
+
+  /* the glyph gets its own version of the arrival animation, because its transform already carries
+     the translate(-50%,-50%) that centers it on the viewport — the generic .arrive keyframe would
+     silently overwrite that centering offset the moment it played */
+  @keyframes glyphArrive{
+    from{ opacity:0; transform:translate(-50%,-50%) translateY(16px) scale(1.015); }
+    to{ opacity:1; transform:translate(-50%,-50%) translateY(0) scale(1); }
+  }
+  #hero img.glyph.glyph-arrive{ animation:glyphArrive 1.3s cubic-bezier(.16,1,.3,1) .05s both; }
+
+  /* the value line, threshold line, and scrolldown cue no longer reveal on a fixed timer —
+     they're triggered by JS the instant the background film (video 2) explodes */
+  .explosion-reveal{
+    opacity:0; transform:translateY(16px) scale(1.015);
+    transition:opacity 1.3s cubic-bezier(.16,1,.3,1), transform 1.3s cubic-bezier(.16,1,.3,1);
+  }
+  .explosion-reveal.show{ opacity:1; transform:translateY(0) scale(1); }
+
+  /* tintLift removed — an animation with fill-mode:both here would permanently lock #bg-tint's
+     opacity at its "to" value, silently overriding the body.bg-clear rule above on every scroll
+     (the exact same trap the glyph's arrive animation fell into earlier) */
 
   /* PROOF / SHOWREEL */
   #proof{padding-top:120px;}
@@ -85,7 +156,9 @@
 
   /* PHILOSOPHY GALLERY */
   #filosofia{padding-left:0; padding-right:0;}
-  #filosofia .intro{padding:0 8% 90px;}
+  #filosofia .intro{padding:0 8% 90px; text-align:center;}
+  .philo-title{font-size:clamp(44px,7vw,84px); font-weight:400; text-transform:lowercase; letter-spacing:-0.02em; line-height:1.1;}
+  .philo-sub{font-size:20px; color:var(--muted); font-style:italic;}
   .quote-stack{margin-top:10px;}
   .qrow{
     display:flex; align-items:baseline; gap:28px; padding:34px 0; border-bottom:1px solid var(--line);
@@ -112,6 +185,42 @@
   .tag{
     font-size:12px; letter-spacing:0.03em; color:var(--ink); border:1px solid var(--line);
     padding:8px 16px; border-radius:20px; text-transform:lowercase;
+    position:relative; cursor:default; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .tag:hover{background:var(--ink); color:var(--bg); border-color:var(--ink); z-index:5;}
+  .tag::after{
+    content:attr(data-tip);
+    position:absolute; bottom:calc(100% + 10px); left:50%; transform:translateX(-50%) translateY(5px);
+    width:220px; background:var(--ink); color:var(--bg); font-size:11.5px; line-height:1.55;
+    padding:11px 13px; border-radius:6px; text-align:left; font-weight:400; letter-spacing:normal;
+    text-transform:none; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    z-index:20; box-shadow:0 12px 28px rgba(0,0,0,0.28);
+  }
+  .tag:hover::after{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* WORKFLOW TIMELINE — month one (compact) flowing into twelve months (expansive) */
+  .wf-timeline{display:flex; align-items:flex-start; gap:44px; position:relative; margin-bottom:60px;}
+  .wf-rail{position:absolute; top:19px; left:19px; right:19px; height:1px; background:var(--line); z-index:0;}
+  .wf-block{position:relative; z-index:1;}
+  .wf-block-1{flex:0 0 230px;}
+  .wf-block-12{flex:1;}
+  .wf-dot{
+    width:38px; height:38px; border-radius:50%; background:var(--ink); color:var(--bg);
+    display:flex; align-items:center; justify-content:center; font-size:11px; letter-spacing:0.02em;
+    margin-bottom:20px;
+  }
+  .wf-cap{font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
+  .wf-block h3{font-size:30px; text-transform:lowercase; margin-bottom:12px;}
+  .wf-block p{font-size:14.5px; line-height:1.75; max-width:560px;}
+  .wf-sub{margin-top:18px;}
+  .wf-sub:first-of-type{margin-top:2px;}
+  .wf-sub h4{font-size:16px; text-transform:lowercase; margin-bottom:6px; color:var(--ink);}
+  .wf-sub p{font-size:12.5px; line-height:1.65; color:var(--muted); max-width:none;}
+  .wf-block-12 h3{font-size:34px;}
+  @media (max-width:800px){
+    .wf-timeline{flex-direction:column; gap:40px;}
+    .wf-rail{display:none;}
+    .wf-block-1{flex:1;}
   }
 
   .stat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:30px; margin-top:60px;}
@@ -119,21 +228,257 @@
   .stat-grid .v{font-size:clamp(28px,4vw,42px); color:var(--ink);}
   .stat-grid .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:8px;}
 
-  .category-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-top:40px;}
-  @media (max-width:800px){.category-grid{grid-template-columns:repeat(2,1fr);}}
-  .category-card{border:1px solid var(--line); background:var(--bg); padding:26px 16px; text-align:center; border-radius:2px;}
-  .category-card .cname{font-size:19px; text-transform:lowercase;}
-  .category-card .cdesc{font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6;}
+  /* floating "balloon" composition — used for campaign categories & formats */
+  @keyframes floaty{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-16px); }
+  }
 
-  .format-detail{display:flex; gap:32px; align-items:flex-start; padding:40px 0; border-top:1px solid var(--line);}
-  .format-detail:first-of-type{border-top:none; padding-top:50px;}
-  .format-detail .ficon{width:56px; height:56px; flex:0 0 auto; object-fit:contain; margin-top:4px;}
-  .format-detail .fbody{flex:1;}
-  .format-detail .ftitle{font-size:26px; text-transform:lowercase; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;}
-  .format-detail .ffreq{font-size:13px; color:var(--muted); font-family:var(--sans); letter-spacing:0.04em;}
-  .format-detail .fsub{font-size:13px; color:var(--muted); font-style:italic; margin:8px 0 14px;}
-  .format-detail p{font-size:15px; line-height:1.75;}
-  @media (max-width:640px){ .format-detail{flex-direction:column; gap:16px;} }
+  .balloon-field{
+    display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start;
+    gap:36px 22px; margin-top:56px; padding:10px 0 30px;
+  }
+  .balloon{
+    width:180px; display:flex; flex-direction:column; align-items:center; text-align:center;
+    transform:translateY(var(--dy,0px));
+    animation:floaty 7s ease-in-out infinite; animation-delay:var(--delay,0s);
+  }
+  .balloon-circle{
+    width:148px; height:148px; border-radius:50%; border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; font-size:19px; text-transform:lowercase;
+    box-shadow:0 16px 32px rgba(51,53,47,0.09); transition:box-shadow .35s ease;
+  }
+  .balloon-cap{font-size:10.5px; color:var(--muted); margin-top:16px; line-height:1.6; max-width:170px;}
+  .balloon p{
+    font-size:11.5px; color:var(--ink); line-height:1.6; max-width:190px;
+    opacity:0; max-height:0; margin-top:0; overflow:hidden;
+    transition:opacity .35s ease, max-height .35s ease, margin-top .35s ease;
+  }
+  .balloon:hover{ animation-play-state:paused; transform:translateY(var(--dy,0px)) scale(1.05); z-index:2; }
+  .balloon:hover .balloon-circle{ box-shadow:0 22px 44px rgba(51,53,47,0.16); }
+  .balloon:hover p{ opacity:1; max-height:180px; margin-top:12px; }
+  @media (max-width:800px){ .balloon{width:132px;} .balloon-circle{width:122px; height:122px; font-size:16px;} }
+
+  .format-balloons{
+    display:flex; flex-direction:column; align-items:center;
+    margin-top:56px; padding:10px 0 20px;
+  }
+  .format-featured{display:flex; justify-content:center; margin-bottom:74px;}
+  .format-secondary{
+    display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start;
+    gap:56px 30px;
+  }
+  .format-balloon{
+    width:270px; display:flex; flex-direction:column; align-items:center; text-align:center;
+    transform:translateY(var(--dy,0px));
+    animation:floaty 8s ease-in-out infinite; animation-delay:var(--delay,0s);
+  }
+  .fb-icon{
+    width:100px; height:100px; border-radius:50%; border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; box-shadow:0 18px 36px rgba(51,53,47,0.1);
+    margin-bottom:20px;
+  }
+  .fb-icon img{width:50px; height:50px; object-fit:contain;}
+  .fb-kicker{
+    font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:12px;
+  }
+  .format-featured .format-balloon{width:310px;}
+  .format-featured .fb-kicker{
+    font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:16px;
+  }
+  .format-featured .fb-icon{
+    width:124px; height:124px; box-shadow:0 24px 48px rgba(51,53,47,0.14);
+  }
+  .format-featured .fb-icon img{width:62px; height:62px;}
+  .format-featured .fb-title{font-size:26px;}
+  .format-balloon .fb-title{font-size:22px; text-transform:lowercase; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; justify-content:center;}
+  .format-balloon .fb-freq{font-size:12px; color:var(--muted); font-family:var(--sans); letter-spacing:0.04em;}
+  .format-balloon .fb-sub{font-size:12.5px; color:var(--muted); font-style:italic; margin:8px 0 0;}
+  .fb-medium{
+    font-size:9.5px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted);
+    margin-top:10px; opacity:0.75;
+  }
+  .format-balloon{cursor:default;}
+  .format-balloon p{
+    font-size:13.5px; line-height:1.7; max-width:none;
+    opacity:0; max-height:0; margin-top:0; overflow:hidden;
+    transition:opacity .35s ease, max-height .35s ease, margin-top .35s ease;
+  }
+  .format-balloon:hover{ animation-play-state:paused; transform:translateY(var(--dy,0px)) scale(1.07); z-index:2; }
+  .format-balloon:hover .fb-icon{ box-shadow:0 22px 44px rgba(51,53,47,0.16); }
+  .format-balloon:hover p{ opacity:1; max-height:260px; margin-top:12px; }
+  @media (max-width:640px){ .format-balloons{gap:40px 20px;} .format-balloon{width:100%; max-width:320px;} }
+
+  /* WHEEL TRIGGER — small button that opens the campaigns modal */
+  .wheel-trigger-row{display:flex; justify-content:center; margin:54px 0 6px;}
+  .wheel-trigger{
+    display:inline-flex; align-items:center; gap:12px; padding:11px 22px; border:1px solid var(--line);
+    border-radius:30px; background:var(--bg); cursor:pointer; font-size:11.5px; letter-spacing:0.03em;
+    text-transform:lowercase; color:var(--ink); font-family:var(--sans); transition:box-shadow .3s ease, border-color .3s ease;
+  }
+  .wheel-trigger:hover{box-shadow:0 10px 24px rgba(51,53,47,0.12); border-color:var(--ink);}
+  .wheel-glyph{
+    width:18px; height:18px; border-radius:50%; flex-shrink:0;
+    background:conic-gradient(var(--c-human) 0 72deg, var(--c-spaces) 72deg 144deg, var(--c-product) 144deg 216deg,
+      var(--c-lifestyle) 216deg 288deg, var(--c-art) 288deg 360deg);
+  }
+
+  /* WHEEL MODAL — the five campaigns, orbiting the five products */
+  .wheel-panel{max-width:640px;}
+  .wheel-panel .mkicker, .calendar-panel .mkicker, .year-panel .mkicker{
+    font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:10px;
+  }
+  .wheel-panel h2, .calendar-panel h2, .year-panel h2{font-size:clamp(26px,3.8vw,32px); margin-bottom:8px; text-transform:lowercase;}
+  .wheel-panel .wsub, .calendar-panel .wsub, .year-panel .wsub{
+    color:var(--muted); font-size:14px; line-height:1.6; margin-bottom:10px; max-width:480px;
+  }
+
+  .wheel-wrap{position:relative; width:100%; max-width:400px; height:380px; margin:30px auto 6px;}
+  .wheel-node{
+    position:absolute; top:50%; left:50%; display:flex; flex-direction:column; align-items:center; gap:8px;
+    cursor:pointer; background:none; border:none; font-family:var(--sans); padding:0;
+  }
+  .wheel-node .w-sphere{
+    width:48px; height:48px; border-radius:50%; box-shadow:0 10px 22px rgba(0,0,0,0.14);
+    transition:transform .3s ease, box-shadow .3s ease;
+  }
+  .wheel-node .w-name{font-size:11px; text-transform:lowercase; color:var(--ink);}
+  .wheel-node:hover .w-sphere, .wheel-node.active .w-sphere{ transform:scale(1.16); box-shadow:0 16px 30px rgba(0,0,0,0.22); }
+
+  .wheel-center{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:236px; height:236px; border-radius:50%; background:var(--bg); border:1px dashed var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:20px;
+  }
+  .wc-featured{display:flex; justify-content:center;}
+  .wc-secondary{display:grid; grid-template-columns:repeat(2,1fr); gap:14px 22px; justify-items:center;}
+  .wc-icon{
+    position:relative; width:42px; height:42px; border-radius:50%; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); background:var(--bg); box-shadow:0 8px 18px rgba(51,53,47,0.08);
+    transition:box-shadow .3s ease;
+  }
+  .wc-featured .wc-icon{width:56px; height:56px; box-shadow:0 10px 22px rgba(51,53,47,0.1);}
+  .wc-icon img{
+    width:52%; height:52%; object-fit:contain; position:relative; z-index:2;
+    transition:filter .3s ease;
+  }
+  .wc-icon img.inverted{ filter:brightness(0) invert(1); }
+  .wc-icon .wc-fill{
+    position:absolute; inset:0; background-color:transparent; z-index:1;
+    transform:scaleY(0); transform-origin:bottom;
+    transition:transform .6s cubic-bezier(.45,0,.15,1), background-color .3s ease;
+  }
+  .wc-icon .wc-fill.filled{ transform:scaleY(1); }
+  .wc-icon.active{ box-shadow:0 14px 28px rgba(51,53,47,0.16); }
+
+  .wheel-caption{margin-top:32px; text-align:center;}
+  .wheel-caption .wc-cap{
+    font-size:11px; letter-spacing:0.04em; text-transform:lowercase; color:var(--muted);
+    margin-bottom:12px; transition:color .3s ease;
+  }
+  .wheel-caption .wc-text{font-size:13px; line-height:1.75; color:var(--ink); max-width:440px; margin:0 auto;}
+  .wheel-caption.empty .wc-cap{font-style:italic;}
+
+  /* shared "go deeper" link button, used to chain modal → modal */
+  .modal-link-row{display:flex; justify-content:center; gap:14px; margin-top:38px; flex-wrap:wrap;}
+  .modal-link-btn.back i{display:inline-block; transform:scaleX(-1);}
+  .modal-link-btn.back:hover i{transform:scaleX(-1) translateX(4px);}
+  .modal-link-btn{
+    display:inline-flex; align-items:center; gap:8px; padding:11px 22px; border:1px solid var(--line);
+    border-radius:30px; background:none; cursor:pointer; font-size:11.5px; letter-spacing:0.03em;
+    text-transform:lowercase; color:var(--ink); font-family:var(--sans); transition:box-shadow .3s ease, border-color .3s ease;
+  }
+  .modal-link-btn:hover{box-shadow:0 10px 24px rgba(51,53,47,0.12); border-color:var(--ink);}
+  .modal-link-btn i{font-style:normal; transition:transform .25s ease;}
+  .modal-link-btn:hover i{transform:translateX(4px);}
+
+  /* CALENDAR MODAL — a sample month inside the system */
+  .calendar-panel{max-width:660px;}
+  .cal-note-top{font-size:12.5px; color:var(--muted); font-style:italic; margin-bottom:6px;}
+  .cal-grid{margin-top:28px; border:1px solid var(--line); border-radius:10px;}
+  .cal-head{display:grid; grid-template-columns:repeat(7,1fr); background:var(--bg2); border-radius:10px 10px 0 0; overflow:hidden;}
+  .cal-head div{
+    padding:10px 4px; text-align:center; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--muted);
+  }
+  .cal-body{display:grid; grid-template-columns:repeat(7,1fr);}
+  .cal-day{
+    aspect-ratio:1; border-top:1px solid var(--line); border-right:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    position:relative; padding:4px;
+  }
+  .cal-day:nth-child(7n){border-right:none;}
+  .cal-day .cd-num{position:absolute; top:5px; left:7px; font-size:9px; color:var(--muted);}
+  .cal-day.empty .cd-num{color:var(--line);}
+  .cal-day .cd-icon{
+    width:36px; height:36px; position:relative; cursor:default;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cal-day .cd-badge{
+    width:100%; height:100%; border-radius:50%; overflow:hidden; position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cal-day .cd-fill{position:absolute; inset:0; z-index:1;}
+  .cal-day .cd-icon img{
+    width:58%; height:58%; object-fit:contain; position:relative; z-index:2;
+    filter:brightness(0) invert(1);
+  }
+  .cal-note{font-size:12.5px; color:var(--muted); line-height:1.7; margin-top:20px; font-style:italic;}
+
+  /* calendar hover tooltip — product + campaign, shown together */
+  .cal-day .cd-tip{
+    position:absolute; bottom:calc(100% + 12px); left:50%; transform:translateX(-50%) translateY(6px);
+    min-width:150px; background:var(--deep); border-radius:10px; padding:13px 15px;
+    display:flex; flex-direction:column; gap:6px; align-items:flex-start; text-align:left;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    z-index:30; box-shadow:0 18px 36px rgba(0,0,0,0.32); white-space:nowrap;
+  }
+  .cal-day .cd-tip::after{
+    content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    border:6px solid transparent; border-top-color:var(--deep);
+  }
+  .cal-day .cd-icon:hover .cd-tip{opacity:1; transform:translateX(-50%) translateY(0);}
+  .cd-tip-row{display:flex; align-items:center; gap:8px;}
+  .cd-tip-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .cd-tip-prod{font-size:12.5px; color:var(--bg); text-transform:lowercase; font-weight:700; letter-spacing:0.01em;}
+  .cd-tip-camp{font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; margin-left:16px;}
+
+  /* YEAR MODAL — the annual distribution */
+  .year-panel{max-width:800px;}
+  .year-grid{margin-top:30px;}
+  .year-months-label{font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; padding-left:142px;}
+  .year-head{display:flex; align-items:flex-end; gap:14px; padding-bottom:14px; border-bottom:1px solid var(--line);}
+  .year-head .yh-spacer{width:128px; flex-shrink:0;}
+  .year-head .yh-months{flex:1; display:grid; grid-template-columns:0.85fr repeat(12,1fr); gap:5px;}
+  .year-head .yh-m{text-align:center; font-size:9.5px; color:var(--muted); letter-spacing:0.03em;}
+  .year-head .yh-m.yh-assembly{
+    font-size:8.5px; font-style:italic; letter-spacing:0.02em; text-transform:lowercase; color:var(--muted);
+  }
+  .year-row{display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .year-row:last-child{border-bottom:none;}
+  .yr-who{width:128px; flex-shrink:0; display:flex; align-items:center; gap:10px;}
+  .yr-icon{width:26px; height:26px; flex-shrink:0;}
+  .yr-icon img{width:100%; height:100%; object-fit:contain;}
+  .yr-label{font-size:12px; text-transform:lowercase; color:var(--ink); line-height:1.3;}
+  .yr-label small{display:block; font-size:9.5px; color:var(--muted); letter-spacing:0.02em; margin-top:1px;}
+  .yr-months{flex:1; display:grid; grid-template-columns:0.85fr repeat(12,1fr); gap:5px;}
+  .yr-cell{
+    height:24px; border-radius:6px; background:var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; color:transparent;
+  }
+  .yr-cell.active{color:var(--bg); font-weight:700;}
+  .yr-cell.assembly{background:transparent; border:1px dashed var(--line);}
+  .year-note{font-size:12.5px; color:var(--muted); line-height:1.7; margin-top:26px;}
+  .year-legend{
+    display:flex; gap:20px; flex-wrap:wrap; margin-top:22px; font-size:11.5px; color:var(--muted);
+  }
+  .year-legend span{display:inline-flex; align-items:center; gap:7px;}
+  .year-legend i{
+    display:inline-block; width:10px; height:10px; border-radius:3px; background:var(--ink); font-style:normal;
+  }
+  .year-legend i.dashed{background:transparent; border:1px dashed var(--line);}
 
   .value-anchor{
     margin-top:40px; padding:24px 28px; border:1px dashed var(--ink); border-radius:4px;
@@ -214,16 +559,92 @@
   .modal-body ul.mlist li{font-size:14.5px; padding:11px 0; border-top:1px solid var(--line); color:var(--ink);}
   .modal-body ul.mlist li:first-child{border-top:none;}
   .modal-body .mtags{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
-  .modal-body .mtags span{font-size:11.5px; border:1px solid var(--line); padding:6px 12px; border-radius:16px; color:var(--muted);}
+  .modal-body .mtags span{
+    font-size:11.5px; border:1px solid var(--line); padding:6px 12px; border-radius:16px; color:var(--muted);
+    position:relative; cursor:default; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .modal-body .mtags span:hover{background:var(--ink); color:var(--bg); border-color:var(--ink); z-index:5;}
+  .modal-body .mtags span::after{
+    content:attr(data-tip);
+    position:absolute; bottom:calc(100% + 10px); left:50%; transform:translateX(-50%) translateY(5px);
+    width:200px; background:var(--ink); color:var(--bg); font-size:11.5px; line-height:1.55;
+    padding:11px 13px; border-radius:6px; text-align:left; font-weight:400;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    z-index:20; box-shadow:0 12px 28px rgba(0,0,0,0.28);
+  }
+  .modal-body .mtags span:hover::after{opacity:1; transform:translateX(-50%) translateY(0);}
   .modal-body .mnote{font-size:13px; color:var(--muted); margin-top:10px; font-style:italic;}
+  .tier-included{
+    margin:0 0 22px; padding:22px 24px; border:1px solid var(--line); border-radius:12px;
+    background:rgba(51,53,47,0.035);
+  }
+  .tier-included .ti-label{
+    font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:16px;
+  }
+  .tier-icons{display:flex; flex-wrap:wrap; gap:22px;}
+  .tier-icon{display:flex; flex-direction:column; align-items:center; gap:8px; width:64px;}
+  .tier-icon .ti-circle{
+    width:46px; height:46px; border-radius:50%; background:var(--bg); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; box-shadow:0 8px 18px rgba(51,53,47,0.08);
+  }
+  .tier-icon .ti-circle img{width:23px; height:23px; object-fit:contain;}
+  .tier-icon span{font-size:10px; color:var(--ink); text-align:center; letter-spacing:0.01em; line-height:1.3; text-transform:lowercase;}
+  .tier-chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .tier-chip{
+    font-size:11.5px; color:var(--ink); background:var(--bg); border:1px solid var(--line);
+    padding:7px 13px; border-radius:20px; letter-spacing:0.01em; text-transform:lowercase;
+  }
+  .ti-note{font-size:12.5px; color:var(--muted); line-height:1.7; margin-top:16px; font-style:italic;}
+  .mvideo-row{display:flex; gap:14px; margin-top:20px;}
+  .mvideo{
+    flex:1; border-radius:6px; overflow:hidden; background:#000; border:1px solid var(--line);
+    position:relative; cursor:pointer;
+  }
+  .mvideo video{width:100%; display:block; aspect-ratio:9/16; object-fit:cover;}
+  .mvideo .playbtn{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:40px; height:40px; border-radius:50%; background:rgba(244,242,236,0.9);
+    color:var(--ink); display:flex; align-items:center; justify-content:center;
+    font-size:13px; padding-left:2px; transition:.25s; box-shadow:0 4px 14px rgba(0,0,0,0.2);
+  }
+  .mvideo:hover .playbtn{background:var(--ink); color:var(--bg);}
+  @media (max-width:600px){ .mvideo-row{flex-wrap:wrap;} .mvideo{flex:1 1 40%;} }
 
   /* VIDEOS (proof grid, reused) */
   .video-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:26px;}
   @media (max-width:800px){.video-grid{grid-template-columns:1fr 1fr;}}
-  .video-card figure{margin:0; border:1px solid var(--line); overflow:hidden;}
-  .video-card img{width:100%; aspect-ratio:16/10; object-fit:cover; filter:grayscale(15%);}
+  .video-card{cursor:pointer;}
+  .video-card figure{margin:0; border:1px solid var(--line); overflow:hidden; position:relative;}
+  .video-card img{width:100%; aspect-ratio:16/10; object-fit:cover; filter:grayscale(15%); transition:transform .35s ease, filter .35s ease;}
+  .video-card:hover img{transform:scale(1.04); filter:grayscale(0%);}
+  .video-card .playbtn{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:44px; height:44px; border-radius:50%; background:rgba(244,242,236,0.9);
+    color:var(--ink); display:flex; align-items:center; justify-content:center;
+    font-size:14px; padding-left:3px; transition:.25s; box-shadow:0 4px 14px rgba(0,0,0,0.15);
+  }
+  .video-card:hover .playbtn{background:var(--ink); color:var(--bg);}
   .video-card .t{font-size:13px; margin-top:10px; text-transform:lowercase;}
   .video-card .d{font-size:11.5px; color:var(--muted); margin-top:2px;}
+
+  /* VIDEO MODAL */
+  .video-modal{
+    position:fixed; inset:0; z-index:350; background:rgba(20,20,18,0.9);
+    display:flex; align-items:center; justify-content:center; padding:40px 20px;
+    opacity:0; pointer-events:none; transition:opacity .3s ease;
+  }
+  .video-modal.open{opacity:1; pointer-events:auto;}
+  .video-modal-inner{max-width:900px; width:100%;}
+  .video-modal video{width:100%; display:block; max-height:80vh; background:#000;}
+  .video-modal-cap{margin-top:22px; text-align:center;}
+  .vmc-kicker{
+    font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:#cfae74; margin-bottom:8px;
+  }
+  .vmc-title{color:var(--bg); font-size:16px; text-transform:lowercase; letter-spacing:0.02em;}
+  .video-modal-close{
+    position:absolute; top:24px; right:32px; background:none; border:none; font-size:32px;
+    color:var(--bg); cursor:pointer; line-height:1; font-family:var(--sans);
+  }
 
   /* FAQ */
   .faq-item{border-top:1px solid var(--line); padding:26px 0;}
@@ -254,6 +675,11 @@
 </head>
 <body>
 
+<div id="bg-canvas-wrap" aria-hidden="true">
+  <canvas id="bg-canvas"></canvas>
+</div>
+<div id="bg-tint" aria-hidden="true"></div>
+
 <nav class="topnav">
   <img class="brand-logo" src="assets/logo_glyph.png" alt="pssycco">
   <span class="links">
@@ -263,17 +689,17 @@
     <a href="#sistema">system</a>
     <a href="#membresias">memberships</a>
     <a href="#faq">faq</a>
+    <a href="members/">members</a>
     <a class="nav-cta" href="#cta">book a call</a>
   </span>
 </nav>
 
 <!-- HERO -->
 <section id="hero">
-  <img class="glyph" src="assets/logo_glyph.png" alt="pssycco">
-  <p class="tagline">engineers of perception.</p>
-  <h1 class="value">AI-powered brand content, delivered every month — built and directed by pssycco.</h1>
-  <div class="badge-pill">pre-launch founder pricing · closes july 30, 2026</div>
-  <div class="scrolldown">scroll ↓</div>
+  <img class="glyph glyph-arrive" src="assets/logo_glyph.png" alt="pssycco">
+  <p class="value phrase-fixed phrase-3">AI-powered brand content, <span class="value-em">delivered every month</span> — built and directed by pssycco.</p>
+  <p class="threshold explosion-reveal pending-reveal">you haven't opened a website. you've crossed into the studio's world.</p>
+  <div class="scrolldown explosion-reveal pending-reveal">scroll ↓</div>
 </section>
 
 <!-- PROOF / SHOWREEL -->
@@ -286,25 +712,25 @@
       <div class="proof-main-cap">pssycco / formula — how existing brand assets become an ever-expanding content ecosystem</div>
     </div>
     <div class="video-grid fade">
-      <div class="video-card">
-        <figure><img src="assets/thumbs/framework.jpg" loading="lazy" alt=""></figure>
+      <div class="video-card" data-video="assets/video/framework.mp4" data-title="pssycco / framework" tabindex="0" role="button">
+        <figure><img src="assets/thumbs/framework.jpg" loading="lazy" alt=""><span class="playbtn">▶</span></figure>
         <div class="t">pssycco / framework</div>
         <div class="d">the structure of the creative system</div>
       </div>
-      <div class="video-card">
-        <figure><img src="assets/thumbs/dictionary.jpg" loading="lazy" alt=""></figure>
+      <div class="video-card" data-video="assets/video/dictionary.mp4" data-title="pssycco / dictionary" tabindex="0" role="button">
+        <figure><img src="assets/thumbs/dictionary.jpg" loading="lazy" alt=""><span class="playbtn">▶</span></figure>
         <div class="t">pssycco / dictionary</div>
-        <div class="d">the glossary of our formats</div>
+        <div class="d">the glossary of our products</div>
       </div>
-      <div class="video-card">
-        <figure><img src="assets/thumbs/brandfilm.jpg" loading="lazy" alt=""></figure>
+      <div class="video-card" data-video="assets/video/brandfilm.mp4" data-title="brand film — work in progress" tabindex="0" role="button">
+        <figure><img src="assets/thumbs/brandfilm.jpg" loading="lazy" alt=""><span class="playbtn">▶</span></figure>
         <div class="t">brand film</div>
         <div class="d">work in progress</div>
       </div>
-      <div class="video-card">
-        <figure><img src="assets/thumbs/shorts.jpg" loading="lazy" alt=""></figure>
-        <div class="t">shorts · clips · carousels</div>
-        <div class="d">format examples</div>
+      <div class="video-card" data-video="assets/video/shorts.mp4" data-title="shorts · clips · photo studios" tabindex="0" role="button">
+        <figure><img src="assets/thumbs/shorts.jpg" loading="lazy" alt=""><span class="playbtn">▶</span></figure>
+        <div class="t">shorts · clips · photo studios</div>
+        <div class="d">product examples</div>
       </div>
     </div>
     <p class="muted fade" style="margin-top:22px; font-size:13px;">more references available in your project folder.</p>
@@ -312,32 +738,23 @@
 </section>
 
 <!-- TEAM -->
-<section id="team" style="background:var(--bg2);">
+<section id="team" style="background:rgba(236,232,223,0.55);">
   <div class="narrow" style="max-width:900px;">
-    <div class="kicker">led by</div>
-    <h2 class="fade">the people behind pssycco.</h2>
-    <div class="team-row fade">
-      <div class="team-card">
-        <div class="tname">Mateo de Mossaicco</div>
-        <div class="trole">Founder, pssycco AI Studios</div>
-        <p>Leads the creative direction and client relationships personally, escorting every brand's campaigns
-        and the construction of its visual universe from day one.</p>
-      </div>
-      <div class="team-card">
-        <div class="tname">Pedro Ermoso</div>
-        <div class="trole">Head of Production</div>
-        <p>In-house producer for Spotify Studios and director of <i>Made in Medellín</i>, J Balvin's podcast —
-        leading the development of assets, narratives, and AI systems alongside the full pssycco studio.</p>
-      </div>
-    </div>
+    <div class="kicker">who we are</div>
+    <h2 class="fade">the minds behind pssycco.</h2>
+    <p class="fade" style="margin-top:22px;">
+      pssycco is a collective of entrepreneurs, artists, designers, and advertisers — each an expert in their
+      own discipline — who came together to build something no single field could create alone. This is where
+      strategy, art direction, design, and advertising converge into one system, powered by AI.
+    </p>
   </div>
 </section>
 
 <!-- FILOSOFIA -->
 <section id="filosofia">
   <div class="intro fade">
-    <div class="kicker narrow" style="margin:0 auto;">the pssycco philosophy</div>
-    <h2 class="narrow" style="margin:0 auto;">the authority theory.</h2>
+    <h1 class="philo-title narrow" style="margin:0 auto;">the pssycco philosophy.</h1>
+    <div class="philo-sub narrow" style="margin:14px auto 0;">the authority theory.</div>
   </div>
   <div class="narrow" style="padding:0 8%;">
     <div class="quote-stack">
@@ -355,24 +772,30 @@
     <div class="kicker">the workflow · 13 months</div>
     <h2 class="fade">our methodology is multiplication.</h2>
 
-    <div class="prose-block fade" style="margin-top:60px;">
-      <h3>month one — ensemble</h3>
-      <p>Month one is dedicated to designing the next twelve: scripts, campaign concepts, visual references,
-      prompt libraries, narrative systems, production documentation, and every creative foundation required to
-      execute the year's storytelling.</p>
-    </div>
-
-    <div class="prose-block fade">
-      <h3>twelve months — uninterrupted production</h3>
-      <p>Once the foundation is set, the following twelve months run as a single continuous production cycle —
-      no gaps, no pauses. A non-stopping stream of campaigns, assets, and storytelling built on top of the
-      system designed in month one.</p>
-    </div>
-
-    <div class="prose-block fade">
-      <h3>gathering</h3>
-      <p>During the first month, we gather everything your brand has built over the years: products, spaces,
-      people, stories, archives, identity.</p>
+    <div class="wf-timeline fade" style="margin-top:70px;">
+      <div class="wf-rail"></div>
+      <div class="wf-block wf-block-1">
+        <div class="wf-dot">1</div>
+        <div class="wf-cap">month one</div>
+        <div class="wf-sub">
+          <h4>ensemble</h4>
+          <p>Month one is dedicated to designing the next twelve: scripts, campaign concepts, visual
+          references, prompt libraries, narrative systems, production documentation, and every creative
+          foundation required to execute the year's storytelling.</p>
+        </div>
+        <div class="wf-sub">
+          <h4>gathering</h4>
+          <p>During this same month, we gather everything your brand has built over the years: products,
+          spaces, people, stories, archives, identity.</p>
+        </div>
+      </div>
+      <div class="wf-block wf-block-12">
+        <div class="wf-dot">2–13</div>
+        <div class="wf-cap">twelve months</div>
+        <h3>uninterrupted production</h3>
+        <p>Once the foundation is set, production runs as a single continuous cycle — no gaps, no pauses. A
+        non-stopping stream of campaigns and assets, built entirely on the system designed in month one.</p>
+      </div>
     </div>
 
     <div class="prose-block fade">
@@ -380,90 +803,84 @@
       <p>Every AI production is an asset. Content stops being an expense — it becomes part of your brand's
       equity. One production, multiple destinations.</p>
       <div class="tags">
-        <span class="tag">social media</span><span class="tag">advertising</span><span class="tag">websites</span>
-        <span class="tag">investor presentations</span><span class="tag">community management</span>
-        <span class="tag">events & showrooms</span><span class="tag">press & pr</span>
-        <span class="tag">digital screens</span><span class="tag">trade fairs</span>
-        <span class="tag">future campaigns</span>
+        <span class="tag" data-tip="Where the story starts, never where it ends — the entry point, not the whole campaign.">social media</span><span class="tag" data-tip="The same production, engineered to perform as paid media — built to convert, not just to be seen.">advertising</span><span class="tag" data-tip="Hero banners, product pages, landing pages — content that lives where the buying decision actually happens.">websites</span>
+        <span class="tag" data-tip="The brand's visual system speaking to capital — pitch decks and fundraising materials built with the same craft as any campaign.">investor presentations</span><span class="tag" data-tip="The assets that keep the brand alive day to day, between campaigns — replies, stories, the ongoing conversation.">community management</span>
+        <span class="tag" data-tip="Printed, projected, looped — content built to meet people in a physical room, not a feed.">events & showrooms</span><span class="tag" data-tip="Press kits and media-ready assets — content built for someone else to tell your story.">press & pr</span>
+        <span class="tag" data-tip="Retail, lobbies, out-of-home — the brand at scale, in physical space, running on repeat.">digital screens</span><span class="tag" data-tip="Booth visuals and expo loops — the brand's story built for the trade-show floor.">trade fairs</span>
+        <span class="tag" data-tip="A growing archive — every production becomes reusable material for campaigns that don't exist yet.">future campaigns</span>
       </div>
     </div>
   </div>
 </section>
 
+<!-- VIDEO INTERLUDE — chapters 7+8 get their own text-free stretch of scroll, as the main video,
+     before "the products" begins -->
+<section id="video-interlude" aria-hidden="true" style="min-height:180vh; padding:0;"></section>
+
 <!-- SISTEMA -->
-<section id="sistema" style="background:var(--bg2);">
+<section id="sistema" style="background:rgba(236,232,223,0.55);">
   <div class="narrow" style="max-width:900px;">
-    <div class="kicker">production system</div>
-    <h2 class="fade">5 campaign categories.</h2>
+    <div class="kicker">the collection</div>
+    <h2 class="fade">the products.</h2>
     <p class="fade" style="margin-top:22px;">
-      Every campaign is built around one of five narrative categories — each one designed to reach your
-      audience through a different emotional register.
-    </p>
-    <div class="category-grid fade">
-      <div class="category-card"><div class="cname">human</div><div class="cdesc">message / emotion / meaning / reflection</div></div>
-      <div class="category-card"><div class="cname">spaces</div><div class="cdesc">showrooms / events / experiences</div></div>
-      <div class="category-card"><div class="cname">product</div><div class="cdesc">showcase / service / details / craftsmanship</div></div>
-      <div class="category-card"><div class="cname">lifestyle</div><div class="cdesc">aspiration / status / taste / desire</div></div>
-      <div class="category-card"><div class="cname">art</div><div class="cdesc">expression / symbolism / cinema / prestige</div></div>
-    </div>
-  </div>
-
-  <div class="narrow" style="max-width:900px; margin-top:110px;">
-    <div class="kicker">production system</div>
-    <h2 class="fade">5 formats.</h2>
-    <p class="fade" style="margin-top:22px;">
-      Every campaign is delivered through one of five production formats — distributed strategically across
-      your annual communication system.
+      Developed strategically across your annual communication system.
     </p>
 
-    <div class="format-detail fade">
-      <img class="ficon" src="assets/icons/brandfilms.png" alt="">
-      <div class="fbody">
-        <div class="ftitle">ai brand films <span class="ffreq">4 / year</span></div>
-        <div class="fsub">multiple shots / immersive storytelling</div>
-        <p>The most ambitious expression of your brand. A cinematic production designed to communicate vision,
-        emotion, and identity through stories that define how your company is remembered.</p>
+    <div class="format-balloons fade">
+      <div class="format-featured">
+        <div class="format-balloon" style="--dy:0px; --delay:-1.6s;">
+          <div class="fb-icon"><img src="assets/icons/brandfilms.png" alt=""></div>
+          <div class="fb-medium">video</div>
+          <div class="fb-title">ai brand films <span class="fb-freq">4 / year</span></div>
+          <div class="fb-sub">(multiple shots / immersive storytelling)</div>
+          <p>The most ambitious expression of your brand. A cinematic production designed to communicate vision,
+          emotion, and identity through stories that define how your company is remembered.</p>
+        </div>
+      </div>
+
+      <div class="format-secondary">
+        <div class="format-balloon" style="--dy:0px; --delay:-3.4s;">
+          <div class="fb-icon"><img src="assets/icons/shorts.png" alt=""></div>
+          <div class="fb-medium">video</div>
+          <div class="fb-title">ai shorts <span class="fb-freq">4 / month</span></div>
+          <div class="fb-sub">(4 shots / compact storytelling)</div>
+          <p>A condensed cinematic experience, designed to communicate meaningful stories through concise,
+          carefully crafted cinematic language.</p>
+        </div>
+
+        <div class="format-balloon" style="--dy:22px; --delay:-0.6s;">
+          <div class="fb-icon"><img src="assets/icons/clips.png" alt=""></div>
+          <div class="fb-medium">video</div>
+          <div class="fb-title">ai clips <span class="fb-freq">4 / month</span></div>
+          <div class="fb-sub">(2 shots / one idea)</div>
+          <p>The shortest of the five products. Not every story needs a beginning and an end — sometimes a
+          single moment is enough to define an entire campaign.</p>
+        </div>
+
+        <div class="format-balloon" style="--dy:0px; --delay:-2.5s;">
+          <div class="fb-icon"><img src="assets/icons/carrousels.png" alt=""></div>
+          <div class="fb-medium">image</div>
+          <div class="fb-title">ai photo studios <span class="fb-freq">2 / month</span></div>
+          <div class="fb-sub">(5 images / editorial standard)</div>
+          <p>Ideas transformed into memorable visuals. Photo studios combine art direction, typography, and
+          composition to communicate concepts that photography alone cannot express.</p>
+        </div>
+
+        <div class="format-balloon" style="--dy:22px; --delay:-4.2s;">
+          <div class="fb-icon"><img src="assets/icons/graphics.png" alt=""></div>
+          <div class="fb-medium">image</div>
+          <div class="fb-title">ai graphics <span class="fb-freq">1 / month</span></div>
+          <div class="fb-sub">(5 images / editorial posters)</div>
+          <p>Ideas transformed into memorable visuals — concepts that photography alone cannot express,
+          combining art direction, typography, and composition into a single striking image.</p>
+        </div>
       </div>
     </div>
 
-    <div class="format-detail fade">
-      <img class="ficon" src="assets/icons/shorts.png" alt="">
-      <div class="fbody">
-        <div class="ftitle">ai shorts <span class="ffreq">4 / month</span></div>
-        <div class="fsub">4 shots / compact storytelling</div>
-        <p>A condensed cinematic experience, designed to communicate meaningful stories through concise,
-        carefully crafted cinematic language.</p>
-      </div>
-    </div>
-
-    <div class="format-detail fade">
-      <img class="ficon" src="assets/icons/clips.png" alt="">
-      <div class="fbody">
-        <div class="ftitle">ai clips <span class="ffreq">4 / month</span></div>
-        <div class="fsub">editorial standard · 10 seconds · 2 shots / one idea</div>
-        <p>The shortest format in the system. Not every story needs a beginning and an end — sometimes a
-        single moment is enough to define an entire campaign.</p>
-      </div>
-    </div>
-
-    <div class="format-detail fade">
-      <img class="ficon" src="assets/icons/carrousels.png" alt="">
-      <div class="fbody">
-        <div class="ftitle">ai carousels <span class="ffreq">2 / month</span></div>
-        <div class="fsub">the editorial-standard photo essay</div>
-        <p>Ideas transformed into memorable visuals. Carousels combine art direction, typography, and
-        composition to communicate concepts that photography alone cannot express.</p>
-      </div>
-    </div>
-
-    <div class="format-detail fade">
-      <img class="ficon" src="assets/icons/graphics.png" alt="">
-      <div class="fbody">
-        <div class="ftitle">ai graphics <span class="ffreq">1 / month</span></div>
-        <div class="fsub">visual stories / artboards / editorial posters</div>
-        <p>Ideas transformed into memorable visuals — concepts that photography alone cannot express,
-        combining art direction, typography, and composition into a single striking image.</p>
-      </div>
+    <div class="wheel-trigger-row fade">
+      <button class="wheel-trigger" onclick="openWheel()" type="button">
+        <span class="wheel-glyph"></span> see the five campaigns
+      </button>
     </div>
 
     <div class="stat-grid fade">
@@ -501,12 +918,6 @@
           <th class="center">signature</th>
         </tr>
         <tr>
-          <td class="rowlabel">monthly price</td>
-          <td class="center">$1,500</td>
-          <td class="center">$2,500</td>
-          <td class="center">$3,500</td>
-        </tr>
-        <tr>
           <td class="rowlabel">creative direction, scripts & prompts</td>
           <td class="center">✓</td>
           <td class="center">✓</td>
@@ -525,7 +936,7 @@
           <td class="center">12 commercials / yr</td>
         </tr>
         <tr>
-          <td class="rowlabel">brand films / shorts / carousels / graphics / clips</td>
+          <td class="rowlabel">brand films / shorts / photo studios / graphics / clips</td>
           <td class="center">by request</td>
           <td class="center">4 / 48 / 24 / 12 / 48</td>
           <td class="center">4 / 48 / 24 / 12 / 48</td>
@@ -544,8 +955,6 @@
     <div class="plan" data-plan="leaders" tabindex="0" role="button">
       <div class="pname">leaders</div>
       <div class="psub">production by request · creative strategy & pre-production</div>
-      <div class="price">$1,500 <small>usd/month</small></div>
-      <div class="founder">pre-launch founder pricing</div>
       <ul>
         <li>annual narrative</li>
         <li>quarterly, monthly and weekly campaigns</li>
@@ -559,11 +968,9 @@
       <div class="plan-tag">most popular</div>
       <div class="pname">ultimate</div>
       <div class="psub">leaders + end-to-end ai production</div>
-      <div class="price">$2,500 <small>usd/month</small></div>
-      <div class="founder">pre-launch founder pricing</div>
       <ul>
         <li>everything included in leaders</li>
-        <li>48 shorts · 24 carousels / year</li>
+        <li>48 shorts · 24 photo studios / year</li>
         <li>4 brand films / year</li>
         <li>12 graphics + 48 clips / year</li>
         <li>integrated ai and non-ai production</li>
@@ -573,8 +980,6 @@
     <div class="plan" data-plan="signature" tabindex="0" role="button">
       <div class="pname">signature</div>
       <div class="psub">leaders + ultimate + end-to-end non-ai production</div>
-      <div class="price">$3,500 <small>usd/month</small></div>
-      <div class="founder">pre-launch founder pricing</div>
       <ul>
         <li>everything included in leaders and ultimate</li>
         <li>12 non-ai "signature" commercials / year</li>
@@ -585,7 +990,6 @@
       <span class="plan-more">view full plan <i>→</i></span>
     </div>
   </div>
-  <p class="deadline fade">access to pre-launch founder pricing closes july 30, 2026. applicable taxes calculated separately.</p>
 </section>
 
 <!-- PLAN DETAIL MODAL -->
@@ -596,8 +1000,106 @@
   </div>
 </div>
 
+<!-- WHEEL MODAL — the five campaigns -->
+<div id="wheel-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-panel wheel-panel">
+    <button class="modal-close" id="wheel-close" aria-label="close">×</button>
+    <div class="mkicker">the five campaigns</div>
+    <h2>one product, five campaigns.</h2>
+    <p class="wsub">Every pssycco product can be told through any of the five campaigns. Hover or click one
+    to see it take hold.</p>
+
+    <div class="wheel-wrap" id="wheel-wrap">
+      <div class="wheel-center" id="wheel-center"></div>
+    </div>
+
+    <div class="wheel-caption empty" id="wheel-caption">
+      <div class="wc-cap">hover a campaign above</div>
+    </div>
+
+    <div class="modal-link-row">
+      <button class="modal-link-btn" type="button" onclick="closeWheel(); openCalendar();">see how a month comes together <i>→</i></button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR MODAL — a sample month inside the system -->
+<div id="calendar-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-panel calendar-panel">
+    <button class="modal-close" id="calendar-close" aria-label="close">×</button>
+    <div class="mkicker">the production calendar</div>
+    <h2>a month, mapped.</h2>
+    <p class="wsub">A sample month inside the system. Every colored day is one example of a product + campaign
+    pairing — hover any symbol to see exactly which product and which campaign it represents.</p>
+    <div class="cal-note-top">illustrative sample — each day pairs one product with one campaign; not a specific brand's actual schedule.</div>
+
+    <div class="cal-grid">
+      <div class="cal-head" id="cal-head"></div>
+      <div class="cal-body" id="cal-body"></div>
+    </div>
+
+    <p class="cal-note">Every colored day above is a product + campaign example — one of the five products,
+    paired with one of the five campaigns that gives it its story that day. No two days look alike, and no
+    product is tied to one campaign: the same short can carry a human story one week and an art story the
+    next. The calendar is simply where the five products and the five campaigns actually meet.</p>
+
+    <div class="modal-link-row">
+      <button class="modal-link-btn back" type="button" onclick="closeCalendar(); openWheel();"><i>→</i> back to the campaigns</button>
+      <button class="modal-link-btn" type="button" onclick="closeCalendar(); openYear();">see the full year <i>→</i></button>
+    </div>
+  </div>
+</div>
+
+<!-- YEAR MODAL — the annual distribution -->
+<div id="year-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-panel year-panel">
+    <button class="modal-close" id="year-close" aria-label="close">×</button>
+    <div class="mkicker">the annual system</div>
+    <h2>a year of campaigns.</h2>
+    <p class="wsub">Thirteen months of work in total. The first is <b>assembly</b> — the team comes together
+    and gathers the brand's creative system, with nothing delivered yet. The roman numerals that follow,
+    <b>I through XII</b>, are the twelve months of actual production. The number inside each highlighted
+    month is exactly how many of that product ship — each one colored by whichever of the five campaigns
+    carries it that month.</p>
+
+    <div class="year-months-label">months of production →</div>
+    <div class="year-grid">
+      <div class="year-head" id="year-head"></div>
+      <div id="year-rows"></div>
+    </div>
+
+    <p class="year-note">Shorts and clips ship 4 times a month, photo studios twice a month, and graphics once
+    a month — every single month of the year. Brand films, the flagship, arrive only quarterly: 1 per
+    highlighted month, reserved for the moments that carry the most weight. Together, that's 48 shorts, 24
+    photo studios, 48 clips, 12 graphics, and 4 brand films a year — a production line that never really
+    stops, distributed across the five campaigns as each piece calls for.</p>
+
+    <div class="year-legend">
+      <span><i class="dashed"></i> assembly — month one, no deliverables yet</span>
+      <span><i style="background:var(--ink);"></i> colored by campaign — the number is the deliverable count</span>
+      <span><i style="background:var(--line);"></i> not scheduled that month</span>
+    </div>
+
+    <div class="modal-link-row">
+      <button class="modal-link-btn back" type="button" onclick="closeYear(); openCalendar();"><i>→</i> back to the calendar</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="video-modal" class="video-modal" aria-hidden="true">
+  <button class="video-modal-close" id="video-modal-close" aria-label="close">×</button>
+  <div class="video-modal-inner">
+    <video id="video-modal-player" controls playsinline></video>
+    <div class="video-modal-cap">
+      <div class="vmc-kicker" id="video-modal-kicker"></div>
+      <div class="vmc-title" id="video-modal-title"></div>
+    </div>
+  </div>
+</div>
+
 <!-- FAQ -->
-<section id="faq" style="background:var(--bg2);">
+<section id="faq" style="background:rgba(236,232,223,0.55);">
   <div class="narrow">
     <div class="kicker">good questions</div>
     <h2 class="fade">before you reach out.</h2>
@@ -629,8 +1131,7 @@
       </details>
       <details class="faq-item">
         <summary>What's the next step?</summary>
-        <p>Reach out below and we'll schedule a short call to scope your brand's engagement and confirm
-        founder pricing before it closes on July 30, 2026.</p>
+        <p>Reach out below and we'll schedule a short call to scope your brand's engagement.</p>
       </details>
     </div>
   </div>
@@ -639,12 +1140,8 @@
 <!-- CTA -->
 <section id="cta">
   <div class="narrow fade">
-    <div class="kicker">next step</div>
-    <h2>let's build your brand's<br>perception system.</h2>
-    <p class="muted" style="margin-top:18px;">pre-launch founder pricing closes july 30, 2026 — book a short call, no commitment required.</p>
     <div class="cta-buttons">
       <a class="btn solid" href="mailto:mossaicco@gmail.com?subject=Book%20a%20call%20-%20pssycco">book a call</a>
-      <a class="btn" href="mailto:mossaicco@gmail.com">email us instead</a>
     </div>
   </div>
 </section>
@@ -655,6 +1152,202 @@
 </footer>
 
 <script>
+  // ---- ambient background film ----
+  // chapters 1 + 2 are scroll-driven, mapped to the scroll distance of the hero section.
+  // video 1 (ch1) forms the pssycco mark; video 2 (ch2) is the explosion, dissolving to white.
+  // once the hero has scrolled past, it holds on that final white frame — chapters 3-8 are wired for later.
+  (function(){
+    const CHAPTERS = [
+      {folder:'ch1', count:169}, {folder:'ch2', count:121}, {folder:'ch3', count:121},
+      {folder:'ch4', count:145}, {folder:'ch5', count:241}, {folder:'ch6', count:289},
+      {folder:'ch7', count:121}, {folder:'ch8', count:169},
+    ];
+    const frames = [];
+    CHAPTERS.forEach(c=>{
+      for(let i=1;i<=c.count;i++){
+        frames.push('chapters/'+c.folder+'/f_'+String(i).padStart(3,'0')+'.jpg');
+      }
+    });
+    const total = frames.length;
+    const images = new Array(total);
+
+    // the opening sequence: chapter 1 (the mark forms) + chapter 2 (the explosion → white)
+    const INTRO_FRAMES = CHAPTERS[0].count + CHAPTERS[1].count; // 290
+    const EXPLOSION_FRAME = CHAPTERS[0].count;                  // chapter 2 begins here — the explosion
+
+    // the philosophy sequence: chapters 3 + 4 + 5, played behind #filosofia
+    const CH35_START_FRAME = INTRO_FRAMES; // 290 — chapter 3 begins here
+    const CH35_END_FRAME = INTRO_FRAMES + CHAPTERS[2].count + CHAPTERS[3].count + CHAPTERS[4].count - 1; // 796 — end of chapter 5
+
+    // chapter 6, played behind #workflow's own text — full clarity, no ambient veil
+    const CH6_START_FRAME = CH35_END_FRAME + 1;                  // 797 — chapter 6 begins here
+    const CH6_END_FRAME = CH6_START_FRAME + CHAPTERS[5].count - 1; // 1085 — end of chapter 6
+
+    // chapters 7 + 8, played text-free behind #video-interlude, as the main video, before "the products"
+    const CH78_START_FRAME = CH6_END_FRAME + 1; // 1086 — chapter 7 begins here
+    const CH78_END_FRAME = total - 1;           // 1375 — end of chapter 8
+
+    function loadImage(i){
+      if(images[i]) return;
+      const img = new Image();
+      img.src = frames[i];
+      images[i] = img;
+    }
+
+    // load the opening sequence with priority, then background-fill the rest for later chapters
+    for(let i=0;i<INTRO_FRAMES;i++) loadImage(i);
+    let delay = 0;
+    for(let i=INTRO_FRAMES;i<total;i++){
+      setTimeout(()=>loadImage(i), delay);
+      delay += 8;
+    }
+
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas(){
+      const dpr = Math.min(window.devicePixelRatio||1, 2);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+    }
+    resizeCanvas();
+
+    function drawFrame(idx){
+      let i = idx;
+      while(i>0 && !(images[i] && images[i].complete && images[i].naturalWidth>0)) i--;
+      const img = images[i];
+      if(!img || !img.complete || img.naturalWidth===0) return;
+      const cw = canvas.width, chh = canvas.height;
+      const ir = img.naturalWidth/img.naturalHeight, cr = cw/chh;
+      let dw,dh,dx,dy;
+      if(ir > cr){ dh = chh; dw = chh*ir; dx = (cw-dw)/2; dy = 0; }
+      else { dw = cw; dh = cw/ir; dx = 0; dy = (chh-dh)/2; }
+      ctx.clearRect(0,0,cw,chh);
+      ctx.drawImage(img, dx, dy, dw, dh);
+    }
+
+    // ---- scroll-driven playback, confined to the hero section's own scroll distance ----
+    const hero = document.getElementById('hero');
+    const filosofia = document.getElementById('filosofia');
+    const workflowSection = document.getElementById('workflow');
+    const videoInterlude = document.getElementById('video-interlude');
+    let explosionFired = false;
+
+    const heroGlyph = document.querySelector('#hero img.glyph');
+    const heroPhrase3 = document.querySelector('#hero .phrase-3');
+    const EXPLOSION_PROGRESS = EXPLOSION_FRAME / (INTRO_FRAMES-1); // where video 1 → video 2 explodes
+    const VIDEO_PROGRESS_END = 0.5; // the video+text intro resolves within the first half of the hero's
+                                     // scroll distance — the second half is the blank pause, on purpose
+
+    // once the glyph's own arrival animation finishes, JS takes over its opacity/transform directly —
+    // otherwise the animation's held end-state would fight any inline style we set afterward
+    let glyphReady = false;
+    if(heroGlyph){
+      heroGlyph.addEventListener('animationend', ()=>{
+        heroGlyph.classList.remove('glyph-arrive');
+        glyphReady = true;
+      }, {once:true});
+    }
+
+    function fadeWindow(p, start, end){
+      if(end <= start) return p >= end ? 1 : 0;
+      return Math.max(0, Math.min(1, (p-start)/(end-start)));
+    }
+
+    function updateBg(){
+      const h = document.documentElement;
+      const scrollTop = h.scrollTop;
+
+      // ---- region 1: hero, chapters 1-2 ----
+      const heroHeight = Math.max(1, hero.offsetHeight);
+      const heroRaw = Math.max(0, Math.min(1, scrollTop / heroHeight));
+      // everything below (video frame, glyph, phrase) is driven by `progress`, remapped so the whole
+      // sequence finishes at VIDEO_PROGRESS_END — past that point progress just holds at 1 (the pause)
+      const progress = Math.min(1, heroRaw / VIDEO_PROGRESS_END);
+      const heroIdx = Math.min(INTRO_FRAMES-1, Math.floor(progress * (INTRO_FRAMES-1)));
+
+      // the glyph holds still for the first stretch of scroll, then rises and fades out —
+      // giving it a few more seconds on screen before it makes way for the explosion
+      if(heroGlyph && glyphReady){
+        const goneBy = fadeWindow(progress, 0.10, 0.24);
+        heroGlyph.style.opacity = String(1 - goneBy);
+        heroGlyph.style.transform = `translate(-50%, calc(-50% - ${(goneBy*70).toFixed(1)}px))`;
+      }
+
+      // "AI-powered brand content..." — takes the glyph's place, fully in view by the time video 2
+      // explodes, sitting over the explosion itself, then dissolves away just before
+      // "this is what we build" takes over
+      if(heroPhrase3){
+        const phraseIn = fadeWindow(progress, 0.28, EXPLOSION_PROGRESS);
+        const phraseOut = fadeWindow(progress, 0.85, 1.0);
+        heroPhrase3.style.opacity = String(Math.max(0, phraseIn - phraseOut));
+      }
+
+      if(!explosionFired && heroIdx >= EXPLOSION_FRAME){
+        explosionFired = true;
+        document.dispatchEvent(new CustomEvent('pssycco:explosion'));
+      }
+
+      // ---- region 2: #filosofia, chapters 3-5 — mapped across the section's own natural height ----
+      let idx = heroIdx;
+      if(filosofia){
+        const filosofiaTop = filosofia.offsetTop;
+        if(scrollTop >= filosofiaTop){
+          const filosofiaHeight = Math.max(1, filosofia.offsetHeight);
+          const filosofiaProgress = Math.max(0, Math.min(1, (scrollTop - filosofiaTop) / filosofiaHeight));
+          idx = CH35_START_FRAME + Math.floor(filosofiaProgress * (CH35_END_FRAME - CH35_START_FRAME));
+        }
+      }
+
+      // ---- region 3: #workflow, chapter 6 only — plays behind the timeline text, full clarity ----
+      let pastPhilosophy = false;
+      if(workflowSection){
+        const workflowTop = workflowSection.offsetTop;
+        if(scrollTop >= workflowTop){
+          pastPhilosophy = true;
+          const workflowHeight = Math.max(1, workflowSection.offsetHeight);
+          const workflowProgress = Math.max(0, Math.min(1, (scrollTop - workflowTop) / workflowHeight));
+          idx = CH6_START_FRAME + Math.floor(workflowProgress * (CH6_END_FRAME - CH6_START_FRAME));
+        }
+      }
+
+      // ---- region 4: #video-interlude, chapters 7+8 — text is gone, this is the main video ----
+      if(videoInterlude){
+        const interludeTop = videoInterlude.offsetTop;
+        if(scrollTop >= interludeTop){
+          const interludeHeight = Math.max(1, videoInterlude.offsetHeight);
+          const interludeProgress = Math.max(0, Math.min(1, (scrollTop - interludeTop) / interludeHeight));
+          idx = CH78_START_FRAME + Math.floor(interludeProgress * (CH78_END_FRAME - CH78_START_FRAME));
+        }
+      }
+
+      document.body.classList.toggle('bg-clear', pastPhilosophy);
+
+      drawFrame(idx);
+    }
+
+    let bgTicking = false;
+    function onBgScroll(){
+      if(!bgTicking){
+        window.requestAnimationFrame(()=>{ updateBg(); bgTicking = false; });
+        bgTicking = true;
+      }
+    }
+    window.addEventListener('scroll', onBgScroll, {passive:true});
+    window.addEventListener('resize', ()=>{ resizeCanvas(); updateBg(); });
+    setTimeout(updateBg, 200);
+    updateBg();
+  })();
+
+  // ---- hero reveal, synced to the video-2 explosion instead of a fixed timer ----
+  document.addEventListener('pssycco:explosion', function(){
+    const value = document.querySelector('#hero p.value');
+    const threshold = document.querySelector('#hero .threshold');
+    const scrolldown = document.querySelector('#hero .scrolldown');
+    if(value) value.classList.add('show');
+    setTimeout(()=>{ if(threshold) threshold.classList.add('show'); }, 400);
+    setTimeout(()=>{ if(scrolldown) scrolldown.classList.add('show'); }, 800);
+  });
+
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
   },{threshold:0.15});
@@ -671,8 +1364,6 @@
       <div class="mkicker">memberships</div>
       <h2>leaders</h2>
       <div class="msub">production by request · creative strategy & pre-production</div>
-      <div class="mprice">$1,500 <small>usd/month</small></div>
-      <div class="mfounder">pre-launch founder pricing</div>
 
       <h3>annual deliverables</h3>
       <ul class="mlist">
@@ -713,14 +1404,22 @@
       <div class="mkicker">memberships</div>
       <h2>ultimate</h2>
       <div class="msub">leaders + end-to-end ai production</div>
-      <div class="mprice">$2,500 <small>usd/month</small></div>
-      <div class="mfounder">pre-launch founder pricing</div>
 
       <h3>annual deliverables</h3>
+      <div class="tier-included">
+        <div class="ti-label">everything included in leaders</div>
+        <div class="tier-chips">
+          <span class="tier-chip">annual narrative</span>
+          <span class="tier-chip">quarterly campaigns</span>
+          <span class="tier-chip">monthly campaigns</span>
+          <span class="tier-chip">weekly campaigns</span>
+          <span class="tier-chip">ai brand identity system</span>
+          <span class="tier-chip">annual brand archive</span>
+        </div>
+      </div>
       <ul class="mlist">
-        <li>everything included in leaders</li>
         <li>48 shorts / year</li>
-        <li>24 carousels / year</li>
+        <li>24 photo studios / year</li>
         <li>4 brand films / year</li>
         <li>12 graphics / year</li>
         <li>48 clips / year</li>
@@ -736,11 +1435,11 @@
       meaningful stories through concise, carefully crafted cinematic language.</p>
 
       <h3>ai clips — 4 / month</h3>
-      <p><i>editorial standard, 10 seconds / 2 shots, one idea.</i> The shortest format in the system. Not
+      <p><i>editorial standard, 10 seconds / 2 shots, one idea.</i> The shortest of the five products. Not
       every story needs a beginning and an end — sometimes a single moment is enough to define an entire
       campaign.</p>
 
-      <h3>ai carousels — 2 / month</h3>
+      <h3>ai photo studios — 2 / month</h3>
       <p><i>the editorial-standard photo essay.</i> Ideas transformed into memorable visuals, combining art
       direction, typography, and composition to communicate concepts that photography alone cannot express.</p>
 
@@ -752,12 +1451,20 @@
       <div class="mkicker">memberships</div>
       <h2>signature</h2>
       <div class="msub">leaders + ultimate + end-to-end non-ai production</div>
-      <div class="mprice">$3,500 <small>usd/month</small></div>
-      <div class="mfounder">pre-launch founder pricing</div>
 
       <h3>annual deliverables</h3>
+      <div class="tier-included">
+        <div class="ti-label">everything included in leaders + ultimate</div>
+        <div class="tier-icons">
+          <div class="tier-icon"><div class="ti-circle"><img src="assets/icons/shorts.png" alt=""></div><span>shorts</span></div>
+          <div class="tier-icon"><div class="ti-circle"><img src="assets/icons/carrousels.png" alt=""></div><span>photo studios</span></div>
+          <div class="tier-icon"><div class="ti-circle"><img src="assets/icons/clips.png" alt=""></div><span>clips</span></div>
+          <div class="tier-icon"><div class="ti-circle"><img src="assets/icons/brandfilms.png" alt=""></div><span>brand films</span></div>
+          <div class="tier-icon"><div class="ti-circle"><img src="assets/icons/graphics.png" alt=""></div><span>graphics</span></div>
+        </div>
+        <p class="ti-note">plus the full leaders strategy system — annual narrative, campaigns & the ai brand identity archive.</p>
+      </div>
       <ul class="mlist">
-        <li>everything included in leaders and ultimate</li>
         <li>12 non-ai signature commercials / year</li>
       </ul>
 
@@ -766,23 +1473,38 @@
       non-AI signature commercial production day becomes a full-scale content capture session, designed to be
       released throughout the following 30-day campaign.</p>
 
+      <div class="mvideo-row">
+        <div class="mvideo" data-video="assets/video/signature-1.mp4" data-kicker="signature membership" data-title="signature commercial — example 01" tabindex="0" role="button">
+          <video src="assets/video/signature-1.mp4" muted loop playsinline autoplay preload="metadata"></video>
+          <span class="playbtn">▶</span>
+        </div>
+        <div class="mvideo" data-video="assets/video/signature-2.mp4" data-kicker="signature membership" data-title="signature commercial — example 02" tabindex="0" role="button">
+          <video src="assets/video/signature-2.mp4" muted loop playsinline autoplay preload="metadata"></video>
+          <span class="playbtn">▶</span>
+        </div>
+        <div class="mvideo" data-video="assets/video/signature-3.mp4" data-kicker="signature membership" data-title="signature commercial — example 03" tabindex="0" role="button">
+          <video src="assets/video/signature-3.mp4" muted loop playsinline autoplay preload="metadata"></video>
+          <span class="playbtn">▶</span>
+        </div>
+      </div>
+
       <h3>choose a theme</h3>
       <p>Each of the following themes can become one non-AI signature commercial. Your membership includes 12
       per year — make each one count.</p>
       <div class="mtags">
-        <span>founder interviews</span><span>on-site visits</span><span>award announcements</span>
-        <span>customer success stories</span><span>project walkthroughs</span><span>live events</span>
-        <span>day-in-the-life</span><span>behind-the-scenes</span><span>product launches</span>
-        <span>team spotlights</span><span>educational talks</span><span>founder stories</span>
-        <span>milestone celebrations</span><span>factory & workshop tours</span><span>client testimonials</span>
-        <span>industry commentary</span><span>office life</span><span>csr & philanthropic initiatives</span>
-        <span>podcast appearances</span><span>trade shows</span><span>q&a sessions</span>
-        <span>creator partnerships</span><span>employee stories</span><span>client visits</span>
-        <span>design process</span><span>maker stories</span><span>expert insights</span>
-        <span>industry trends</span><span>brand documentary</span><span>executive conversations</span>
-        <span>conferences</span><span>unscripted moments</span><span>awards & recognition</span>
-        <span>networking events</span><span>open house events</span><span>collaborations</span>
-        <span>community events</span>
+        <span data-tip="A candid conversation with your founder, sharing vision, story, and the reasons behind the brand.">founder interviews</span><span data-tip="A guided visit through your physical space, showing where the brand actually lives and works.">on-site visits</span><span data-tip="Capturing the moment an award or recognition is announced, celebrated on camera.">award announcements</span>
+        <span data-tip="A real customer describing the results and experience of working with your brand.">customer success stories</span><span data-tip="A detailed tour through a finished project, explaining the thinking and execution behind it.">project walkthroughs</span><span data-tip="On-the-ground coverage of a live event, capturing energy, atmosphere, and key moments.">live events</span>
+        <span data-tip="A day inside the brand, following a role or routine from start to finish.">day-in-the-life</span><span data-tip="An unpolished look at how the work actually gets made, away from the final result.">behind-the-scenes</span><span data-tip="The reveal moment for a new product or service, built to generate excitement.">product launches</span>
+        <span data-tip="Introducing a member of the team, their role, and what they bring to the brand.">team spotlights</span><span data-tip="A short talk or lesson that teaches the audience something valuable and brand-relevant.">educational talks</span><span data-tip="The origin story — why the brand exists and the journey that built it.">founder stories</span>
+        <span data-tip="Marking a meaningful milestone — an anniversary, a number reached, a goal achieved.">milestone celebrations</span><span data-tip="A look inside where things are actually built, made, or produced.">factory & workshop tours</span><span data-tip="A client speaking directly about their experience and the value they received.">client testimonials</span>
+        <span data-tip="Your brand's point of view on a trend or topic shaping the industry.">industry commentary</span><span data-tip="A relaxed, human look at everyday life inside the company.">office life</span><span data-tip="Documenting the brand's social or environmental commitments and community initiatives.">csr & philanthropic initiatives</span>
+        <span data-tip="Footage from a podcast appearance, repackaged as a standalone piece of content.">podcast appearances</span><span data-tip="Coverage from a trade show or exhibition, showing presence and engagement.">trade shows</span><span data-tip="Answering real questions from your audience, directly and transparently, on camera.">q&a sessions</span>
+        <span data-tip="A collaboration with an external creator or influencer, told through video.">creator partnerships</span><span data-tip="A personal story from someone on the team, told in their own words.">employee stories</span><span data-tip="A visit to or from a client, capturing the relationship in person.">client visits</span>
+        <span data-tip="Showing how an idea becomes a finished design, step by step.">design process</span><span data-tip="The people who make the product, telling their craft in their own words.">maker stories</span><span data-tip="A specialist from your team sharing knowledge that builds authority and trust.">expert insights</span>
+        <span data-tip="A forward-looking take on where the industry is heading, and why it matters.">industry trends</span><span data-tip="A longer-form, narrative piece that tells a fuller story about the brand.">brand documentary</span><span data-tip="A conversation with leadership on strategy, vision, or decisions shaping the brand.">executive conversations</span>
+        <span data-tip="Coverage from a conference — talks, panels, presence, and key takeaways.">conferences</span><span data-tip="Genuine, unplanned moments captured as they happen, without a script.">unscripted moments</span><span data-tip="Celebrating an award or recognition the brand or team has received.">awards & recognition</span>
+        <span data-tip="Capturing the connections and conversations happening at a networking event.">networking events</span><span data-tip="An open invitation into the brand's space, welcoming people in to see it firsthand.">open house events</span><span data-tip="A partnership between your brand and another, told as a shared story.">collaborations</span>
+        <span data-tip="The brand's presence and participation within its local or online community.">community events</span>
       </div>
 
       <h3>we'll make it bigger</h3>
@@ -826,7 +1548,380 @@
   });
   modalClose.addEventListener('click', closePlan);
   modal.addEventListener('click', (e)=>{ if(e.target === modal) closePlan(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closePlan(); });
+
+  // ---- the wheel: five campaigns orbiting the five products ----
+  const CAMPAIGNS = [
+    { key:'human',     name:'human',     color:'#b5674a', cap:'message / emotion / meaning / reflection',
+      text:'Stories that reveal the people behind the brand. Designed to create emotional connection, meaning, and trust beyond the product.' },
+    { key:'spaces',    name:'spaces',    color:'#7089a0', cap:'showrooms / events / experiences',
+      text:'Stories that invite people to live the brand. Showrooms, events, launches, and physical moments.' },
+    { key:'product',   name:'product',   color:'#748049', cap:'showcase / service / details / craftsmanship',
+      text:'Stories that celebrate what you build. Every detail, material, feature, and decision.' },
+    { key:'lifestyle', name:'lifestyle', color:'#c2897e', cap:'aspiration / status / taste / desire',
+      text:'Stories that place the brand inside a desired way of living. They create aspiration, identity, and the feeling of belonging.' },
+    { key:'art',       name:'art',       color:'#c79a3d', cap:'expression / symbolism / cinema / prestige',
+      text:'Stories created to elevate perception. Less commercial, more cultural — designed to express ideas, create symbolism, and build prestige.' },
+  ];
+  // brandfilms is the flagship, shown featured on its own — matching the hierarchy of "the five pssycco products" above
+  const WHEEL_FEATURED = { key:'brandfilms', icon:'assets/icons/brandfilms.png' };
+  const WHEEL_SECONDARY = [
+    { key:'shorts',       icon:'assets/icons/shorts.png' },
+    { key:'clips',        icon:'assets/icons/clips.png' },
+    { key:'photostudios', icon:'assets/icons/carrousels.png' },
+    { key:'graphics',     icon:'assets/icons/graphics.png' },
+  ];
+
+  const wheelModal = document.getElementById('wheel-modal');
+  const wheelClose = document.getElementById('wheel-close');
+  const wheelWrap = document.getElementById('wheel-wrap');
+  const wheelCenter = document.getElementById('wheel-center');
+  const wheelCaption = document.getElementById('wheel-caption');
+  let wheelBuilt = false;
+
+  function makeProductIcon(p){
+    const iconWrap = document.createElement('div');
+    iconWrap.className = 'wc-icon';
+    const fill = document.createElement('div');
+    fill.className = 'wc-fill';
+    fill.dataset.product = p.key;
+    const img = document.createElement('img');
+    img.src = p.icon;
+    img.alt = '';
+    iconWrap.appendChild(fill);
+    iconWrap.appendChild(img);
+    return iconWrap;
+  }
+
+  function buildWheel(){
+    if(wheelBuilt) return;
+    wheelBuilt = true;
+    const R = 172;
+
+    const featuredRow = document.createElement('div');
+    featuredRow.className = 'wc-featured';
+    featuredRow.appendChild(makeProductIcon(WHEEL_FEATURED));
+    wheelCenter.appendChild(featuredRow);
+
+    const secondaryRow = document.createElement('div');
+    secondaryRow.className = 'wc-secondary';
+    WHEEL_SECONDARY.forEach(p=> secondaryRow.appendChild(makeProductIcon(p)));
+    wheelCenter.appendChild(secondaryRow);
+
+    CAMPAIGNS.forEach((c, i)=>{
+      const angle = (-90 + i * 72) * Math.PI / 180;
+      const x = Math.round(R * Math.cos(angle));
+      const y = Math.round(R * Math.sin(angle));
+      const node = document.createElement('button');
+      node.type = 'button';
+      node.className = 'wheel-node';
+      node.style.left = `calc(50% + ${x}px)`;
+      node.style.top = `calc(50% + ${y}px)`;
+      node.style.transform = 'translate(-50%,-50%)';
+      node.innerHTML = `<div class="w-sphere" style="background:${c.color};"></div><div class="w-name">${c.name}</div>`;
+      node.addEventListener('click', ()=>applyCampaign(c, node));
+      node.addEventListener('mouseenter', ()=>applyCampaign(c, node));
+      wheelWrap.appendChild(node);
+    });
+  }
+
+  function applyCampaign(c, node){
+    document.querySelectorAll('#wheel-wrap .wheel-node').forEach(n=>n.classList.remove('active'));
+    node.classList.add('active');
+    wheelCaption.classList.remove('empty');
+    wheelCaption.innerHTML = `<div class="wc-cap" style="color:${c.color};">${c.cap}</div><div class="wc-text">${c.text}</div>`;
+
+    // pour out the old color quickly, then rise back up in the new one — like refilling a little ink jar.
+    // the icon itself flips to cream at the same moment, so it never gets lost against the new color.
+    document.querySelectorAll('#wheel-center .wc-icon').forEach(badge=> badge.classList.add('active'));
+    document.querySelectorAll('#wheel-center .wc-fill').forEach(f=>{
+      const img = f.parentElement.querySelector('img');
+      f.style.transition = 'transform .2s ease-in, background-color .2s ease';
+      f.classList.remove('filled');
+      if(img) img.classList.remove('inverted');
+      setTimeout(()=>{
+        f.style.backgroundColor = c.color;
+        f.style.transition = 'transform .55s cubic-bezier(.45,0,.15,1), background-color .3s ease';
+        void f.offsetWidth; // force reflow so the rise-up animates from empty
+        f.classList.add('filled');
+        if(img) img.classList.add('inverted');
+      }, 200);
+    });
+  }
+
+  function openWheel(){
+    buildWheel();
+    wheelModal.classList.add('open');
+    wheelModal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeWheel(){
+    wheelModal.classList.remove('open');
+    wheelModal.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+  wheelClose.addEventListener('click', closeWheel);
+  wheelModal.addEventListener('click', (e)=>{ if(e.target === wheelModal) closeWheel(); });
+
+  // ---- the calendar: a sample month, days colored by campaign, marked by product ----
+  const ALL_PRODUCTS = [WHEEL_FEATURED, ...WHEEL_SECONDARY];
+  function productByKey(key){ return ALL_PRODUCTS.find(p=>p.key===key); }
+  function campaignByKey(key){ return CAMPAIGNS.find(c=>c.key===key); }
+  const PRODUCT_LABELS = {
+    brandfilms:'ai brand films', shorts:'ai shorts', clips:'ai clips',
+    photostudios:'ai photo studios', graphics:'ai graphics',
+  };
+  // the source icons don't share the same internal padding, so each gets a small
+  // visual-size correction to make them read as the same size next to each other
+  // illustrative sample — not a real client's schedule
+  const CAL_EVENTS = {
+    3:{ product:'shorts', campaign:'human' },
+    5:{ product:'clips', campaign:'art' },
+    8:{ product:'brandfilms', campaign:'product' },
+    11:{ product:'photostudios', campaign:'lifestyle' },
+    14:{ product:'clips', campaign:'spaces' },
+    16:{ product:'shorts', campaign:'lifestyle' },
+    19:{ product:'graphics', campaign:'product' },
+    22:{ product:'shorts', campaign:'art' },
+    24:{ product:'clips', campaign:'human' },
+    27:{ product:'photostudios', campaign:'spaces' },
+    29:{ product:'shorts', campaign:'spaces' },
+  };
+  const CAL_DAY_LABELS = ['mon','tue','wed','thu','fri','sat','sun'];
+  const CAL_START_OFFSET = 2; // the 1st falls on a wednesday, in this sample
+  const CAL_DAYS_IN_MONTH = 30;
+
+  const calendarModal = document.getElementById('calendar-modal');
+  const calendarClose = document.getElementById('calendar-close');
+  const calHead = document.getElementById('cal-head');
+  const calBody = document.getElementById('cal-body');
+  let calendarBuilt = false;
+
+  function buildCalendar(){
+    if(calendarBuilt) return;
+    calendarBuilt = true;
+
+    CAL_DAY_LABELS.forEach(lbl=>{
+      const d = document.createElement('div');
+      d.textContent = lbl;
+      calHead.appendChild(d);
+    });
+
+    const totalCells = Math.ceil((CAL_START_OFFSET + CAL_DAYS_IN_MONTH) / 7) * 7;
+    for(let i=0; i<totalCells; i++){
+      const dayNum = i - CAL_START_OFFSET + 1;
+      const cell = document.createElement('div');
+      cell.className = 'cal-day';
+      if(dayNum < 1 || dayNum > CAL_DAYS_IN_MONTH){
+        cell.classList.add('empty');
+        calBody.appendChild(cell);
+        continue;
+      }
+      const num = document.createElement('div');
+      num.className = 'cd-num';
+      num.textContent = dayNum;
+      cell.appendChild(num);
+
+      const ev = CAL_EVENTS[dayNum];
+      if(ev){
+        const p = productByKey(ev.product);
+        const c = campaignByKey(ev.campaign);
+        const iconWrap = document.createElement('div');
+        iconWrap.className = 'cd-icon';
+
+        const badge = document.createElement('div');
+        badge.className = 'cd-badge';
+        const fill = document.createElement('div');
+        fill.className = 'cd-fill';
+        fill.style.backgroundColor = c.color;
+        const img = document.createElement('img');
+        img.src = p.icon;
+        img.alt = '';
+        badge.appendChild(fill);
+        badge.appendChild(img);
+
+        const tip = document.createElement('div');
+        tip.className = 'cd-tip';
+        tip.innerHTML = `
+          <div class="cd-tip-row"><span class="cd-tip-dot" style="background:${c.color};"></span><span class="cd-tip-prod">${PRODUCT_LABELS[p.key]}</span></div>
+          <div class="cd-tip-camp" style="color:${c.color};">${c.name} campaign</div>
+        `;
+
+        iconWrap.appendChild(badge);
+        iconWrap.appendChild(tip);
+        cell.appendChild(iconWrap);
+      }
+      calBody.appendChild(cell);
+    }
+  }
+
+  function openCalendar(){
+    buildCalendar();
+    calendarModal.classList.add('open');
+    calendarModal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeCalendar(){
+    calendarModal.classList.remove('open');
+    calendarModal.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+  calendarClose.addEventListener('click', closeCalendar);
+  calendarModal.addEventListener('click', (e)=>{ if(e.target === calendarModal) closeCalendar(); });
+
+  // ---- the year: the annual distribution of the five products ----
+  const YEAR_ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+  const YEAR_ACTIVE = {
+    brandfilms:   [2,5,8,11],
+    shorts:       [1,2,3,4,5,6,7,8,9,10,11,12],
+    clips:        [1,2,3,4,5,6,7,8,9,10,11,12],
+    photostudios: [1,2,3,4,5,6,7,8,9,10,11,12],
+    graphics:     [1,2,3,4,5,6,7,8,9,10,11,12],
+  };
+  // how many of each product ship in an active month — matches the real Ultimate deliverables
+  // (48 shorts/yr, 24 photo studios/yr, 48 clips/yr, 12 graphics/yr, 4 brand films/yr)
+  const YEAR_PER_MONTH = { brandfilms:1, shorts:4, clips:4, photostudios:2, graphics:1 };
+  const YEAR_FREQ_NOTE = {
+    brandfilms:'quarterly', shorts:'every month', clips:'every month',
+    photostudios:'every month', graphics:'every month',
+  };
+
+  const yearModal = document.getElementById('year-modal');
+  const yearClose = document.getElementById('year-close');
+  const yearHead = document.getElementById('year-head');
+  const yearRows = document.getElementById('year-rows');
+  let yearBuilt = false;
+
+  function buildYear(){
+    if(yearBuilt) return;
+    yearBuilt = true;
+
+    const spacer = document.createElement('div');
+    spacer.className = 'yh-spacer';
+    yearHead.appendChild(spacer);
+    const months = document.createElement('div');
+    months.className = 'yh-months';
+
+    const assemblyHead = document.createElement('div');
+    assemblyHead.className = 'yh-m yh-assembly';
+    assemblyHead.textContent = 'assembly';
+    assemblyHead.title = 'month one — the team assembles and gathers the brand\'s creative system. no deliverables yet.';
+    months.appendChild(assemblyHead);
+
+    YEAR_ROMAN.forEach(r=>{
+      const m = document.createElement('div');
+      m.className = 'yh-m';
+      m.textContent = r;
+      months.appendChild(m);
+    });
+    yearHead.appendChild(months);
+
+    ALL_PRODUCTS.forEach((p, rowIndex)=>{
+      const row = document.createElement('div');
+      row.className = 'year-row';
+
+      const who = document.createElement('div');
+      who.className = 'yr-who';
+      const iconWrap = document.createElement('div');
+      iconWrap.className = 'yr-icon';
+      const img = document.createElement('img');
+      img.src = p.icon;
+      img.alt = '';
+      iconWrap.appendChild(img);
+      const label = document.createElement('div');
+      label.className = 'yr-label';
+      label.innerHTML = `${PRODUCT_LABELS[p.key]}<small>${YEAR_FREQ_NOTE[p.key]}</small>`;
+      who.appendChild(iconWrap);
+      who.appendChild(label);
+      row.appendChild(who);
+
+      const cellsWrap = document.createElement('div');
+      cellsWrap.className = 'yr-months';
+
+      const assemblyCell = document.createElement('div');
+      assemblyCell.className = 'yr-cell assembly';
+      assemblyCell.title = 'month one — assembly, no deliverables yet';
+      cellsWrap.appendChild(assemblyCell);
+
+      for(let m=1; m<=12; m++){
+        const cell = document.createElement('div');
+        cell.className = 'yr-cell';
+        if(YEAR_ACTIVE[p.key].includes(m)){
+          // spread each active cell across the five campaigns, offset per row so the grid reads
+          // as a genuine mosaic — no product is tied to a single campaign, month to month
+          const campaign = CAMPAIGNS[(rowIndex + m) % CAMPAIGNS.length];
+          cell.classList.add('active');
+          cell.style.backgroundColor = campaign.color;
+          cell.textContent = YEAR_PER_MONTH[p.key];
+          cell.title = `${YEAR_PER_MONTH[p.key]} ${PRODUCT_LABELS[p.key]} this month — ${campaign.name} campaign`;
+        }
+        cellsWrap.appendChild(cell);
+      }
+      row.appendChild(cellsWrap);
+      yearRows.appendChild(row);
+    });
+  }
+
+  function openYear(){
+    buildYear();
+    yearModal.classList.add('open');
+    yearModal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeYear(){
+    yearModal.classList.remove('open');
+    yearModal.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+  yearClose.addEventListener('click', closeYear);
+  yearModal.addEventListener('click', (e)=>{ if(e.target === yearModal) closeYear(); });
+
+  // ---- video modal ----
+  const videoModal = document.getElementById('video-modal');
+  const videoPlayer = document.getElementById('video-modal-player');
+  const videoKicker = document.getElementById('video-modal-kicker');
+  const videoTitleEl = document.getElementById('video-modal-title');
+  const videoModalClose = document.getElementById('video-modal-close');
+
+  function openVideo(src, title, kicker){
+    videoPlayer.src = src;
+    videoKicker.textContent = kicker || 'pssycco reference';
+    videoTitleEl.textContent = title || '';
+    videoModal.classList.add('open');
+    videoModal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    videoPlayer.play().catch(()=>{});
+  }
+  function closeVideo(){
+    videoPlayer.pause();
+    videoPlayer.removeAttribute('src');
+    videoPlayer.load();
+    videoModal.classList.remove('open');
+    videoModal.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.video-card[data-video]').forEach(card=>{
+    card.addEventListener('click', ()=>openVideo(card.dataset.video, card.dataset.title, card.dataset.kicker));
+    card.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openVideo(card.dataset.video, card.dataset.title, card.dataset.kicker); });
+  });
+
+  // signature commercial previews inside the plan modal — click opens with sound
+  document.body.addEventListener('click', (e)=>{
+    const mv = e.target.closest('.mvideo[data-video]');
+    if(mv) openVideo(mv.dataset.video, mv.dataset.title, mv.dataset.kicker);
+  });
+  document.body.addEventListener('keypress', (e)=>{
+    if(e.key !== 'Enter') return;
+    const mv = e.target.closest && e.target.closest('.mvideo[data-video]');
+    if(mv) openVideo(mv.dataset.video, mv.dataset.title, mv.dataset.kicker);
+  });
+
+  videoModalClose.addEventListener('click', closeVideo);
+  videoModal.addEventListener('click', (e)=>{ if(e.target === videoModal) closeVideo(); });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='Escape'){ closePlan(); closeVideo(); closeWheel(); closeCalendar(); closeYear(); }
+  });
 </script>
 
 </body>

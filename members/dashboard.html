@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>your workspace — pssycco</title>
+<style>
+  :root{
+    --bg:#f4f2ec; --bg2:#ece8df; --ink:#4b4d45; --deep:#33352f;
+    --muted:#9a9d90; --line:rgba(51,53,47,0.12);
+    --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--bg); min-height:100vh;}
+  body{
+    color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  a{color:inherit;}
+  img{display:block; max-width:100%;}
+
+  nav.topnav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 5%; background:rgba(244,242,236,0.9); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line); font-size:12px; letter-spacing:0.06em;
+  }
+  nav.topnav .brand-logo{height:20px; width:auto; display:block;}
+  nav.topnav .right{display:flex; align-items:center; gap:20px;}
+  nav.topnav .user-email{color:var(--muted); font-size:12px;}
+  nav.topnav button.signout{
+    border:1px solid var(--ink); color:var(--ink); background:transparent;
+    padding:8px 16px; font-size:11.5px; letter-spacing:0.06em; text-transform:lowercase;
+    cursor:pointer; font-family:var(--sans); transition:.2s;
+  }
+  nav.topnav button.signout:hover{background:var(--ink); color:var(--bg);}
+
+  main{flex:1; padding:70px 6% 60px;}
+  .wrap{max-width:1000px; margin:0 auto;}
+
+  .kicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:16px;}
+  h2{font-weight:400; text-transform:lowercase; line-height:1.15; letter-spacing:-0.01em; font-size:clamp(26px,4vw,38px);}
+  p{font-size:15px; line-height:1.8; color:var(--ink);}
+  p.muted{color:var(--muted);}
+
+  .fade{opacity:0; transform:translateY(16px); transition:opacity .7s ease, transform .7s ease;}
+  .fade.in{opacity:1; transform:translateY(0);}
+
+  .drive-frame{
+    margin-top:34px; border:1px solid var(--line); background:var(--bg2);
+    width:100%; height:70vh; min-height:480px; overflow:hidden;
+  }
+  .drive-frame iframe{width:100%; height:100%; border:none; display:block;}
+
+  .empty-state{
+    margin-top:34px; border:1px solid var(--line); padding:50px 40px; text-align:center;
+    background:var(--bg2);
+  }
+
+  footer{padding:34px 5% 40px; text-align:center; border-top:1px solid var(--line); margin-top:auto;}
+  .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <img class="brand-logo" src="../assets/logo_glyph.png" alt="pssycco">
+  <div class="right">
+    <span class="user-email" id="user-email"></span>
+    <button class="signout" id="signout">sign out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap fade" id="wrap">
+    <div class="kicker">your workspace</div>
+    <h2 id="heading">loading your drive…</h2>
+    <p class="muted" id="subtext" style="margin-top:10px;"></p>
+
+    <div id="drive-slot"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="signature">a mossaicco company / kingdom of shapes</div>
+</footer>
+
+<!-- ===================================================================
+     Uses the same Firebase project as members/index.html — the config
+     below must match. Reads members/{email} from Firestore for the
+     assigned Google Drive folder id.
+     =================================================================== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCIZ8vQRjpavUCovCKkm7G2TKlDtu-ROo8",
+    authDomain: "pietra-41149.firebaseapp.com",
+    projectId: "pietra-41149",
+    storageBucket: "pietra-41149.firebasestorage.app",
+    messagingSenderId: "965119942981",
+    appId: "1:965119942981:web:b72072ed543fe3282f5e2c"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const heading = document.getElementById('heading');
+  const subtext = document.getElementById('subtext');
+  const slot = document.getElementById('drive-slot');
+  const userEmailEl = document.getElementById('user-email');
+
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user){
+      window.location.href = "index.html";
+      return;
+    }
+    userEmailEl.textContent = user.email;
+    document.getElementById('wrap').classList.add('in');
+
+    try{
+      const snap = await getDoc(doc(db, "members", user.email.toLowerCase()));
+      const data = snap.exists() ? snap.data() : null;
+      const folderId = data && data.driveFolderId;
+
+      if(folderId){
+        heading.textContent = "your drive.";
+        subtext.textContent = "everything shared with you, in one place.";
+        const frame = document.createElement('div');
+        frame.className = 'drive-frame';
+        frame.innerHTML = '<iframe src="https://drive.google.com/embeddedfolderview?id='+encodeURIComponent(folderId)+'#list" allow="fullscreen"></iframe>';
+        slot.appendChild(frame);
+      }else{
+        heading.textContent = "your workspace is being set up.";
+        subtext.textContent = "we're still connecting your drive folder — check back soon.";
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.innerHTML = '<p class="muted">once your folder is linked on our end, it will appear here automatically.</p>';
+        slot.appendChild(empty);
+      }
+    }catch(err){
+      heading.textContent = "couldn't load your workspace.";
+      subtext.textContent = "please refresh, or reach out if this keeps happening.";
+    }
+  });
+
+  document.getElementById('signout').addEventListener('click', async ()=>{
+    await signOut(auth);
+    window.location.href = "index.html";
+  });
+</script>
+
+</body>
+</html>
