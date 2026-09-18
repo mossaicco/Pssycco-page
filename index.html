@@ -1182,7 +1182,7 @@
   // once the hero has scrolled past, it holds on that final white frame — chapters 3-8 are wired for later.
   (function(){
     const CHAPTERS = [
-      {folder:'ch1', count:169, start:50}, {folder:'ch2', count:121}, {folder:'ch3', count:121},
+      {folder:'ch1', count:169, start:1}, {folder:'ch2', count:121}, {folder:'ch3', count:121},
       {folder:'ch4', count:145}, {folder:'ch5', count:241}, {folder:'ch6', count:289},
       {folder:'ch7', count:121}, {folder:'ch8', count:169},
     ];
@@ -1196,8 +1196,8 @@
     const total = frames.length;
     const images = new Array(total);
 
-    // the opening sequence: chapter 1 (the mark forms — trimmed to start at its frame 50, cutting the
-    // unwanted early frames) + chapter 2 (the explosion → white)
+    // the opening sequence: chapter 1 (the mark forms, from its very first frame) + chapter 2
+    // (the explosion → white)
     const CH1_COUNT = CHAPTERS[0].count - (CHAPTERS[0].start||1) + 1;
     const INTRO_FRAMES = CH1_COUNT + CHAPTERS[1].count;
     const EXPLOSION_FRAME = CH1_COUNT;                  // chapter 2 begins here — the explosion
