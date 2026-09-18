@@ -75,38 +75,6 @@
   .msg.error{color:#a35447;}
   .msg.ok{color:#5c7a4d;}
 
-  .transition-overlay{
-    position:fixed; inset:0; background:var(--bg); z-index:1000;
-    display:none; align-items:center; justify-content:center; pointer-events:none;
-    overflow:hidden;
-  }
-  .transition-overlay.show{display:flex;}
-  .transition-overlay img{opacity:0;}
-  .transition-overlay img:not(.brand){
-    width:min(64vw,64vh); height:auto;
-    animation: bot-fade 2.8s ease-in-out forwards, bot-float 3.6s ease-in-out infinite;
-  }
-  .transition-overlay img.brand{
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-    animation: brand-fade 3.2s ease-in-out forwards;
-  }
-  @keyframes bot-fade{
-    0%{opacity:0;}
-    35%{opacity:0.55;}
-    65%{opacity:0.55;}
-    100%{opacity:0;}
-  }
-  @keyframes bot-float{
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-14px);}
-  }
-  @keyframes brand-fade{
-    0%{opacity:0;}
-    30%{opacity:1;}
-    70%{opacity:1;}
-    100%{opacity:0;}
-  }
-
   .switch-hint{text-align:center; font-size:12.5px; color:var(--muted); margin-top:20px;}
   .switch-hint button{
     background:none; border:none; color:var(--ink); text-decoration:underline; cursor:pointer;
@@ -177,10 +145,6 @@
   </div>
 </main>
 
-<div class="transition-overlay" id="transition-overlay">
-  <img src="../assets/callbot.webp" alt="">
-</div>
-
 <footer>
   <div class="signature">a mossaicco company / kingdom of shapes</div>
 </footer>
@@ -195,7 +159,6 @@
   import {
     getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyClZ8vQRjpavUCovCKkm7G2TKlDtu-ROo8",
@@ -210,15 +173,6 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  async function getMemberLogo(email){
-    try{
-      const snap = await getDoc(doc(db, "members", email));
-      if(snap.exists() && snap.data().logoUrl) return snap.data().logoUrl;
-    }catch(err){ /* fall back to the default */ }
-    return null;
-  }
 
   // if already signed in, skip straight to the dashboard
   onAuthStateChanged(auth, (user)=>{
@@ -257,20 +211,6 @@
     el.className = 'msg' + (kind ? ' '+kind : '');
   }
 
-  function goWithTransition(url, brandLogoUrl){
-    const overlay = document.getElementById('transition-overlay');
-    const img = overlay.querySelector('img');
-    if(brandLogoUrl){
-      img.src = brandLogoUrl;
-      img.classList.add('brand');
-    }else{
-      img.src = '../assets/callbot.webp';
-      img.classList.remove('brand');
-    }
-    overlay.classList.add('show');
-    setTimeout(()=>{ window.location.href = url; }, brandLogoUrl ? 3200 : 2700);
-  }
-
   function friendlyError(err){
     const code = err && err.code || '';
     if(code.includes('auth/invalid-email')) return 'that email doesn\'t look right.';
@@ -291,9 +231,8 @@
     btn.disabled = true; setMsg(msg, 'signing in…');
     try{
       await signInWithEmailAndPassword(auth, email, pass);
-      const brandLogoUrl = await getMemberLogo(email);
       setMsg(msg, '', 'ok');
-      goWithTransition("dashboard.html", brandLogoUrl);
+      window.location.href = "dashboard.html";
     }catch(err){
       setMsg(msg, friendlyError(err), 'error');
       btn.disabled = false;
@@ -321,9 +260,8 @@
     btn.disabled = true; setMsg(msg, 'creating your account…');
     try{
       await createUserWithEmailAndPassword(auth, email, pass);
-      const brandLogoUrl = await getMemberLogo(email);
       setMsg(msg, '', 'ok');
-      goWithTransition("dashboard.html", brandLogoUrl);
+      window.location.href = "dashboard.html";
     }catch(err){
       setMsg(msg, friendlyError(err), 'error');
       btn.disabled = false;

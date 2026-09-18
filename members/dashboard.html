@@ -77,22 +77,37 @@
   .drive-error{color:#a35447;}
 
   .modal-overlay{
-    position:fixed; inset:0; background:rgba(51,53,47,0.75); display:none;
-    align-items:center; justify-content:center; z-index:999; padding:3vh 3vw;
+    position:fixed; inset:0; background:rgba(20,21,18,0.92); display:none;
+    align-items:center; justify-content:center; z-index:999; padding:2vh 2vw;
   }
   .modal-overlay.open{display:flex;}
   .modal-box{
-    background:var(--bg); width:100%; max-width:1200px; max-height:94vh; display:flex;
-    flex-direction:column; position:relative; box-shadow:0 30px 70px rgba(0,0,0,0.35);
+    background:var(--bg); width:96vw; height:94vh; display:flex;
+    flex-direction:column; position:relative; box-shadow:0 30px 70px rgba(0,0,0,0.45);
   }
-  .modal-close{
-    position:absolute; top:6px; right:10px; background:none; border:none; font-size:22px;
-    line-height:1; cursor:pointer; color:var(--muted); z-index:2; padding:8px;
+  .modal-close, .modal-fullscreen{
+    position:absolute; top:10px; background:rgba(20,21,18,0.55); border:none; color:#fff;
+    cursor:pointer; z-index:4; border-radius:50%; width:40px; height:40px;
+    display:flex; align-items:center; justify-content:center; font-size:19px; line-height:1;
+    transition:.2s;
   }
-  .modal-close:hover{color:var(--ink);}
-  .modal-name{padding:16px 50px 0 20px; font-size:13px; color:var(--muted); word-break:break-word;}
-  .modal-frame{flex:1; min-height:600px; background:#000; margin-top:12px;}
-  .modal-frame iframe{width:100%; height:100%; border:none; display:block; min-height:600px;}
+  .modal-close{right:10px; font-size:22px;}
+  .modal-fullscreen{right:58px; font-size:16px;}
+  .modal-close:hover, .modal-fullscreen:hover{background:rgba(20,21,18,0.85);}
+
+  .modal-nav{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:4;
+    background:rgba(20,21,18,0.45); border:none; color:#fff; width:52px; height:52px;
+    border-radius:50%; font-size:28px; cursor:pointer; display:none; align-items:center; justify-content:center;
+    transition:.2s; line-height:1; padding:0 0 3px;
+  }
+  .modal-nav:hover{background:rgba(20,21,18,0.8);}
+  .modal-nav.prev{left:12px;}
+  .modal-nav.next{right:12px;}
+
+  .modal-name{padding:14px 100px 0 16px; font-size:13px; color:var(--muted); word-break:break-word;}
+  .modal-frame{flex:1; min-height:0; background:#000; margin-top:12px;}
+  .modal-frame iframe{width:100%; height:100%; border:none; display:block;}
   .modal-actions{padding:16px 20px; border-top:1px solid var(--line); text-align:center;}
   .btn{
     display:inline-block; border:1px solid var(--ink); color:var(--ink);
@@ -102,6 +117,19 @@
   }
   .btn.solid{background:var(--ink); color:var(--bg);}
   .btn.solid:hover{background:var(--deep);}
+
+  .modal-box:fullscreen{width:100vw; height:100vh; background:#000;}
+  .modal-box:-webkit-full-screen{width:100vw; height:100vh; background:#000;}
+
+  @media (max-width:600px){
+    .modal-overlay{padding:1vh 1vw;}
+    .modal-box{width:98vw; height:96vh;}
+    .modal-nav{width:44px; height:44px; font-size:22px;}
+    .modal-nav.prev{left:6px;}
+    .modal-nav.next{right:6px;}
+    .modal-close, .modal-fullscreen{width:36px; height:36px;}
+    .modal-fullscreen{right:50px;}
+  }
 
   footer{padding:34px 5% 40px; text-align:center; border-top:1px solid var(--line); margin-top:auto;}
   .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
@@ -133,7 +161,10 @@
 </footer>
 
 <div class="modal-overlay" id="modal-overlay">
-  <div class="modal-box">
+  <div class="modal-box" id="modal-box">
+    <button class="modal-nav prev" id="modal-prev" type="button" aria-label="previous">&#8249;</button>
+    <button class="modal-nav next" id="modal-next" type="button" aria-label="next">&#8250;</button>
+    <button class="modal-fullscreen" id="modal-fullscreen" type="button" aria-label="fullscreen">&#9974;</button>
     <button class="modal-close" id="modal-close" type="button">&times;</button>
     <div class="modal-name" id="modal-name"></div>
     <div class="modal-frame" id="modal-frame"></div>
@@ -180,6 +211,9 @@
   const userEmailEl = document.getElementById('user-email');
 
   let pathStack = []; // [{id, name}]
+  let currentPreviewFiles = [];
+  let currentPreviewIndex = -1;
+  const FOLDER_MIME = 'application/vnd.google-apps.folder';
 
   function escapeHtml(s){
     const d = document.createElement('div');
@@ -245,25 +279,80 @@
   }
 
   function openPreview(file){
-    const overlay = document.getElementById('modal-overlay');
     const frame = document.getElementById('modal-frame');
     const name = document.getElementById('modal-name');
     const dl = document.getElementById('modal-download');
     name.textContent = file.name;
-    frame.innerHTML = '<iframe src="https://drive.google.com/file/d/' + encodeURIComponent(file.id) + '/preview" allow="autoplay"></iframe>';
+    frame.innerHTML = '<iframe src="https://drive.google.com/file/d/' + encodeURIComponent(file.id) + '/preview" allow="autoplay; fullscreen"></iframe>';
     dl.href = file.webContentLink || ('https://drive.google.com/uc?export=download&id=' + encodeURIComponent(file.id));
-    overlay.classList.add('open');
+  }
+
+  function updateNavVisibility(){
+    const showNav = currentPreviewFiles.length > 1;
+    document.getElementById('modal-prev').style.display = showNav ? 'flex' : 'none';
+    document.getElementById('modal-next').style.display = showNav ? 'flex' : 'none';
+  }
+
+  function openPreviewByIndex(idx){
+    if(idx < 0 || idx >= currentPreviewFiles.length) return;
+    currentPreviewIndex = idx;
+    openPreview(currentPreviewFiles[idx]);
+    document.getElementById('modal-overlay').classList.add('open');
+    updateNavVisibility();
+  }
+
+  function navigatePreview(delta){
+    if(currentPreviewFiles.length < 2) return;
+    const n = currentPreviewFiles.length;
+    openPreviewByIndex((currentPreviewIndex + delta + n) % n);
   }
 
   function closePreview(){
     document.getElementById('modal-overlay').classList.remove('open');
     document.getElementById('modal-frame').innerHTML = '';
+    currentPreviewIndex = -1;
+    if(document.fullscreenElement || document.webkitFullscreenElement){
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    }
+  }
+
+  function toggleFullscreen(){
+    const box = document.getElementById('modal-box');
+    if(!document.fullscreenElement && !document.webkitFullscreenElement){
+      (box.requestFullscreen || box.webkitRequestFullscreen)?.call(box);
+    }else{
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    }
   }
 
   document.getElementById('modal-close').addEventListener('click', closePreview);
+  document.getElementById('modal-fullscreen').addEventListener('click', toggleFullscreen);
+  document.getElementById('modal-prev').addEventListener('click', ()=> navigatePreview(-1));
+  document.getElementById('modal-next').addEventListener('click', ()=> navigatePreview(1));
   document.getElementById('modal-overlay').addEventListener('click', (e)=>{
     if(e.target.id === 'modal-overlay') closePreview();
   });
+
+  document.addEventListener('keydown', (e)=>{
+    if(!document.getElementById('modal-overlay').classList.contains('open')) return;
+    if(e.key === 'ArrowLeft') navigatePreview(-1);
+    else if(e.key === 'ArrowRight') navigatePreview(1);
+    else if(e.key === 'Escape') closePreview();
+  });
+
+  let touchStartX = null;
+  const modalFrameEl = document.getElementById('modal-frame');
+  modalFrameEl.addEventListener('touchstart', (e)=>{
+    touchStartX = e.changedTouches[0].clientX;
+  }, { passive:true });
+  modalFrameEl.addEventListener('touchend', (e)=>{
+    if(touchStartX == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if(Math.abs(dx) > 50){
+      if(dx < 0) navigatePreview(1); else navigatePreview(-1);
+    }
+    touchStartX = null;
+  }, { passive:true });
 
   async function renderExplorer(){
     slot.innerHTML = '';
@@ -278,6 +367,7 @@
     try{
       const files = await fetchChildren(currentId);
       grid.innerHTML = '';
+      currentPreviewFiles = files.filter(f => f.mimeType !== FOLDER_MIME);
       if(files.length === 0){
         const empty = document.createElement('div');
         empty.className = 'drive-empty';
@@ -302,7 +392,7 @@
             ? '<img src="' + thumb.replace(/=s\d+$/, '=s400') + '" loading="lazy" alt="">'
             : '<div class="drive-icon">' + FILE_SVG + '</div>';
           card.innerHTML = '<div class="drive-thumb-wrap">' + thumbHtml + '</div><div class="drive-name">' + escapeHtml(f.name) + '</div>';
-          card.addEventListener('click', ()=> openPreview(f));
+          card.addEventListener('click', ()=> openPreviewByIndex(currentPreviewFiles.findIndex(x=>x.id===f.id)));
         }
         grid.appendChild(card);
       });
