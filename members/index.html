@@ -74,6 +74,8 @@
   .msg{font-size:13px; min-height:18px; text-align:center;}
   .msg.error{color:#a35447;}
   .msg.ok{color:#5c7a4d;}
+  .thinker-row{display:flex; align-items:center; justify-content:center; gap:8px;}
+  .thinker{width:26px; height:26px; object-fit:contain;}
 
   .switch-hint{text-align:center; font-size:12.5px; color:var(--muted); margin-top:20px;}
   .switch-hint button{
@@ -211,6 +213,11 @@
     el.className = 'msg' + (kind ? ' '+kind : '');
   }
 
+  function setThinking(el, text){
+    el.className = 'msg';
+    el.innerHTML = '<span class="thinker-row"><video class="thinker" autoplay muted loop playsinline src="../assets/loader.mp4"></video><span>' + text + '</span></span>';
+  }
+
   function friendlyError(err){
     const code = err && err.code || '';
     if(code.includes('auth/invalid-email')) return 'that email doesn\'t look right.';
@@ -228,7 +235,7 @@
     const email = document.getElementById('si-email').value.trim().toLowerCase();
     const pass = document.getElementById('si-pass').value;
     const btn = formSignin.querySelector('button');
-    btn.disabled = true; setMsg(msg, 'signing in…');
+    btn.disabled = true; setThinking(msg, 'signing in…');
     try{
       await signInWithEmailAndPassword(auth, email, pass);
       setMsg(msg, 'welcome back — redirecting…', 'ok');
@@ -257,7 +264,7 @@
       return;
     }
 
-    btn.disabled = true; setMsg(msg, 'creating your account…');
+    btn.disabled = true; setThinking(msg, 'creating your account…');
     try{
       await createUserWithEmailAndPassword(auth, email, pass);
       setMsg(msg, 'account created — redirecting…', 'ok');

@@ -32,7 +32,7 @@
   nav.topnav button.signout:hover{background:var(--ink); color:var(--bg);}
 
   main{flex:1; padding:70px 6% 60px;}
-  .wrap{max-width:760px; margin:0 auto;}
+  .wrap{max-width:920px; margin:0 auto;}
   .wrap.narrow-form{max-width:420px;}
 
   .kicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:16px;}
@@ -42,14 +42,17 @@
 
   form{display:flex; flex-direction:column; gap:14px; margin-top:26px;}
   label{font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; display:block;}
-  input{
+  input, textarea{
     width:100%; padding:12px 14px; border:1px solid var(--line); background:var(--bg2);
     color:var(--ink); font-family:var(--sans); font-size:14.5px; outline:none; transition:.2s;
   }
-  input:focus{border-color:var(--ink);}
+  textarea{resize:vertical; min-height:74px; line-height:1.5;}
+  input:focus, textarea:focus{border-color:var(--ink);}
+  input[type="file"]{padding:10px 12px; font-size:12.5px; background:var(--bg2); cursor:pointer;}
   .field{display:flex; flex-direction:column;}
+  .field .hint{font-size:11.5px; color:var(--muted); margin-top:5px;}
   .row{display:flex; gap:14px; flex-wrap:wrap;}
-  .row .field{flex:1; min-width:220px;}
+  .row .field{flex:1; min-width:180px;}
 
   .btn{
     display:inline-block; border:1px solid var(--ink); color:var(--ink);
@@ -64,12 +67,16 @@
   .msg{font-size:13px; min-height:18px; margin-top:6px;}
   .msg.error{color:#a35447;}
   .msg.ok{color:#5c7a4d;}
+  .thinker-row{display:flex; align-items:center; gap:8px;}
+  .thinker{width:24px; height:24px; object-fit:contain;}
 
   table{width:100%; margin-top:40px; border-collapse:collapse; font-size:13.5px;}
-  th{text-align:left; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); padding:10px 0; border-bottom:1px solid var(--line);}
-  td{padding:12px 0; border-bottom:1px solid var(--line); vertical-align:middle;}
-  td.email{color:var(--ink);}
-  td.folder input{font-size:12.5px; padding:8px 10px;}
+  th{text-align:left; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); padding:10px 8px 10px 0; border-bottom:1px solid var(--line);}
+  td{padding:12px 8px 12px 0; border-bottom:1px solid var(--line); vertical-align:middle;}
+  td.email{color:var(--ink); word-break:break-word; font-size:12.5px;}
+  td.name input, td.folder input{font-size:12.5px; padding:8px 10px;}
+  td.logo img{height:22px; width:auto; display:block;}
+  td.logo span{color:var(--muted);}
   td.action{text-align:right; white-space:nowrap;}
   td.action button{
     border:1px solid var(--line); background:transparent; color:var(--muted);
@@ -122,26 +129,35 @@
   <!-- the actual admin panel -->
   <div class="wrap" id="panel">
     <div class="kicker">members admin</div>
-    <h2>assign drive folders.</h2>
-    <p class="muted" style="margin-top:10px;">paste a member's email and the id of the google drive folder shared with them (the string after <code>/folders/</code> in the folder's url). set that folder's sharing to "anyone with the link — editor" so it works fully once embedded.</p>
+    <h2>assign a brand.</h2>
+    <p class="muted" style="margin-top:10px;">add one or several emails for the same brand/team, an official display name, their google drive folder id (the string after <code>/folders/</code> in the folder's url), and optionally their logo. set the folder's sharing to "anyone with the link — editor" so it works fully once embedded.</p>
 
     <form id="form-assign">
+      <div class="field">
+        <label for="as-emails">member email(s)</label>
+        <textarea id="as-emails" placeholder="one per line, or separated by commas — add a whole team at once" required></textarea>
+      </div>
       <div class="row">
         <div class="field">
-          <label for="as-email">member email</label>
-          <input id="as-email" type="email" required>
+          <label for="as-name">display name</label>
+          <input id="as-name" type="text" placeholder="e.g. Studio Bettina">
         </div>
         <div class="field">
           <label for="as-folder">drive folder id</label>
           <input id="as-folder" type="text" required>
         </div>
       </div>
+      <div class="field">
+        <label for="as-logo">brand logo url</label>
+        <input id="as-logo" type="url" placeholder="https://…">
+        <div class="hint">optional — paste a link to an already-hosted image (google drive, imgur, etc). shown at the top of their dashboard. leave empty to keep the current logo.</div>
+      </div>
       <div class="msg" id="as-msg"></div>
       <button class="btn solid" type="submit" style="width:200px;">save</button>
     </form>
 
     <table>
-      <tr><th>email</th><th>drive folder id</th><th></th></tr>
+      <tr><th>email</th><th>display name</th><th>drive folder id</th><th>logo</th><th></th></tr>
       <tbody id="members-body"></tbody>
     </table>
   </div>
@@ -154,7 +170,8 @@
 <!-- ===================================================================
      Uses the same Firebase project as the other members/ pages — the
      config below must match. Writes to Firestore are only permitted
-     for ADMIN_EMAIL by the security rules (see setup notes).
+     for ADMIN_EMAIL by the security rules (see setup notes). Brand
+     logos are just a pasted image URL — no Firebase Storage needed.
      =================================================================== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -187,6 +204,23 @@
 
   function show(el){ [gate,denied,panel].forEach(x=>x.style.display = (x===el?'block':'none')); }
 
+  function escapeAttr(s){
+    return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  }
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+  function thinkerRow(text){
+    return '<span class="thinker-row"><video class="thinker" autoplay muted loop playsinline src="../assets/loader.mp4"></video><span>' + text + '</span></span>';
+  }
+  function parseEmails(raw){
+    return Array.from(new Set(
+      raw.split(/[\n,]+/).map(s=>s.trim().toLowerCase()).filter(Boolean)
+    ));
+  }
+
   onAuthStateChanged(auth, async (user)=>{
     if(!user){
       show(gate); signoutBtn.style.display = 'none';
@@ -206,7 +240,7 @@
     const msg = document.getElementById('ad-msg');
     const email = document.getElementById('ad-email').value.trim().toLowerCase();
     const pass = document.getElementById('ad-pass').value;
-    msg.className = 'msg'; msg.textContent = 'signing in…';
+    msg.className = 'msg'; msg.innerHTML = thinkerRow('signing in…');
     try{
       await signInWithEmailAndPassword(auth, email, pass);
     }catch(err){
@@ -220,11 +254,11 @@
 
   async function loadMembers(){
     const body = document.getElementById('members-body');
-    body.innerHTML = '<tr><td colspan="3" class="muted">loading…</td></tr>';
+    body.innerHTML = '<tr><td colspan="5" class="muted">' + thinkerRow('loading…') + '</td></tr>';
     try{
       const snaps = await getDocs(collection(db, "members"));
       if(snaps.empty){
-        body.innerHTML = '<tr><td colspan="3" class="muted">no members yet.</td></tr>';
+        body.innerHTML = '<tr><td colspan="5" class="muted">no members yet.</td></tr>';
         return;
       }
       body.innerHTML = '';
@@ -232,18 +266,24 @@
         const data = snap.data();
         const tr = document.createElement('tr');
         tr.innerHTML =
-          '<td class="email">'+snap.id+'</td>'+
-          '<td class="folder"><input type="text" value="'+(data.driveFolderId||'')+'" data-email="'+snap.id+'"></td>'+
+          '<td class="email">'+escapeHtml(snap.id)+'</td>'+
+          '<td class="name"><input type="text" value="'+escapeAttr(data.displayName||'')+'" data-email="'+snap.id+'" data-field="name"></td>'+
+          '<td class="folder"><input type="text" value="'+escapeAttr(data.driveFolderId||'')+'" data-email="'+snap.id+'" data-field="folder"></td>'+
+          '<td class="logo">'+(data.logoUrl ? '<img src="'+escapeAttr(data.logoUrl)+'" alt="">' : '<span>—</span>')+'</td>'+
           '<td class="action"><button type="button" data-email="'+snap.id+'">update</button></td>';
         body.appendChild(tr);
       });
       body.querySelectorAll('button[data-email]').forEach(btn=>{
         btn.addEventListener('click', async ()=>{
           const email = btn.getAttribute('data-email');
-          const input = body.querySelector('input[data-email="'+email+'"]');
+          const nameInput = body.querySelector('input[data-email="'+email+'"][data-field="name"]');
+          const folderInput = body.querySelector('input[data-email="'+email+'"][data-field="folder"]');
           btn.disabled = true; btn.textContent = 'saving…';
           try{
-            await setDoc(doc(db, "members", email), { driveFolderId: input.value.trim() }, { merge:true });
+            await setDoc(doc(db, "members", email), {
+              displayName: nameInput.value.trim(),
+              driveFolderId: folderInput.value.trim()
+            }, { merge:true });
             btn.textContent = 'saved';
           }catch(err){
             btn.textContent = 'failed';
@@ -252,24 +292,37 @@
         });
       });
     }catch(err){
-      body.innerHTML = '<tr><td colspan="3" class="msg error">couldn\'t load members.</td></tr>';
+      body.innerHTML = '<tr><td colspan="5" class="msg error">couldn\'t load members.</td></tr>';
     }
   }
 
   document.getElementById('form-assign').addEventListener('submit', async (e)=>{
     e.preventDefault();
     const msg = document.getElementById('as-msg');
-    const email = document.getElementById('as-email').value.trim().toLowerCase();
+    const emails = parseEmails(document.getElementById('as-emails').value);
+    const name = document.getElementById('as-name').value.trim();
     const folder = document.getElementById('as-folder').value.trim();
-    const btn = document.querySelector('#form-assign button');
-    btn.disabled = true; msg.className = 'msg'; msg.textContent = 'saving…';
+    const logoUrl = document.getElementById('as-logo').value.trim();
+    const btn = document.querySelector('#form-assign button[type="submit"]');
+
+    if(emails.length === 0){
+      msg.className = 'msg error'; msg.textContent = 'add at least one email.';
+      return;
+    }
+
+    btn.disabled = true; msg.className = 'msg'; msg.innerHTML = thinkerRow('saving member(s)…');
     try{
-      await setDoc(doc(db, "members", email), { driveFolderId: folder }, { merge:true });
-      msg.className = 'msg ok'; msg.textContent = 'saved.';
+      const payload = { displayName: name, driveFolderId: folder };
+      if(logoUrl) payload.logoUrl = logoUrl;
+
+      await Promise.all(emails.map(email => setDoc(doc(db, "members", email), payload, { merge:true })));
+
+      msg.className = 'msg ok';
+      msg.textContent = 'saved ' + emails.length + ' member' + (emails.length > 1 ? 's' : '') + '.';
       document.getElementById('form-assign').reset();
       await loadMembers();
     }catch(err){
-      msg.className = 'msg error'; msg.textContent = 'couldn\'t save — check the rules setup.';
+      msg.className = 'msg error'; msg.textContent = "couldn't save — check the rules/storage setup.";
     }
     btn.disabled = false;
   });

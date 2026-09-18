@@ -37,6 +37,8 @@
   main{flex:1; padding:70px 6% 60px;}
   .wrap{max-width:1100px; margin:0 auto;}
 
+  .brand-logo-custom{max-height:52px; width:auto; margin-bottom:26px; display:none; object-fit:contain;}
+
   .kicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:16px;}
   h2{font-weight:400; text-transform:lowercase; line-height:1.15; letter-spacing:-0.01em; font-size:clamp(26px,4vw,38px);}
   p{font-size:15px; line-height:1.8; color:var(--ink);}
@@ -49,6 +51,11 @@
     margin-top:34px; border:1px solid var(--line); padding:50px 40px; text-align:center;
     background:var(--bg2);
   }
+
+  /* ---- loader ---- */
+  .thinker{width:34px; height:34px; object-fit:contain;}
+  .thinker-row{display:flex; align-items:center; gap:10px;}
+  #page-loader{width:44px; height:44px; object-fit:contain; margin-bottom:18px; display:block;}
 
   /* ---- drive explorer ---- */
   .breadcrumb{display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); margin-top:34px; margin-bottom:18px;}
@@ -116,7 +123,9 @@
 
 <main>
   <div class="wrap fade" id="wrap">
-    <div class="kicker">your workspace</div>
+    <video id="page-loader" autoplay muted loop playsinline src="../assets/loader.mp4"></video>
+    <img id="brand-logo-custom" class="brand-logo-custom" alt="">
+    <div class="kicker" id="kicker">your workspace</div>
     <h2 id="heading">loading your drive…</h2>
     <p class="muted" id="subtext" style="margin-top:10px;"></p>
 
@@ -142,9 +151,10 @@
 <!-- ===================================================================
      Uses the same Firebase project as members/index.html — the config
      below must match. Reads members/{email} from Firestore for the
-     assigned Google Drive root folder id, then browses it in-page via
-     the Google Drive API (public, "anyone with the link" access only —
-     no OAuth needed for read/preview/download of files shared that way).
+     member's display name, brand logo, and assigned Google Drive root
+     folder id, then browses that folder in-page via the Google Drive
+     API (public, "anyone with the link" access only — no OAuth needed
+     for read/preview/download of files shared that way).
      =================================================================== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -167,8 +177,10 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  const kicker = document.getElementById('kicker');
   const heading = document.getElementById('heading');
   const subtext = document.getElementById('subtext');
+  const brandLogo = document.getElementById('brand-logo-custom');
   const slot = document.getElementById('drive-slot');
   const userEmailEl = document.getElementById('user-email');
 
@@ -264,7 +276,7 @@
 
     const grid = document.createElement('div');
     grid.className = 'drive-grid';
-    grid.innerHTML = '<p class="muted">loading…</p>';
+    grid.innerHTML = '<div class="thinker-row"><video class="thinker" autoplay muted loop playsinline src="../assets/loader.mp4"></video><span class="muted">loading…</span></div>';
     slot.appendChild(grid);
 
     const currentId = pathStack[pathStack.length - 1].id;
@@ -315,20 +327,31 @@
     }
     userEmailEl.textContent = user.email;
     document.getElementById('wrap').classList.add('in');
+    const pageLoader = document.getElementById('page-loader');
 
     try{
       const snap = await getDoc(doc(db, "members", user.email.toLowerCase()));
       const data = snap.exists() ? snap.data() : null;
       const folderId = data && data.driveFolderId;
+      const displayName = (data && data.displayName) ? data.displayName : user.email.split('@')[0];
+      const logoUrl = data && data.logoUrl;
+
+      pageLoader.style.display = 'none';
+
+      if(logoUrl){
+        brandLogo.src = logoUrl;
+        brandLogo.style.display = 'block';
+      }
+
+      kicker.textContent = displayName + "’s workspace";
+      heading.textContent = "welcome to your brand's ecosystem.";
 
       if(folderId){
-        heading.textContent = "your drive.";
-        subtext.textContent = "click a folder to explore, click a file to preview or download.";
+        subtext.textContent = "explore, preview, or download your brand's assets.";
         const rootName = await getFolderName(folderId);
         pathStack = [{ id: folderId, name: rootName }];
         await renderExplorer();
       }else{
-        heading.textContent = "your workspace is being set up.";
         subtext.textContent = "we're still connecting your drive folder — check back soon.";
         const empty = document.createElement('div');
         empty.className = 'empty-state';
@@ -336,6 +359,7 @@
         slot.appendChild(empty);
       }
     }catch(err){
+      pageLoader.style.display = 'none';
       heading.textContent = "couldn't load your workspace.";
       subtext.textContent = "please refresh, or reach out if this keeps happening.";
     }
