@@ -1262,6 +1262,12 @@
     const heroGlyph = document.querySelector('#hero img.glyph');
     const heroPhrase3 = document.querySelector('#hero .phrase-3');
     const EXPLOSION_PROGRESS = EXPLOSION_FRAME / (INTRO_FRAMES-1); // where video 1 → video 2 explodes
+
+    // the tint over the background film starts at its normal opacity, then thickens a bit more as
+    // the mark gets rougher/hairier, holding at that heavier veil from ch1's frame 56 onward (frame
+    // index 55, since ch1 now starts at its own frame 1)
+    const bgTint = document.getElementById('bg-tint');
+    const TINT_BASE = 0.86, TINT_PEAK = 0.95, TINT_RAMP_END_IDX = 55;
     const VIDEO_PROGRESS_END = 0.5; // the video+text intro resolves within the first half of the hero's
                                      // scroll distance — the second half is the blank pause, on purpose
 
@@ -1348,6 +1354,17 @@
       }
 
       document.body.classList.toggle('bg-clear', pastPhilosophy);
+
+      // once past the hero, hand the tint's opacity back to the CSS (body.bg-clear fades it to 0) —
+      // otherwise ramp it from TINT_BASE up to TINT_PEAK as the mark roughens up to frame 56
+      if(bgTint){
+        if(pastPhilosophy){
+          bgTint.style.opacity = '';
+        } else {
+          const tintT = Math.min(1, heroIdx / TINT_RAMP_END_IDX);
+          bgTint.style.opacity = String(TINT_BASE + (TINT_PEAK - TINT_BASE) * tintT);
+        }
+      }
 
       drawFrame(idx);
     }
