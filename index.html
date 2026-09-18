@@ -169,13 +169,6 @@
   }
   .proof-main video{width:100%; display:block; aspect-ratio:16/9; object-fit:cover;}
   .proof-main-cap{padding:14px 18px; font-size:12.5px; color:var(--muted); background:var(--bg2); border-top:1px solid var(--line);}
-  .proof-fullscreen{
-    position:absolute; top:16px; right:16px; z-index:3; width:44px; height:44px; border-radius:50%;
-    background:rgba(20,21,18,0.55); border:none; color:#fff; cursor:pointer; font-size:18px;
-    display:flex; align-items:center; justify-content:center; transition:.2s;
-  }
-  .proof-fullscreen:hover{background:rgba(20,21,18,0.85);}
-  @media (max-width:600px){ .proof-fullscreen{width:38px; height:38px; font-size:16px; top:10px; right:10px;} }
 
   /* TEAM */
   .team-row{display:flex; gap:60px; flex-wrap:wrap; margin-top:50px;}
@@ -738,9 +731,9 @@
   <div class="narrow" style="max-width:1000px;">
     <div class="kicker">see the work</div>
     <h2 class="fade">this is what we build.</h2>
-    <div class="proof-main fade">
-      <video id="proof-main-video" src="assets/video/formula.mp4" muted loop playsinline autoplay preload="metadata"></video>
-      <button class="proof-fullscreen" id="proof-fullscreen" type="button" title="watch fullscreen with sound">⛶</button>
+    <div class="proof-main video-card fade" data-video="assets/video/formula.mp4" data-title="pssycco / formula" data-kicker="pssycco reference" tabindex="0" role="button">
+      <video src="assets/video/formula.mp4" muted loop playsinline autoplay preload="metadata"></video>
+      <span class="playbtn">▶</span>
       <div class="proof-main-cap">pssycco / formula — how existing brand assets become an ever-expanding content ecosystem</div>
     </div>
     <div class="video-grid fade">
@@ -1938,23 +1931,12 @@
     document.body.style.overflow = '';
   }
 
+  // covers both the four thumbnail cards below AND the big "this is what we build" reel above —
+  // same class, same data-video attributes, so clicking either behaves identically
   document.querySelectorAll('.video-card[data-video]').forEach(card=>{
     card.addEventListener('click', ()=>openVideo(card.dataset.video, card.dataset.title, card.dataset.kicker));
     card.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openVideo(card.dataset.video, card.dataset.title, card.dataset.kicker); });
   });
-
-  // "this is what we build" main reel — silent/looping in the background by default; this button
-  // opens it in the same video modal used elsewhere (sound on, native controls), then also pushes
-  // the player itself into true fullscreen
-  const proofFullscreenBtn = document.getElementById('proof-fullscreen');
-  if(proofFullscreenBtn){
-    proofFullscreenBtn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      openVideo('assets/video/formula.mp4', 'pssycco / formula', 'pssycco reference');
-      const req = videoPlayer.requestFullscreen || videoPlayer.webkitRequestFullscreen || videoPlayer.webkitEnterFullscreen;
-      if(req) req.call(videoPlayer);
-    });
-  }
 
   // signature commercial previews inside the plan modal — click opens with sound
   document.body.addEventListener('click', (e)=>{
