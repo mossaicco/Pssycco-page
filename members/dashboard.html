@@ -35,7 +35,7 @@
   nav.topnav button.signout:hover{background:var(--ink); color:var(--bg);}
 
   main{flex:1; padding:70px 6% 60px;}
-  .wrap{max-width:1000px; margin:0 auto;}
+  .wrap{max-width:1100px; margin:0 auto;}
 
   .kicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:16px;}
   h2{font-weight:400; text-transform:lowercase; line-height:1.15; letter-spacing:-0.01em; font-size:clamp(26px,4vw,38px);}
@@ -45,16 +45,60 @@
   .fade{opacity:0; transform:translateY(16px); transition:opacity .7s ease, transform .7s ease;}
   .fade.in{opacity:1; transform:translateY(0);}
 
-  .drive-frame{
-    margin-top:34px; border:1px solid var(--line); background:var(--bg2);
-    width:100%; height:70vh; min-height:480px; overflow:hidden;
-  }
-  .drive-frame iframe{width:100%; height:100%; border:none; display:block;}
-
   .empty-state{
     margin-top:34px; border:1px solid var(--line); padding:50px 40px; text-align:center;
     background:var(--bg2);
   }
+
+  /* ---- drive explorer ---- */
+  .breadcrumb{display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); margin-top:34px; margin-bottom:18px;}
+  .breadcrumb .crumb{cursor:pointer; text-decoration:underline; text-transform:lowercase;}
+  .breadcrumb .crumb:last-child{color:var(--ink); text-decoration:none; cursor:default;}
+  .breadcrumb .sep{color:var(--muted);}
+
+  .drive-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px;}
+  .drive-card{
+    border:1px solid var(--line); background:var(--bg2); padding:16px 12px; cursor:pointer;
+    transition:.2s; display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center;
+  }
+  .drive-card:hover{border-color:var(--ink);}
+  .drive-thumb-wrap{
+    width:100%; height:90px; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; background:var(--bg); color:var(--muted);
+  }
+  .drive-thumb-wrap img{width:100%; height:100%; object-fit:cover;}
+  .drive-icon{color:var(--muted); display:flex; align-items:center; justify-content:center;}
+  .drive-name{font-size:12px; line-height:1.35; color:var(--ink); word-break:break-word;}
+
+  .drive-empty, .drive-error{margin-top:10px; text-align:center; color:var(--muted); font-size:13.5px; padding:40px 0;}
+  .drive-error{color:#a35447;}
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(51,53,47,0.75); display:none;
+    align-items:center; justify-content:center; z-index:999; padding:5vh 4vw;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:var(--bg); width:100%; max-width:920px; max-height:90vh; display:flex;
+    flex-direction:column; position:relative; box-shadow:0 30px 70px rgba(0,0,0,0.35);
+  }
+  .modal-close{
+    position:absolute; top:6px; right:10px; background:none; border:none; font-size:22px;
+    line-height:1; cursor:pointer; color:var(--muted); z-index:2; padding:8px;
+  }
+  .modal-close:hover{color:var(--ink);}
+  .modal-name{padding:16px 50px 0 20px; font-size:13px; color:var(--muted); word-break:break-word;}
+  .modal-frame{flex:1; min-height:420px; background:#000; margin-top:12px;}
+  .modal-frame iframe{width:100%; height:100%; border:none; display:block; min-height:420px;}
+  .modal-actions{padding:16px 20px; border-top:1px solid var(--line); text-align:center;}
+  .btn{
+    display:inline-block; border:1px solid var(--ink); color:var(--ink);
+    padding:12px 28px; text-align:center; text-decoration:none; letter-spacing:0.08em;
+    text-transform:lowercase; font-size:13px; transition:.25s; cursor:pointer;
+    background:transparent; font-family:var(--sans);
+  }
+  .btn.solid{background:var(--ink); color:var(--bg);}
+  .btn.solid:hover{background:var(--deep);}
 
   footer{padding:34px 5% 40px; text-align:center; border-top:1px solid var(--line); margin-top:auto;}
   .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
@@ -84,10 +128,23 @@
   <div class="signature">a mossaicco company / kingdom of shapes</div>
 </footer>
 
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" id="modal-close" type="button">&times;</button>
+    <div class="modal-name" id="modal-name"></div>
+    <div class="modal-frame" id="modal-frame"></div>
+    <div class="modal-actions">
+      <a class="btn solid" id="modal-download" href="#" target="_blank" rel="noopener">download</a>
+    </div>
+  </div>
+</div>
+
 <!-- ===================================================================
      Uses the same Firebase project as members/index.html — the config
      below must match. Reads members/{email} from Firestore for the
-     assigned Google Drive folder id.
+     assigned Google Drive root folder id, then browses it in-page via
+     the Google Drive API (public, "anyone with the link" access only —
+     no OAuth needed for read/preview/download of files shared that way).
      =================================================================== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -103,6 +160,9 @@
     appId: "1:965119942981:web:b72072ed543fe3282f5e2c"
   };
 
+  // Separate key, restricted to the Google Drive API + pssycco.com referrer.
+  const DRIVE_API_KEY = "AIzaSyDAs-zLIFdtnOZloI75INw7XiqOJiWwmqA";
+
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -111,6 +171,142 @@
   const subtext = document.getElementById('subtext');
   const slot = document.getElementById('drive-slot');
   const userEmailEl = document.getElementById('user-email');
+
+  let pathStack = []; // [{id, name}]
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  const FOLDER_SVG = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 6.5a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-11z"/></svg>';
+  const FILE_SVG = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M15 2v5h5"/></svg>';
+
+  async function driveGet(path, params){
+    const usp = new URLSearchParams(params || {});
+    usp.set('key', DRIVE_API_KEY);
+    const res = await fetch('https://www.googleapis.com/drive/v3/' + path + '?' + usp.toString());
+    if(!res.ok){
+      const body = await res.text().catch(()=> '');
+      throw new Error('drive api error ' + res.status + ' ' + body);
+    }
+    return res.json();
+  }
+
+  async function getFolderName(id){
+    try{
+      const data = await driveGet('files/' + encodeURIComponent(id), { fields: 'name' });
+      return data.name || 'your drive';
+    }catch(err){
+      return 'your drive';
+    }
+  }
+
+  async function fetchChildren(folderId){
+    const data = await driveGet('files', {
+      q: "'" + folderId + "' in parents and trashed = false",
+      fields: 'files(id,name,mimeType,thumbnailLink,iconLink,webContentLink)',
+      orderBy: 'folder,name',
+      pageSize: '1000'
+    });
+    return data.files || [];
+  }
+
+  function renderBreadcrumb(){
+    const container = document.createElement('div');
+    container.className = 'breadcrumb';
+    pathStack.forEach((p, i)=>{
+      if(i > 0){
+        const sep = document.createElement('span');
+        sep.className = 'sep';
+        sep.textContent = '/';
+        container.appendChild(sep);
+      }
+      const crumb = document.createElement('span');
+      crumb.className = 'crumb';
+      crumb.textContent = p.name;
+      if(i < pathStack.length - 1){
+        crumb.addEventListener('click', ()=>{
+          pathStack = pathStack.slice(0, i + 1);
+          renderExplorer();
+        });
+      }
+      container.appendChild(crumb);
+    });
+    return container;
+  }
+
+  function openPreview(file){
+    const overlay = document.getElementById('modal-overlay');
+    const frame = document.getElementById('modal-frame');
+    const name = document.getElementById('modal-name');
+    const dl = document.getElementById('modal-download');
+    name.textContent = file.name;
+    frame.innerHTML = '<iframe src="https://drive.google.com/file/d/' + encodeURIComponent(file.id) + '/preview" allow="autoplay"></iframe>';
+    dl.href = file.webContentLink || ('https://drive.google.com/uc?export=download&id=' + encodeURIComponent(file.id));
+    overlay.classList.add('open');
+  }
+
+  function closePreview(){
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.getElementById('modal-frame').innerHTML = '';
+  }
+
+  document.getElementById('modal-close').addEventListener('click', closePreview);
+  document.getElementById('modal-overlay').addEventListener('click', (e)=>{
+    if(e.target.id === 'modal-overlay') closePreview();
+  });
+
+  async function renderExplorer(){
+    slot.innerHTML = '';
+    slot.appendChild(renderBreadcrumb());
+
+    const grid = document.createElement('div');
+    grid.className = 'drive-grid';
+    grid.innerHTML = '<p class="muted">loading…</p>';
+    slot.appendChild(grid);
+
+    const currentId = pathStack[pathStack.length - 1].id;
+    try{
+      const files = await fetchChildren(currentId);
+      grid.innerHTML = '';
+      if(files.length === 0){
+        const empty = document.createElement('div');
+        empty.className = 'drive-empty';
+        empty.textContent = 'this folder is empty.';
+        slot.appendChild(empty);
+        return;
+      }
+      files.forEach(f=>{
+        const isFolder = f.mimeType === 'application/vnd.google-apps.folder';
+        const card = document.createElement('div');
+        card.className = 'drive-card';
+
+        if(isFolder){
+          card.innerHTML = '<div class="drive-icon">' + FOLDER_SVG + '</div><div class="drive-name">' + escapeHtml(f.name) + '</div>';
+          card.addEventListener('click', ()=>{
+            pathStack.push({ id: f.id, name: f.name });
+            renderExplorer();
+          });
+        }else{
+          const thumb = f.thumbnailLink || null;
+          const thumbHtml = thumb
+            ? '<img src="' + thumb.replace(/=s\d+$/, '=s400') + '" loading="lazy" alt="">'
+            : '<div class="drive-icon">' + FILE_SVG + '</div>';
+          card.innerHTML = '<div class="drive-thumb-wrap">' + thumbHtml + '</div><div class="drive-name">' + escapeHtml(f.name) + '</div>';
+          card.addEventListener('click', ()=> openPreview(f));
+        }
+        grid.appendChild(card);
+      });
+    }catch(err){
+      grid.innerHTML = '';
+      const errEl = document.createElement('div');
+      errEl.className = 'drive-error';
+      errEl.textContent = "couldn't load this folder. please refresh, or reach out if this keeps happening.";
+      slot.appendChild(errEl);
+    }
+  }
 
   onAuthStateChanged(auth, async (user)=>{
     if(!user){
@@ -127,11 +323,10 @@
 
       if(folderId){
         heading.textContent = "your drive.";
-        subtext.textContent = "everything shared with you, in one place.";
-        const frame = document.createElement('div');
-        frame.className = 'drive-frame';
-        frame.innerHTML = '<iframe src="https://drive.google.com/embeddedfolderview?id='+encodeURIComponent(folderId)+'#list" allow="fullscreen"></iframe>';
-        slot.appendChild(frame);
+        subtext.textContent = "click a folder to explore, click a file to preview or download.";
+        const rootName = await getFolderName(folderId);
+        pathStack = [{ id: folderId, name: rootName }];
+        await renderExplorer();
       }else{
         heading.textContent = "your workspace is being set up.";
         subtext.textContent = "we're still connecting your drive folder — check back soon.";
