@@ -54,6 +54,28 @@
   .row{display:flex; gap:14px; flex-wrap:wrap;}
   .row .field{flex:1; min-width:180px;}
 
+  /* ---- email tag input ---- */
+  .email-tags{
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    width:100%; padding:9px 10px; border:1px solid var(--line); background:var(--bg2);
+    min-height:46px; cursor:text;
+  }
+  .email-tags:focus-within{border-color:var(--ink);}
+  .email-chip{
+    display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:var(--bg);
+    padding:6px 8px 6px 12px; font-size:12.5px; border-radius:999px; line-height:1; white-space:nowrap;
+  }
+  .email-chip button{
+    background:rgba(244,242,236,0.25); border:none; color:var(--bg); border-radius:50%;
+    width:18px; height:18px; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:13px; line-height:1; padding:0; font-family:var(--sans);
+  }
+  .email-chip button:hover{background:rgba(244,242,236,0.5);}
+  .email-tags input{
+    flex:1; min-width:160px; border:none; background:transparent; padding:6px 4px; font-size:14.5px;
+  }
+  .email-tags input:focus{outline:none;}
+
   .btn{
     display:inline-block; border:1px solid var(--ink); color:var(--ink);
     padding:13px 28px; text-align:center; text-decoration:none; letter-spacing:0.08em;
@@ -79,9 +101,10 @@
   td.action button{
     border:1px solid var(--line); background:transparent; color:var(--muted);
     padding:6px 12px; font-size:11px; letter-spacing:0.04em; text-transform:lowercase;
-    cursor:pointer; font-family:var(--sans); transition:.2s;
+    cursor:pointer; font-family:var(--sans); transition:.2s; margin-left:6px;
   }
   td.action button:hover{border-color:var(--ink); color:var(--ink);}
+  td.action button.btn-delete:hover{border-color:#a35447; color:#a35447;}
 
   footer{padding:34px 5% 40px; text-align:center; border-top:1px solid var(--line); margin-top:auto;}
   .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
@@ -132,8 +155,11 @@
 
     <form id="form-assign">
       <div class="field">
-        <label for="as-emails">member email(s)</label>
-        <textarea id="as-emails" placeholder="one per line, or separated by commas — add a whole team at once" required></textarea>
+        <label for="as-email-input">member email(s)</label>
+        <div class="email-tags" id="email-tags">
+          <input id="as-email-input" type="email" placeholder="type an email, press enter or comma">
+        </div>
+        <div class="hint">each email becomes a tag — add as many as you need for the same brand/team.</div>
       </div>
       <div class="row">
         <div class="field">
@@ -177,7 +203,7 @@
     getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDocs, collection
+    getFirestore, doc, setDoc, deleteDoc, getDocs, collection
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -210,11 +236,50 @@
     d.textContent = s == null ? '' : s;
     return d.innerHTML;
   }
-  function parseEmails(raw){
-    return Array.from(new Set(
-      raw.split(/[\n,]+/).map(s=>s.trim().toLowerCase()).filter(Boolean)
-    ));
+
+  // ---- email tag input ----
+  let emailChips = [];
+  const tagsContainer = document.getElementById('email-tags');
+  const emailInput = document.getElementById('as-email-input');
+
+  function renderChips(){
+    tagsContainer.querySelectorAll('.email-chip').forEach(c => c.remove());
+    emailChips.forEach((email, i)=>{
+      const chip = document.createElement('span');
+      chip.className = 'email-chip';
+      chip.innerHTML = escapeHtml(email) + ' <button type="button" data-i="'+i+'" aria-label="remove">&times;</button>';
+      tagsContainer.insertBefore(chip, emailInput);
+    });
   }
+  function addEmailFromInput(){
+    const val = emailInput.value.trim().toLowerCase().replace(/[,\s]+$/,'');
+    if(val && !emailChips.includes(val)){
+      emailChips.push(val);
+      renderChips();
+    }
+    emailInput.value = '';
+  }
+  emailInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ','){
+      e.preventDefault();
+      addEmailFromInput();
+    }else if(e.key === 'Backspace' && emailInput.value === '' && emailChips.length){
+      emailChips.pop();
+      renderChips();
+    }
+  });
+  emailInput.addEventListener('blur', ()=>{
+    if(emailInput.value.trim()) addEmailFromInput();
+  });
+  tagsContainer.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-i]');
+    if(btn){
+      emailChips.splice(Number(btn.dataset.i), 1);
+      renderChips();
+    }else if(e.target === tagsContainer){
+      emailInput.focus();
+    }
+  });
 
   onAuthStateChanged(auth, async (user)=>{
     if(!user){
@@ -265,10 +330,10 @@
           '<td class="name"><input type="text" value="'+escapeAttr(data.displayName||'')+'" data-email="'+snap.id+'" data-field="name"></td>'+
           '<td class="folder"><input type="text" value="'+escapeAttr(data.driveFolderId||'')+'" data-email="'+snap.id+'" data-field="folder"></td>'+
           '<td class="logo">'+(data.logoUrl ? '<img src="'+escapeAttr(data.logoUrl)+'" alt="">' : '<span>—</span>')+'</td>'+
-          '<td class="action"><button type="button" data-email="'+snap.id+'">update</button></td>';
+          '<td class="action"><button type="button" class="btn-update" data-email="'+snap.id+'">update</button><button type="button" class="btn-delete" data-email="'+snap.id+'">eliminar</button></td>';
         body.appendChild(tr);
       });
-      body.querySelectorAll('button[data-email]').forEach(btn=>{
+      body.querySelectorAll('button.btn-update[data-email]').forEach(btn=>{
         btn.addEventListener('click', async ()=>{
           const email = btn.getAttribute('data-email');
           const nameInput = body.querySelector('input[data-email="'+email+'"][data-field="name"]');
@@ -286,6 +351,19 @@
           setTimeout(()=>{ btn.disabled=false; btn.textContent='update'; }, 1400);
         });
       });
+      body.querySelectorAll('button.btn-delete[data-email]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const email = btn.getAttribute('data-email');
+          if(!confirm('¿eliminar el acceso de ' + email + '? ya no podrá entrar a su drive.')) return;
+          btn.disabled = true; btn.textContent = 'eliminando…';
+          try{
+            await deleteDoc(doc(db, "members", email));
+            await loadMembers();
+          }catch(err){
+            btn.disabled = false; btn.textContent = 'error';
+          }
+        });
+      });
     }catch(err){
       body.innerHTML = '<tr><td colspan="5" class="msg error">couldn\'t load members.</td></tr>';
     }
@@ -294,7 +372,8 @@
   document.getElementById('form-assign').addEventListener('submit', async (e)=>{
     e.preventDefault();
     const msg = document.getElementById('as-msg');
-    const emails = parseEmails(document.getElementById('as-emails').value);
+    if(emailInput.value.trim()) addEmailFromInput();
+    const emails = Array.from(new Set(emailChips));
     const name = document.getElementById('as-name').value.trim();
     const folder = document.getElementById('as-folder').value.trim();
     const logoUrl = document.getElementById('as-logo').value.trim();
@@ -315,6 +394,8 @@
       msg.className = 'msg ok';
       msg.textContent = 'saved ' + emails.length + ' member' + (emails.length > 1 ? 's' : '') + '.';
       document.getElementById('form-assign').reset();
+      emailChips = [];
+      renderChips();
       await loadMembers();
     }catch(err){
       msg.className = 'msg error'; msg.textContent = "couldn't save — check the rules/storage setup.";

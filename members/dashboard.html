@@ -76,32 +76,60 @@
   .drive-empty, .drive-error{margin-top:10px; text-align:center; color:var(--muted); font-size:13.5px; padding:40px 0;}
   .drive-error{color:#a35447;}
 
+  /* ---- preview modal ---- */
   .modal-overlay{
-    position:fixed; inset:0; background:rgba(51,53,47,0.75); display:none;
-    align-items:center; justify-content:center; z-index:999; padding:5vh 4vw;
+    position:fixed; inset:0; background:rgba(20,21,18,0.92); display:none;
+    align-items:center; justify-content:center; z-index:999; padding:4vh 3vw;
   }
   .modal-overlay.open{display:flex;}
   .modal-box{
-    background:var(--bg); width:100%; max-width:920px; max-height:90vh; display:flex;
-    flex-direction:column; position:relative; box-shadow:0 30px 70px rgba(0,0,0,0.35);
+    background:var(--bg); max-width:94vw; max-height:92vh; display:flex;
+    flex-direction:column; position:relative; box-shadow:0 30px 70px rgba(0,0,0,0.45);
   }
-  .modal-close{
-    position:absolute; top:6px; right:10px; background:none; border:none; font-size:22px;
-    line-height:1; cursor:pointer; color:var(--muted); z-index:2; padding:8px;
+  .modal-box.doc{width:920px; width:min(920px,94vw);}
+  .modal-box.media{width:auto; background:transparent; box-shadow:none;}
+
+  .modal-close, .modal-fullscreen{
+    position:absolute; top:8px; background:rgba(20,21,18,0.55); border:none; color:#fff;
+    cursor:pointer; z-index:4; border-radius:50%; width:34px; height:34px;
+    display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1;
+    transition:.2s;
   }
-  .modal-close:hover{color:var(--ink);}
-  .modal-name{padding:16px 50px 0 20px; font-size:13px; color:var(--muted); word-break:break-word;}
-  .modal-frame{flex:1; min-height:420px; background:#000; margin-top:12px;}
-  .modal-frame iframe{width:100%; height:100%; border:none; display:block; min-height:420px;}
-  .modal-actions{padding:16px 20px; border-top:1px solid var(--line); text-align:center;}
-  .btn{
-    display:inline-block; border:1px solid var(--ink); color:var(--ink);
-    padding:12px 28px; text-align:center; text-decoration:none; letter-spacing:0.08em;
-    text-transform:lowercase; font-size:13px; transition:.25s; cursor:pointer;
-    background:transparent; font-family:var(--sans);
+  .modal-close{right:8px; font-size:20px;}
+  .modal-fullscreen{right:50px; font-size:14px;}
+  .modal-close:hover, .modal-fullscreen:hover{background:rgba(20,21,18,0.85);}
+
+  .modal-nav{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:4;
+    background:rgba(20,21,18,0.45); border:none; color:#fff; width:44px; height:44px;
+    border-radius:50%; font-size:26px; cursor:pointer; display:none; align-items:center; justify-content:center;
+    transition:.2s; line-height:1; padding:0 0 3px;
   }
-  .btn.solid{background:var(--ink); color:var(--bg);}
-  .btn.solid:hover{background:var(--deep);}
+  .modal-nav:hover{background:rgba(20,21,18,0.8);}
+  .modal-nav.prev{left:10px;}
+  .modal-nav.next{right:10px;}
+
+  .modal-name{padding:14px 60px 0 16px; font-size:13px; color:var(--muted); word-break:break-word;}
+  .modal-box.media .modal-name{color:#fff; text-shadow:0 1px 6px rgba(0,0,0,0.7); padding-top:0; position:absolute; top:10px; left:16px; right:60px; z-index:3;}
+
+  .modal-frame{flex:1; margin-top:12px; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .modal-frame.doc{background:#000; min-height:420px;}
+  .modal-frame.doc iframe{width:100%; height:100%; border:none; display:block; min-height:420px;}
+
+  .modal-frame.media{margin-top:0;}
+  .modal-frame.media img.preview-media,
+  .modal-frame.media video.preview-media{
+    display:block; max-width:94vw; max-height:88vh; width:auto; height:auto; margin:0 auto;
+  }
+  .modal-frame.media audio.preview-audio{width:min(90vw,420px); margin:60px auto;}
+
+  .modal-box:fullscreen{max-width:100vw; max-height:100vh; width:100vw; height:100vh; background:#000; justify-content:center;}
+  .modal-box:-webkit-full-screen{max-width:100vw; max-height:100vh; width:100vw; height:100vh; background:#000; justify-content:center;}
+  .modal-box:fullscreen .modal-frame, .modal-box:-webkit-full-screen .modal-frame{height:100%;}
+  .modal-box:fullscreen img.preview-media, .modal-box:fullscreen video.preview-media,
+  .modal-box:-webkit-full-screen img.preview-media, .modal-box:-webkit-full-screen video.preview-media{
+    max-width:100vw; max-height:100vh;
+  }
 
   footer{padding:34px 5% 40px; text-align:center; border-top:1px solid var(--line); margin-top:auto;}
   .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
@@ -133,13 +161,13 @@
 </footer>
 
 <div class="modal-overlay" id="modal-overlay">
-  <div class="modal-box">
+  <div class="modal-box" id="modal-box">
+    <button class="modal-nav prev" id="modal-prev" type="button" aria-label="previous">&#8249;</button>
+    <button class="modal-nav next" id="modal-next" type="button" aria-label="next">&#8250;</button>
+    <button class="modal-fullscreen" id="modal-fullscreen" type="button" aria-label="fullscreen">&#10021;</button>
     <button class="modal-close" id="modal-close" type="button">&times;</button>
     <div class="modal-name" id="modal-name"></div>
     <div class="modal-frame" id="modal-frame"></div>
-    <div class="modal-actions">
-      <a class="btn solid" id="modal-download" href="#" target="_blank" rel="noopener">download</a>
-    </div>
   </div>
 </div>
 
@@ -149,7 +177,10 @@
      member's display name, brand logo, and assigned Google Drive root
      folder id, then browses that folder in-page via the Google Drive
      API (public, "anyone with the link" access only — no OAuth needed
-     for read/preview/download of files shared that way).
+     for read/preview/download of files shared that way). Images/video/
+     audio render as native elements (correct aspect ratio, no letterbox,
+     full keyboard/swipe navigation); other file types (docs, sheets,
+     slides, pdf) fall back to Google's own /preview embed.
      =================================================================== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -180,6 +211,10 @@
   const userEmailEl = document.getElementById('user-email');
 
   let pathStack = []; // [{id, name}]
+  let currentPreviewFiles = [];
+  let currentPreviewIndex = -1;
+
+  const FOLDER_MIME = 'application/vnd.google-apps.folder';
 
   function escapeHtml(s){
     const d = document.createElement('div');
@@ -244,26 +279,137 @@
     return container;
   }
 
-  function openPreview(file){
-    const overlay = document.getElementById('modal-overlay');
+  function directViewUrl(file){
+    return 'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(file.id);
+  }
+  function directDownloadUrl(file){
+    return file.webContentLink || ('https://drive.google.com/uc?export=download&id=' + encodeURIComponent(file.id));
+  }
+  function iframeUrl(file){
+    return 'https://drive.google.com/file/d/' + encodeURIComponent(file.id) + '/preview';
+  }
+
+  function useIframeFallback(file){
     const frame = document.getElementById('modal-frame');
-    const name = document.getElementById('modal-name');
-    const dl = document.getElementById('modal-download');
-    name.textContent = file.name;
-    frame.innerHTML = '<iframe src="https://drive.google.com/file/d/' + encodeURIComponent(file.id) + '/preview" allow="autoplay"></iframe>';
-    dl.href = file.webContentLink || ('https://drive.google.com/uc?export=download&id=' + encodeURIComponent(file.id));
-    overlay.classList.add('open');
+    const box = document.getElementById('modal-box');
+    box.classList.remove('media'); box.classList.add('doc');
+    frame.className = 'modal-frame doc';
+    frame.innerHTML = '<iframe src="' + iframeUrl(file) + '" allow="autoplay"></iframe>';
+  }
+
+  function buildPreviewEl(file){
+    const frame = document.getElementById('modal-frame');
+    const box = document.getElementById('modal-box');
+    frame.innerHTML = '';
+    box.classList.remove('media', 'doc');
+
+    const mime = file.mimeType || '';
+
+    if(mime.startsWith('image/')){
+      box.classList.add('media');
+      frame.className = 'modal-frame media';
+      const img = document.createElement('img');
+      img.className = 'preview-media';
+      img.alt = file.name;
+      img.addEventListener('error', ()=> useIframeFallback(file));
+      img.src = directViewUrl(file);
+      frame.appendChild(img);
+    }else if(mime.startsWith('video/')){
+      box.classList.add('media');
+      frame.className = 'modal-frame media';
+      const video = document.createElement('video');
+      video.className = 'preview-media';
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      if(file.thumbnailLink) video.poster = file.thumbnailLink.replace(/=s\d+$/, '=s1600');
+      video.addEventListener('error', ()=> useIframeFallback(file));
+      video.src = directDownloadUrl(file);
+      frame.appendChild(video);
+    }else if(mime.startsWith('audio/')){
+      box.classList.add('media');
+      frame.className = 'modal-frame media';
+      const audio = document.createElement('audio');
+      audio.className = 'preview-audio';
+      audio.controls = true;
+      audio.autoplay = true;
+      audio.addEventListener('error', ()=> useIframeFallback(file));
+      audio.src = directDownloadUrl(file);
+      frame.appendChild(audio);
+    }else{
+      useIframeFallback(file);
+    }
+  }
+
+  function updateNavVisibility(){
+    const showNav = currentPreviewFiles.length > 1;
+    document.getElementById('modal-prev').style.display = showNav ? 'flex' : 'none';
+    document.getElementById('modal-next').style.display = showNav ? 'flex' : 'none';
+  }
+
+  function openPreviewByIndex(idx){
+    if(idx < 0 || idx >= currentPreviewFiles.length) return;
+    currentPreviewIndex = idx;
+    const file = currentPreviewFiles[idx];
+    document.getElementById('modal-name').textContent = file.name;
+    buildPreviewEl(file);
+    document.getElementById('modal-overlay').classList.add('open');
+    updateNavVisibility();
+  }
+
+  function navigatePreview(delta){
+    if(currentPreviewFiles.length < 2) return;
+    const n = currentPreviewFiles.length;
+    const next = (currentPreviewIndex + delta + n) % n;
+    openPreviewByIndex(next);
   }
 
   function closePreview(){
     document.getElementById('modal-overlay').classList.remove('open');
     document.getElementById('modal-frame').innerHTML = '';
+    currentPreviewIndex = -1;
+    if(document.fullscreenElement || document.webkitFullscreenElement){
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    }
+  }
+
+  function toggleFullscreen(){
+    const box = document.getElementById('modal-box');
+    if(!document.fullscreenElement && !document.webkitFullscreenElement){
+      (box.requestFullscreen || box.webkitRequestFullscreen)?.call(box);
+    }else{
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    }
   }
 
   document.getElementById('modal-close').addEventListener('click', closePreview);
+  document.getElementById('modal-fullscreen').addEventListener('click', toggleFullscreen);
+  document.getElementById('modal-prev').addEventListener('click', ()=> navigatePreview(-1));
+  document.getElementById('modal-next').addEventListener('click', ()=> navigatePreview(1));
   document.getElementById('modal-overlay').addEventListener('click', (e)=>{
     if(e.target.id === 'modal-overlay') closePreview();
   });
+
+  document.addEventListener('keydown', (e)=>{
+    if(!document.getElementById('modal-overlay').classList.contains('open')) return;
+    if(e.key === 'ArrowLeft') navigatePreview(-1);
+    else if(e.key === 'ArrowRight') navigatePreview(1);
+    else if(e.key === 'Escape') closePreview();
+  });
+
+  let touchStartX = null;
+  const modalFrameEl = document.getElementById('modal-frame');
+  modalFrameEl.addEventListener('touchstart', (e)=>{
+    touchStartX = e.changedTouches[0].clientX;
+  }, { passive:true });
+  modalFrameEl.addEventListener('touchend', (e)=>{
+    if(touchStartX == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if(Math.abs(dx) > 50){
+      if(dx < 0) navigatePreview(1); else navigatePreview(-1);
+    }
+    touchStartX = null;
+  }, { passive:true });
 
   async function renderExplorer(){
     slot.innerHTML = '';
@@ -278,6 +424,7 @@
     try{
       const files = await fetchChildren(currentId);
       grid.innerHTML = '';
+      currentPreviewFiles = files.filter(f => f.mimeType !== FOLDER_MIME);
       if(files.length === 0){
         const empty = document.createElement('div');
         empty.className = 'drive-empty';
@@ -286,7 +433,7 @@
         return;
       }
       files.forEach(f=>{
-        const isFolder = f.mimeType === 'application/vnd.google-apps.folder';
+        const isFolder = f.mimeType === FOLDER_MIME;
         const card = document.createElement('div');
         card.className = 'drive-card';
 
@@ -302,7 +449,7 @@
             ? '<img src="' + thumb.replace(/=s\d+$/, '=s400') + '" loading="lazy" alt="">'
             : '<div class="drive-icon">' + FILE_SVG + '</div>';
           card.innerHTML = '<div class="drive-thumb-wrap">' + thumbHtml + '</div><div class="drive-name">' + escapeHtml(f.name) + '</div>';
-          card.addEventListener('click', ()=> openPreview(f));
+          card.addEventListener('click', ()=> openPreviewByIndex(currentPreviewFiles.findIndex(x=>x.id===f.id)));
         }
         grid.appendChild(card);
       });
