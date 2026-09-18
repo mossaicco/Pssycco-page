@@ -49,7 +49,12 @@
     text-decoration:none; text-transform:lowercase; letter-spacing:0.04em; font-size:12px;
   }
   nav.topnav .nav-cta:hover{background:var(--deep); color:var(--bg);}
-  @media (max-width:900px){ nav.topnav .links a:not(.nav-cta){display:none;} }
+  nav.topnav .nav-cta.cta-members{display:none;}
+  @media (max-width:900px){
+    nav.topnav .links a:not(.nav-cta){display:none;}
+    nav.topnav .nav-cta.cta-call{display:none;}
+    nav.topnav .nav-cta.cta-members{display:inline-block; margin-left:0;}
+  }
 
   section{padding:150px 8% 110px;}
   .narrow{max-width:760px; margin:0 auto;}
@@ -83,7 +88,7 @@
      instead of drifting away with the hero section's own box. */
   #hero img.glyph{
     position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1;
-    width:clamp(220px, 50vh, 640px); max-width:none; margin:0;
+    width:clamp(180px, min(50vh, 55vw), 640px); max-width:none; margin:0;
   }
   .pending-reveal{display:none;}
   /* the tagline is repositioned to the same fixed spot the glyph occupied — once the glyph rises
@@ -109,6 +114,19 @@
   #hero .threshold{
     margin-top:32px; font-size:12.5px; letter-spacing:0.08em; color:var(--muted); font-style:italic;
     max-width:420px;
+  }
+
+  /* MOBILE / VERTICAL FIT — tighten the top-level interface (nav, hero, logo) so nothing
+     overflows or reads oversized on narrow portrait screens */
+  @media (max-width:600px){
+    nav.topnav{padding:14px 6%;}
+    nav.topnav .brand-logo{height:17px;}
+    section{padding:90px 6% 70px;}
+    #hero{padding-top:90px;}
+    #hero p.value.phrase-fixed{max-width:88vw;}
+    #hero .tagline.phrase-fixed{max-width:88vw;}
+    #hero .threshold{max-width:88vw;}
+    #hero .scrolldown{margin-top:44px;}
   }
 
   /* ARRIVAL — the hero reveals itself on load, like stepping through a threshold */
@@ -690,7 +708,8 @@
     <a href="#membresias">memberships</a>
     <a href="#faq">faq</a>
     <a href="members/">members</a>
-    <a class="nav-cta" href="#cta">book a call</a>
+    <a class="nav-cta cta-call" href="#cta">book a call</a>
+    <a class="nav-cta cta-members" href="members/">members</a>
   </span>
 </nav>
 
