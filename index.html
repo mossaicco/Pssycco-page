@@ -1182,7 +1182,7 @@
   // once the hero has scrolled past, it holds on that final white frame — chapters 3-8 are wired for later.
   (function(){
     const CHAPTERS = [
-      {folder:'ch1', count:169, start:1}, {folder:'ch2', count:121}, {folder:'ch3', count:121},
+      {folder:'ch1', count:169, start:48}, {folder:'ch2', count:121}, {folder:'ch3', count:121},
       {folder:'ch4', count:145}, {folder:'ch5', count:241}, {folder:'ch6', count:289},
       {folder:'ch7', count:121}, {folder:'ch8', count:169},
     ];
@@ -1196,7 +1196,7 @@
     const total = frames.length;
     const images = new Array(total);
 
-    // the opening sequence: chapter 1 (the mark forms, from its very first frame) + chapter 2
+    // the opening sequence: chapter 1 (the mark forms — trimmed to start at its frame 48) + chapter 2
     // (the explosion → white)
     const CH1_COUNT = CHAPTERS[0].count - (CHAPTERS[0].start||1) + 1;
     const INTRO_FRAMES = CH1_COUNT + CHAPTERS[1].count;
@@ -1265,9 +1265,9 @@
 
     // the tint over the background film starts at its normal opacity, then thickens a bit more as
     // the mark gets rougher/hairier, holding at that heavier veil from ch1's frame 56 onward (frame
-    // index 55, since ch1 now starts at its own frame 1)
+    // index 8, since ch1 now starts at its own frame 48)
     const bgTint = document.getElementById('bg-tint');
-    const TINT_BASE = 0.86, TINT_PEAK = 0.95, TINT_RAMP_END_IDX = 55;
+    const TINT_BASE = 0.86, TINT_PEAK = 0.95, TINT_RAMP_END_IDX = 8;
     const VIDEO_PROGRESS_END = 0.5; // the video+text intro resolves within the first half of the hero's
                                      // scroll distance — the second half is the blank pause, on purpose
 
