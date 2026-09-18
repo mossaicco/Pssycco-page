@@ -52,10 +52,6 @@
     background:var(--bg2);
   }
 
-  /* ---- loader ---- */
-  .thinker{width:34px; height:34px; object-fit:contain;}
-  .thinker-row{display:flex; align-items:center; gap:10px;}
-  #page-loader{width:44px; height:44px; object-fit:contain; margin-bottom:18px; display:block;}
 
   /* ---- drive explorer ---- */
   .breadcrumb{display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); margin-top:34px; margin-bottom:18px;}
@@ -123,7 +119,6 @@
 
 <main>
   <div class="wrap fade" id="wrap">
-    <video id="page-loader" autoplay muted loop playsinline src="../assets/loader.mp4"></video>
     <img id="brand-logo-custom" class="brand-logo-custom" alt="">
     <div class="kicker" id="kicker">your workspace</div>
     <h2 id="heading">loading your drive…</h2>
@@ -276,7 +271,7 @@
 
     const grid = document.createElement('div');
     grid.className = 'drive-grid';
-    grid.innerHTML = '<div class="thinker-row"><video class="thinker" autoplay muted loop playsinline src="../assets/loader.mp4"></video><span class="muted">loading…</span></div>';
+    grid.innerHTML = '<p class="muted">loading…</p>';
     slot.appendChild(grid);
 
     const currentId = pathStack[pathStack.length - 1].id;
@@ -327,7 +322,6 @@
     }
     userEmailEl.textContent = user.email;
     document.getElementById('wrap').classList.add('in');
-    const pageLoader = document.getElementById('page-loader');
 
     try{
       const snap = await getDoc(doc(db, "members", user.email.toLowerCase()));
@@ -335,8 +329,6 @@
       const folderId = data && data.driveFolderId;
       const displayName = (data && data.displayName) ? data.displayName : user.email.split('@')[0];
       const logoUrl = data && data.logoUrl;
-
-      pageLoader.style.display = 'none';
 
       if(logoUrl){
         brandLogo.src = logoUrl;
@@ -359,7 +351,6 @@
         slot.appendChild(empty);
       }
     }catch(err){
-      pageLoader.style.display = 'none';
       heading.textContent = "couldn't load your workspace.";
       subtext.textContent = "please refresh, or reach out if this keeps happening.";
     }

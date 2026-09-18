@@ -67,8 +67,6 @@
   .msg{font-size:13px; min-height:18px; margin-top:6px;}
   .msg.error{color:#a35447;}
   .msg.ok{color:#5c7a4d;}
-  .thinker-row{display:flex; align-items:center; gap:8px;}
-  .thinker{width:24px; height:24px; object-fit:contain;}
 
   table{width:100%; margin-top:40px; border-collapse:collapse; font-size:13.5px;}
   th{text-align:left; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); padding:10px 8px 10px 0; border-bottom:1px solid var(--line);}
@@ -212,9 +210,6 @@
     d.textContent = s == null ? '' : s;
     return d.innerHTML;
   }
-  function thinkerRow(text){
-    return '<span class="thinker-row"><video class="thinker" autoplay muted loop playsinline src="../assets/loader.mp4"></video><span>' + text + '</span></span>';
-  }
   function parseEmails(raw){
     return Array.from(new Set(
       raw.split(/[\n,]+/).map(s=>s.trim().toLowerCase()).filter(Boolean)
@@ -240,7 +235,7 @@
     const msg = document.getElementById('ad-msg');
     const email = document.getElementById('ad-email').value.trim().toLowerCase();
     const pass = document.getElementById('ad-pass').value;
-    msg.className = 'msg'; msg.innerHTML = thinkerRow('signing in…');
+    msg.className = 'msg'; msg.textContent = 'signing in…';
     try{
       await signInWithEmailAndPassword(auth, email, pass);
     }catch(err){
@@ -254,7 +249,7 @@
 
   async function loadMembers(){
     const body = document.getElementById('members-body');
-    body.innerHTML = '<tr><td colspan="5" class="muted">' + thinkerRow('loading…') + '</td></tr>';
+    body.innerHTML = '<tr><td colspan="5" class="muted">loading…</td></tr>';
     try{
       const snaps = await getDocs(collection(db, "members"));
       if(snaps.empty){
@@ -310,7 +305,7 @@
       return;
     }
 
-    btn.disabled = true; msg.className = 'msg'; msg.innerHTML = thinkerRow('saving member(s)…');
+    btn.disabled = true; msg.className = 'msg'; msg.textContent = 'saving member(s)…';
     try{
       const payload = { displayName: name, driveFolderId: folder };
       if(logoUrl) payload.logoUrl = logoUrl;

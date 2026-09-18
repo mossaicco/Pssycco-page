@@ -74,8 +74,26 @@
   .msg{font-size:13px; min-height:18px; text-align:center;}
   .msg.error{color:#a35447;}
   .msg.ok{color:#5c7a4d;}
-  .thinker-row{display:flex; align-items:center; justify-content:center; gap:8px;}
-  .thinker{width:26px; height:26px; object-fit:contain;}
+
+  .transition-overlay{
+    position:fixed; inset:0; background:var(--bg); z-index:1000;
+    display:none; align-items:center; justify-content:center; pointer-events:none;
+  }
+  .transition-overlay.show{display:flex;}
+  .transition-overlay img{
+    width:min(64vw,64vh); height:auto; opacity:0;
+    animation: bot-fade 2.8s ease-in-out forwards, bot-float 3.6s ease-in-out infinite;
+  }
+  @keyframes bot-fade{
+    0%{opacity:0;}
+    35%{opacity:0.55;}
+    65%{opacity:0.55;}
+    100%{opacity:0;}
+  }
+  @keyframes bot-float{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-14px);}
+  }
 
   .switch-hint{text-align:center; font-size:12.5px; color:var(--muted); margin-top:20px;}
   .switch-hint button{
@@ -147,6 +165,10 @@
   </div>
 </main>
 
+<div class="transition-overlay" id="transition-overlay">
+  <img src="../assets/callbot.webp" alt="">
+</div>
+
 <footer>
   <div class="signature">a mossaicco company / kingdom of shapes</div>
 </footer>
@@ -213,9 +235,10 @@
     el.className = 'msg' + (kind ? ' '+kind : '');
   }
 
-  function setThinking(el, text){
-    el.className = 'msg';
-    el.innerHTML = '<span class="thinker-row"><video class="thinker" autoplay muted loop playsinline src="../assets/loader.mp4"></video><span>' + text + '</span></span>';
+  function goWithTransition(url){
+    const overlay = document.getElementById('transition-overlay');
+    overlay.classList.add('show');
+    setTimeout(()=>{ window.location.href = url; }, 2700);
   }
 
   function friendlyError(err){
@@ -235,11 +258,11 @@
     const email = document.getElementById('si-email').value.trim().toLowerCase();
     const pass = document.getElementById('si-pass').value;
     const btn = formSignin.querySelector('button');
-    btn.disabled = true; setThinking(msg, 'signing in…');
+    btn.disabled = true; setMsg(msg, 'signing in…');
     try{
       await signInWithEmailAndPassword(auth, email, pass);
-      setMsg(msg, 'welcome back — redirecting…', 'ok');
-      window.location.href = "dashboard.html";
+      setMsg(msg, '', 'ok');
+      goWithTransition("dashboard.html");
     }catch(err){
       setMsg(msg, friendlyError(err), 'error');
       btn.disabled = false;
@@ -264,11 +287,11 @@
       return;
     }
 
-    btn.disabled = true; setThinking(msg, 'creating your account…');
+    btn.disabled = true; setMsg(msg, 'creating your account…');
     try{
       await createUserWithEmailAndPassword(auth, email, pass);
-      setMsg(msg, 'account created — redirecting…', 'ok');
-      window.location.href = "dashboard.html";
+      setMsg(msg, '', 'ok');
+      goWithTransition("dashboard.html");
     }catch(err){
       setMsg(msg, friendlyError(err), 'error');
       btn.disabled = false;
