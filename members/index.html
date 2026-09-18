@@ -81,6 +81,21 @@
     font-family:var(--sans); font-size:12.5px; padding:0;
   }
 
+  /* ---- entry logo (brand-specific fade-in, continues fading out on dashboard.html) ---- */
+  .entry-overlay{
+    position:fixed; inset:0; z-index:1100; background:var(--bg);
+    display:none; align-items:center; justify-content:center;
+  }
+  .entry-overlay.show{display:flex;}
+  .entry-overlay img{
+    width:100%; height:100%; object-fit:cover; display:block; opacity:0;
+    animation: entry-fade-in 1400ms ease-in-out forwards;
+  }
+  @keyframes entry-fade-in{
+    0%{opacity:0;}
+    100%{opacity:1;}
+  }
+
   footer{padding:34px 5% 40px; text-align:center; border-top:1px solid var(--line);}
   .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
 </style>
@@ -145,6 +160,10 @@
   </div>
 </main>
 
+<div class="entry-overlay" id="entry-overlay">
+  <img id="entry-overlay-img" alt="">
+</div>
+
 <footer>
   <div class="signature">a mossaicco company / kingdom of shapes</div>
 </footer>
@@ -159,6 +178,7 @@
   import {
     getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyClZ8vQRjpavUCovCKkm7G2TKlDtu-ROo8",
@@ -173,6 +193,24 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  async function getMemberLogo(email){
+    try{
+      const snap = await getDoc(doc(db, "members", email));
+      if(snap.exists() && snap.data().logoUrl) return snap.data().logoUrl;
+    }catch(err){ /* no brand logo on file — proceed without the entry fade */ }
+    return null;
+  }
+
+  function enterWithLogo(logoUrl, url){
+    sessionStorage.setItem('entryLogoUrl', logoUrl);
+    document.getElementById('card').style.display = 'none';
+    const overlay = document.getElementById('entry-overlay');
+    document.getElementById('entry-overlay-img').src = logoUrl;
+    overlay.classList.add('show');
+    setTimeout(()=>{ window.location.href = url; }, 1500);
+  }
 
   // if already signed in, skip straight to the dashboard
   onAuthStateChanged(auth, (user)=>{
@@ -232,7 +270,12 @@
     try{
       await signInWithEmailAndPassword(auth, email, pass);
       setMsg(msg, '', 'ok');
-      window.location.href = "dashboard.html";
+      const logoUrl = await getMemberLogo(email);
+      if(logoUrl){
+        enterWithLogo(logoUrl, "dashboard.html");
+      }else{
+        window.location.href = "dashboard.html";
+      }
     }catch(err){
       setMsg(msg, friendlyError(err), 'error');
       btn.disabled = false;
@@ -261,7 +304,12 @@
     try{
       await createUserWithEmailAndPassword(auth, email, pass);
       setMsg(msg, '', 'ok');
-      window.location.href = "dashboard.html";
+      const logoUrl = await getMemberLogo(email);
+      if(logoUrl){
+        enterWithLogo(logoUrl, "dashboard.html");
+      }else{
+        window.location.href = "dashboard.html";
+      }
     }catch(err){
       setMsg(msg, friendlyError(err), 'error');
       btn.disabled = false;

@@ -37,8 +37,6 @@
   main{flex:1; padding:70px 6% 60px;}
   .wrap{max-width:1100px; margin:0 auto;}
 
-  .brand-logo-custom{max-height:52px; width:auto; margin-bottom:26px; display:none; object-fit:contain;}
-
   .kicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:16px;}
   h2{font-weight:400; text-transform:lowercase; line-height:1.15; letter-spacing:-0.01em; font-size:clamp(26px,4vw,38px);}
   p{font-size:15px; line-height:1.8; color:var(--ink);}
@@ -131,11 +129,43 @@
     .modal-fullscreen{right:50px;}
   }
 
+  /* ---- entry logo (fades out here, arriving already visible from index.html) ---- */
+  .entry-overlay{
+    position:fixed; inset:0; z-index:1100; background:var(--bg);
+    display:none; align-items:center; justify-content:center;
+  }
+  .entry-overlay.show{display:flex;}
+  .entry-overlay img{width:100%; height:100%; object-fit:cover; display:block;}
+  .entry-overlay.fade-out img{animation: entry-fade-out 1400ms ease-in-out forwards;}
+  @keyframes entry-fade-out{
+    0%{opacity:1;}
+    100%{opacity:0;}
+  }
+
   footer{padding:34px 5% 40px; text-align:center; border-top:1px solid var(--line); margin-top:auto;}
   .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
 </style>
 </head>
 <body>
+
+<div class="entry-overlay" id="entry-overlay">
+  <img id="entry-overlay-img" alt="">
+</div>
+<script>
+  (function(){
+    var url = sessionStorage.getItem('entryLogoUrl');
+    if(url){
+      sessionStorage.removeItem('entryLogoUrl');
+      var overlay = document.getElementById('entry-overlay');
+      document.getElementById('entry-overlay-img').src = url;
+      overlay.classList.add('show');
+      setTimeout(function(){
+        overlay.classList.add('fade-out');
+        setTimeout(function(){ overlay.style.display = 'none'; }, 1450);
+      }, 500);
+    }
+  })();
+</script>
 
 <nav class="topnav">
   <img class="brand-logo" src="../assets/logo_glyph.png" alt="pssycco">
@@ -147,7 +177,6 @@
 
 <main>
   <div class="wrap fade" id="wrap">
-    <img id="brand-logo-custom" class="brand-logo-custom" alt="">
     <div class="kicker" id="kicker">your workspace</div>
     <h2 id="heading">loading your drive…</h2>
     <p class="muted" id="subtext" style="margin-top:10px;"></p>
@@ -206,7 +235,6 @@
   const kicker = document.getElementById('kicker');
   const heading = document.getElementById('heading');
   const subtext = document.getElementById('subtext');
-  const brandLogo = document.getElementById('brand-logo-custom');
   const slot = document.getElementById('drive-slot');
   const userEmailEl = document.getElementById('user-email');
 
@@ -418,12 +446,6 @@
       const data = snap.exists() ? snap.data() : null;
       const folderId = data && data.driveFolderId;
       const displayName = (data && data.displayName) ? data.displayName : user.email.split('@')[0];
-      const logoUrl = data && data.logoUrl;
-
-      if(logoUrl){
-        brandLogo.src = logoUrl;
-        brandLogo.style.display = 'block';
-      }
 
       kicker.textContent = displayName + "’s workspace";
       heading.textContent = "welcome to your brand's ecosystem.";
