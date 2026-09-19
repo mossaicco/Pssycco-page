@@ -70,6 +70,15 @@
   .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
   .signature b{color:var(--ink); font-weight:700;}
 
+  /* footer brand mark — a small card holding the five shape glyphs above the signature line */
+  .brand-mark{
+    display:inline-flex; flex-direction:column; align-items:center; gap:16px;
+    margin:0 auto 30px; padding:26px 34px; background:var(--bg2); border-radius:18px;
+  }
+  .brand-mark-icons{display:flex; align-items:center; justify-content:center; gap:20px; color:var(--muted);}
+  .brand-mark-icons svg{width:24px; height:24px; display:block;}
+  .brand-mark .signature{margin:0;}
+
   .fade{opacity:0; transform:translateY(24px); transition:opacity 1s ease, transform 1s ease;}
   .fade.visible{opacity:1; transform:translateY(0);}
 
@@ -732,8 +741,8 @@
   <div class="narrow" style="max-width:1000px;">
     <div class="kicker">see the work</div>
     <h2 class="fade">this is what we build.</h2>
-    <div class="proof-main video-card fade" data-video="assets/video/formula.mp4" data-title="pssycco / formula" data-kicker="pssycco reference" tabindex="0" role="button">
-      <video src="assets/video/formula.mp4" muted loop playsinline autoplay preload="metadata"></video>
+    <div class="proof-main video-card fade" data-video="assets/video/formula_CORREGIDO.mp4" data-title="pssycco / formula" data-kicker="pssycco reference" tabindex="0" role="button">
+      <video src="assets/video/formula_CORREGIDO.mp4" muted loop playsinline autoplay preload="metadata"></video>
       <span class="playbtn">▶</span>
       <div class="proof-main-cap">pssycco / formula — how existing brand assets become an ever-expanding content ecosystem</div>
     </div>
@@ -784,8 +793,8 @@
   </div>
   <div class="narrow" style="padding:0 8%;">
     <div class="quote-stack">
-      <div class="qrow"><span class="qnum">01</span><span class="qtext"><span class="lead">luxury brands don't sell objects.</span><span class="strong">they sell aspiration.</span></span></div>
-      <div class="qrow"><span class="qnum">02</span><span class="qtext"><span class="lead">the product is never the product.</span><span class="strong">the brand is the product.</span></span></div>
+      <div class="qrow"><span class="qnum">01</span><span class="qtext"><span class="lead">the most valuable part of a brand can't be touched.</span><span class="strong">it can only be perceived.</span></span></div>
+      <div class="qrow"><span class="qnum">02</span><span class="qtext"><span class="lead">recognition · prestige · admiration.</span><span class="strong">that's what we build.</span></span></div>
     </div>
   </div>
 </section>
@@ -1172,7 +1181,16 @@
 
 <footer>
   <img src="assets/logo_glyph.png" alt="pssycco">
-  <div class="signature" style="color:var(--muted);">a mossaicco company / kingdom of shapes</div>
+  <div class="brand-mark">
+    <div class="brand-mark-icons" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.2 9.8L22 12L14.2 14.2L12 22L9.8 14.2L2 12L9.8 9.8Z"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="9" r="6"/><circle cx="15" cy="9" r="6"/><circle cx="9" cy="15" r="6"/><circle cx="15" cy="15" r="6"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16l-4 5H8z"/><path d="M4 18h16l-4-5H8z"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16l-8 8z"/><path d="M4 20h16l-8-8z"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4.2"/><circle cx="17" cy="12" r="4.2"/><circle cx="12" cy="17" r="4.2"/><circle cx="7" cy="12" r="4.2"/></svg>
+    </div>
+    <div class="signature">a <b>mossaicco</b> company / kingdom of shapes</div>
+  </div>
 </footer>
 
 <script>
@@ -1263,11 +1281,13 @@
     const heroPhrase3 = document.querySelector('#hero .phrase-3');
     const EXPLOSION_PROGRESS = EXPLOSION_FRAME / (INTRO_FRAMES-1); // where video 1 → video 2 explodes
 
-    // the tint over the background film starts at its normal opacity, then thickens a bit more as
-    // the mark gets rougher/hairier, holding at that heavier veil from ch1's frame 56 onward (frame
-    // index 5, since ch1 now starts at its own frame 51)
+    // the tint over the background film starts at its normal opacity, thickens a bit more as the
+    // mark gets rougher/hairier (holding heavier from ch1's frame 56 — index 5), then once the
+    // explosion hits (ch1's frame 64 — index 13) it fades out the rest of the way to fully clear,
+    // finishing by the end of the intro sequence
     const bgTint = document.getElementById('bg-tint');
-    const TINT_BASE = 0.86, TINT_PEAK = 0.95, TINT_RAMP_END_IDX = 5;
+    const TINT_BASE = 0.86, TINT_PEAK = 0.95;
+    const TINT_RAMP_END_IDX = 5, TINT_FADE_START_IDX = 13;
     const VIDEO_PROGRESS_END = 0.5; // the video+text intro resolves within the first half of the hero's
                                      // scroll distance — the second half is the blank pause, on purpose
 
@@ -1356,13 +1376,17 @@
       document.body.classList.toggle('bg-clear', pastPhilosophy);
 
       // once past the hero, hand the tint's opacity back to the CSS (body.bg-clear fades it to 0) —
-      // otherwise ramp it from TINT_BASE up to TINT_PEAK as the mark roughens up to frame 56
+      // otherwise: ramp TINT_BASE → TINT_PEAK up to frame 56, hold, then once the explosion hits
+      // (frame 64) fade the rest of the way down to fully clear by the end of the intro
       if(bgTint){
         if(pastPhilosophy){
           bgTint.style.opacity = '';
-        } else {
+        } else if(heroIdx <= TINT_FADE_START_IDX){
           const tintT = Math.min(1, heroIdx / TINT_RAMP_END_IDX);
           bgTint.style.opacity = String(TINT_BASE + (TINT_PEAK - TINT_BASE) * tintT);
+        } else {
+          const fadeT = Math.min(1, (heroIdx - TINT_FADE_START_IDX) / Math.max(1, (INTRO_FRAMES - 1 - TINT_FADE_START_IDX)));
+          bgTint.style.opacity = String(TINT_PEAK * (1 - fadeT));
         }
       }
 
