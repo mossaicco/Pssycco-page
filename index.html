@@ -27,7 +27,7 @@
     filter:grayscale(35%) contrast(0.94) brightness(1.08) saturate(0.9);
     transition:filter 1s ease;
   }
-  #bg-tint{position:fixed; inset:0; z-index:-1; background:var(--bg); opacity:0.86; pointer-events:none; transition:opacity 1s ease;}
+  #bg-tint{position:fixed; inset:0; z-index:-1; background:var(--bg); opacity:0; pointer-events:none; transition:opacity 1s ease;}
   body.bg-clear #bg-canvas-wrap canvas{ filter:none; }
   body.bg-clear #bg-tint{ opacity:0; }
   a{color:inherit;}
@@ -731,7 +731,7 @@
 <!-- HERO -->
 <section id="hero">
   <img class="glyph glyph-arrive" src="assets/logo_glyph.png" alt="pssycco">
-  <p class="value phrase-fixed phrase-3">ai-powered brand content, delivered every month.</p>
+  <p class="value phrase-fixed phrase-3"><b>ai-powered brand content</b>, delivered every month.</p>
   <p class="threshold explosion-reveal pending-reveal">you haven't opened a website. you've crossed into the studio's world.</p>
   <div class="scrolldown explosion-reveal pending-reveal">scroll ↓</div>
 </section>
@@ -1180,7 +1180,7 @@
 </section>
 
 <footer>
-  <img src="assets/logo_glyph.png" alt="pssycco">
+  <img src="data:image/png;base64,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" alt="AI studios">
   <div class="brand-mark">
     <div class="brand-mark-icons" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.2 9.8L22 12L14.2 14.2L12 22L9.8 14.2L2 12L9.8 9.8Z"/></svg>
@@ -1200,7 +1200,7 @@
   // once the hero has scrolled past, it holds on that final white frame — chapters 3-8 are wired for later.
   (function(){
     const CHAPTERS = [
-      {folder:'ch1', count:169, start:51}, {folder:'ch2', count:121}, {folder:'ch3', count:121},
+      {folder:'ch1', count:169, start:1}, {folder:'ch2', count:121}, {folder:'ch3', count:121},
       {folder:'ch4', count:145}, {folder:'ch5', count:241}, {folder:'ch6', count:289},
       {folder:'ch7', count:121}, {folder:'ch8', count:169},
     ];
@@ -1280,14 +1280,11 @@
     const heroGlyph = document.querySelector('#hero img.glyph');
     const heroPhrase3 = document.querySelector('#hero .phrase-3');
     const EXPLOSION_PROGRESS = EXPLOSION_FRAME / (INTRO_FRAMES-1); // where video 1 → video 2 explodes
+    const PHRASE_FRAME = CH1_COUNT + 53;                 // chapter 2, frame 54 — where the phrase starts appearing
+    const PHRASE_PROGRESS = PHRASE_FRAME / (INTRO_FRAMES-1);
 
-    // the tint over the background film starts at its normal opacity, thickens a bit more as the
-    // mark gets rougher/hairier (holding heavier from ch1's frame 56 — index 5), then once the
-    // explosion hits (ch1's frame 64 — index 13) it fades out the rest of the way to fully clear,
-    // finishing by the end of the intro sequence
-    const bgTint = document.getElementById('bg-tint');
-    const TINT_BASE = 0.86, TINT_PEAK = 0.95;
-    const TINT_RAMP_END_IDX = 5, TINT_FADE_START_IDX = 13;
+    // the tint over the background film is fully removed (opacity 0 in CSS) — the film shows at
+    // full clarity the whole way through, no veil at any point
     const VIDEO_PROGRESS_END = 0.5; // the video+text intro resolves within the first half of the hero's
                                      // scroll distance — the second half is the blank pause, on purpose
 
@@ -1330,7 +1327,7 @@
       // explodes, sitting over the explosion itself, then dissolves away just before
       // "this is what we build" takes over
       if(heroPhrase3){
-        const phraseIn = fadeWindow(progress, 0.28, EXPLOSION_PROGRESS);
+        const phraseIn = fadeWindow(progress, PHRASE_PROGRESS, PHRASE_PROGRESS + 0.03);
         const phraseOut = fadeWindow(progress, 0.85, 1.0);
         heroPhrase3.style.opacity = String(Math.max(0, phraseIn - phraseOut));
       }
@@ -1374,21 +1371,6 @@
       }
 
       document.body.classList.toggle('bg-clear', pastPhilosophy);
-
-      // once past the hero, hand the tint's opacity back to the CSS (body.bg-clear fades it to 0) —
-      // otherwise: ramp TINT_BASE → TINT_PEAK up to frame 56, hold, then once the explosion hits
-      // (frame 64) fade the rest of the way down to fully clear by the end of the intro
-      if(bgTint){
-        if(pastPhilosophy){
-          bgTint.style.opacity = '';
-        } else if(heroIdx <= TINT_FADE_START_IDX){
-          const tintT = Math.min(1, heroIdx / TINT_RAMP_END_IDX);
-          bgTint.style.opacity = String(TINT_BASE + (TINT_PEAK - TINT_BASE) * tintT);
-        } else {
-          const fadeT = Math.min(1, (heroIdx - TINT_FADE_START_IDX) / Math.max(1, (INTRO_FRAMES - 1 - TINT_FADE_START_IDX)));
-          bgTint.style.opacity = String(TINT_PEAK * (1 - fadeT));
-        }
-      }
 
       drawFrame(idx);
     }
