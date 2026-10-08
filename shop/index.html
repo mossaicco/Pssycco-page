@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pssycco — shop</title>
+<style>
+  :root{
+    --bg:#f4f2ec; --bg2:#ece8df; --ink:#4b4d45; --deep:#33352f;
+    --muted:#9a9d90; --line:rgba(51,53,47,0.12);
+    --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    --c-human:#b5674a; --c-spaces:#7089a0; --c-product:#748049; --c-lifestyle:#c2897e; --c-art:#c79a3d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{background:var(--bg); scroll-behavior:smooth;}
+  body{
+    background:transparent; color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+  img{display:block; max-width:100%;}
+  ::selection{background:var(--ink); color:var(--bg);}
+
+  nav.topnav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 5%; background:rgba(244,242,236,0.9); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line); font-size:12px; letter-spacing:0.06em;
+  }
+  nav.topnav .brand-logo{height:20px; width:auto; display:block;}
+  nav.topnav .links{display:flex; align-items:center;}
+  nav.topnav .links a{margin-left:24px; text-decoration:none; color:var(--muted); text-transform:lowercase;}
+  nav.topnav .links a:hover{color:var(--ink);}
+  nav.topnav .nav-cta{
+    margin-left:24px; background:var(--ink); color:var(--bg); padding:9px 18px; border-radius:16px;
+    text-decoration:none; text-transform:lowercase; letter-spacing:0.04em; font-size:12px;
+  }
+  nav.topnav .nav-cta:hover{background:var(--deep); color:var(--bg);}
+  nav.topnav .nav-cta.cta-members{display:none;}
+  /* DISCOVER / SHOP — two tabs centred in the top bar, same pill as the call-to-action buttons */
+  nav.topnav .site-tabs{
+    margin-left:28px; margin-right:auto;
+    display:flex; gap:4px; padding:4px; border-radius:20px;
+    background:rgba(51,53,47,0.06); border:1px solid var(--line);
+  }
+  nav.topnav .site-tabs a{
+    margin:0; padding:7px 18px; border-radius:16px; text-decoration:none;
+    text-transform:lowercase; letter-spacing:0.04em; font-size:12px; color:var(--muted);
+    transition:background .3s ease, color .3s ease;
+  }
+  nav.topnav .site-tabs a:hover{color:var(--ink);}
+  nav.topnav .site-tabs a.active{background:var(--ink); color:var(--bg);}
+  @media (max-width:1180px){ nav.topnav .links a[href="#faq"], nav.topnav .links a[href="#sistema"]{display:none;} }
+  @media (max-width:480px){
+    nav.topnav{padding:14px 16px;}
+    nav.topnav .site-tabs{margin-left:14px;}
+    nav.topnav .site-tabs a{padding:7px 13px;}
+    nav.topnav .nav-cta.cta-members{padding:9px 14px;}
+  }
+  @media (max-width:900px){
+    nav.topnav .links a:not(.nav-cta){display:none;}
+    nav.topnav .nav-cta.cta-call{display:none;}
+    nav.topnav .nav-cta.cta-members{display:inline-block; margin-left:0;}
+  }
+
+  section{padding:150px 8% 110px;}
+  .narrow{max-width:760px; margin:0 auto;}
+  .center{text-align:center;}
+
+  .kicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:20px;}
+  h1,h2,h3{font-weight:400; text-transform:lowercase; line-height:1.15; letter-spacing:-0.01em;}
+  h1{font-size:clamp(38px,6.5vw,76px);}
+  h2{font-size:clamp(30px,5vw,54px);}
+  h3{font-size:22px;}
+  p{font-size:17px; line-height:1.85; color:var(--ink);}
+  p.muted{color:var(--muted);}
+  .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
+  .signature b{color:var(--ink); font-weight:700;}
+
+  .shop-hero{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+  .shop-hero p{max-width:520px; margin:26px auto 0;}
+  .shop-hero .fade{opacity:0; transform:translateY(20px); animation:rise 1.2s cubic-bezier(.22,.61,.36,1) forwards;}
+  .shop-hero .fade:nth-child(2){animation-delay:.15s;}
+  .shop-hero .fade:nth-child(3){animation-delay:.3s;}
+  @keyframes rise{to{opacity:1; transform:none;}}
+  footer{padding:40px 8% 60px; text-align:center;}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="/"><img class="brand-logo" src="/assets/logo_glyph.png" alt="pssycco"></a>
+  <span class="site-tabs">
+    <a href="/">discover</a>
+    <a class="active" href="/shop/" aria-current="page">shop</a>
+  </span>
+  <span class="links">
+    <a href="/members/">members</a>
+    <a class="nav-cta cta-call" href="/#cta">book a call</a>
+    <a class="nav-cta cta-members" href="/members/">members</a>
+  </span>
+</nav>
+
+<section class="shop-hero">
+  <div class="kicker fade">pssycco shop</div>
+  <h1 class="fade">the shop.</h1>
+  <p class="muted fade">opening soon.</p>
+</section>
+
+<footer><p class="signature">a <b>mossaicco</b> company / kingdom of shapes</p></footer>
+</body>
+</html>
