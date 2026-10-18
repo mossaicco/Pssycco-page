@@ -577,13 +577,13 @@
   <section class="group" id="production">
     <div class="group-head">
       <h2>how it gets made.</h2>
-      <p>Before you choose your pieces, choose how they get made. By default you send us the material you already have, at no extra cost — or attach a 3D register or a filming day to any piece, from its card or from your hand.</p>
+      <p>Before you choose your pieces, choose how they get made. By default you send us the material you already have, at no extra cost — or book a filming day for any piece, from its card or from your hand.</p>
     </div>
     <div class="how" id="how"></div>
     <div class="how-demo">
-      <p>Example: an <b>ai short</b> with your product on set — attach a <b>3d register</b> and one <b>traditional day</b>, and the short is made from both.</p>
+      <p>Example: an <b>ai short</b> filmed with your team — swap <b>your material</b> for one <b>traditional day</b>, and we shoot it with you.</p>
       <div class="chips" aria-hidden="true">
-        <span class="chip on"><span class="ci" data-ic="register3d"></span>1 3d register</span>
+        <span class="chip"><span class="ci" data-ic="own"></span>your material</span>
         <span class="chip on"><span class="ci" data-ic="dayT"></span>1 traditional day</span>
       </div>
     </div>
@@ -756,7 +756,7 @@
     if (next === cur) return;
     // attaching to a piece that isn't in the hand yet adds the piece too
     openLayers.add(pid); closedLayers.delete(pid);
-    if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; if (aid === 'register3d') att.own = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
+    if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
     if (next) att[aid] = next; else delete att[aid];
     // filming days replace your material; with no days left, your material comes back
     if ((aid === 'dayU' || aid === 'dayT') && next > 0) delete att.own;
@@ -820,7 +820,7 @@
   /* material / immaterial: two doors into the same shop */
   const KIND_TEXT = {
     material:"The five formats, one by one. Each shape is a format — the same shapes you'll find across every pssycco campaign.",
-    immaterial:"The thinking behind the work: the direction of a campaign and the system that keeps your brand consistent inside AI."
+    immaterial:"The thinking behind the work: the direction of a campaign, the system that keeps your brand consistent inside AI, and the digital twins of your products."
   };
   function showKind(k){
     document.querySelectorAll('.kinds [data-kind]').forEach(b=>b.setAttribute('aria-selected', b.dataset.kind===k));

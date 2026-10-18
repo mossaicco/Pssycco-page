@@ -4,4 +4,6 @@ window.PSSYCCO_GLYPHS = {"brandfilm": {"s": 478, "d": "M146.6 472.8C146.3 471.5 
 /* immaterial pieces — drawn to sit with the five */
 window.PSSYCCO_GLYPHS.sheet = { s:100, d:'M8 16 Q8 4 20 4 H50 V34 Q50 48 64 48 H92 V84 Q92 96 80 96 H20 Q8 96 8 84 Z M60 4 Q62 4 64 6 L90 32 Q92 34 92 36 V38 H70 Q60 38 60 28 Z' };
 window.PSSYCCO_GLYPHS.identity = { s:100, d:'M50 2 A34 34 0 0 1 72 62 L82 88 Q85 96 76 96 H24 Q15 96 18 88 L28 62 A34 34 0 0 1 50 2 Z M50 22 A13 13 0 1 0 50.01 22 Z' };
+window.PSSYCCO_GLYPHS.cube = { s:100, d:'M50 6 L86 26.5 L50 47 L14 26.5 Z M10 33 L46.5 53.5 L46.5 95 L10 74.5 Z M90 33 L53.5 53.5 L53.5 95 L90 74.5 Z' };
+window.PSSYCCO_GLYPHS.material = { s:100, d:'M8 32 Q8 24 16 24 H64 Q72 24 72 32 V86 Q72 94 64 94 H16 Q8 94 8 86 Z M40 45 A14 14 0 1 0 40.01 45 Z M30 6 H86 Q94 6 94 14 V64 Q94 72 86 72 H80 V32 Q80 16 64 16 H22 V14 Q22 6 30 6 Z' };
 window.glyphSVG = function(k, cls){ var g = window.PSSYCCO_GLYPHS[k]; return '<svg class="'+(cls||'glyph')+'" viewBox="0 0 '+g.s+' '+g.s+'" aria-hidden="true"><path fill-rule="evenodd" d="'+g.d+'"/></svg>'; };

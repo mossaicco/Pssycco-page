@@ -25,6 +25,11 @@
       spec:'your brand’s proprietary ai system',
       text:'The documentation of your brand’s AI methodology: creative standards, visual language, prompting system, character consistency and production workflows.' },
 
+    { id:'register3d',  group:'ideas', name:'3d product register', price:1800000, max:12,
+      unit:['3d register','3d registers'], icon:'cube',
+      spec:'digital future / one product',
+      text:'A 3D register of one of your brand’s products, built for AI prompting so it can appear in any scene with full fidelity.' },
+
     { id:'clip',        group:'pieces', name:'ai clip', price:350000, max:48,
       unit:['clip','clips'], icon:'clip',
       spec:'2 shots / one idea / 10 seconds',
@@ -53,11 +58,8 @@
      not jokers (they don't count toward bundles); members still take 10% off. */
   var ADDONS = [
     { id:'own',        name:'your own material', short:'your material', price:0, toggle:true,
-      unit:['your material','your material'], icon:'blank',
+      unit:['your material','your material'], icon:'material',
       text:'The default for every piece. You send the footage, photos and references you already have; we elevate them in post-production.' },
-    { id:'register3d', name:'3d product register', short:'3d register', price:1800000, max:12,
-      unit:['3d register','3d registers'], icon:'outline',
-      text:'A 3D register of your product, built for AI prompting so it appears in any scene with full fidelity.' },
     { id:'dayU',       name:'unconventional filming day', short:'unconventional day', price:750000, from:true, max:7,
       unit:['unconventional day','unconventional days'], icon:'dayU',
       text:'One photographer, light setup — for moments that need to be captured, not staged. Starting price per day; production costs are borne by the client.' },

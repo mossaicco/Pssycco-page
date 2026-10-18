@@ -369,13 +369,13 @@
           h += `<p>${m ? 'Adicionalmente, EL CONTRATISTA entregará los siguientes productos:' : 'EL CONTRATISTA entregará los siguientes productos:'}</p>
             <table class="t"><tr><th>Entregable</th><th>Cantidad</th></tr>${q.lines.map(l=>`<tr><td>${pname(l.p.name)} (${l.p.spec})</td><td>${l.qty}</td></tr>`).join('')}</table>`;
           if (q.lines.some(l=>l.p.id==='signature')) h += `<p>Los Signature Videos non-AI no incluyen postproducción, salvo acuerdo escrito en contrario.</p>`;
+          if (q.lines.some(l=>l.p.id==='register3d')) h += `<p>El Registro 3D de Producto se construirá a partir del producto físico o de la información técnica que EL CONTRATANTE suministre, y quedará optimizado para su uso en procesos de generación con inteligencia artificial.</p>`;
         }
         const withAddons = q.lines.filter(l=>l.addons.length);
         if (withAddons.length){
           h += `<p>Para la producción de los productos anteriores, las partes acuerdan los siguientes medios de producción:</p>
             <table class="t"><tr><th>Producto</th><th>Medio de producción</th><th>Cantidad</th></tr>${withAddons.map(l=>l.addons.map(x=>`<tr><td>${pname(l.p.name)}</td><td>${x.a.id==='own' ? 'Material suministrado por EL CONTRATANTE' : pname(x.a.name)}</td><td>${x.a.toggle?'—':x.qty}</td></tr>`).join('')).join('')}</table>`;
           if (q.addonLines.some(x=>x.a.id==='own')) h += `<p>Para los productos en los que así se indica, EL CONTRATANTE suministrará su propio material audiovisual, fotográfico y de referencia, el cual PSSYCCO elevará mediante su estudio de postproducción, sin costo adicional.</p>`;
-          if (q.addonLines.some(x=>x.a.id==='register3d')) h += `<p>El Registro 3D de Producto se construirá a partir del producto físico o de la información técnica que EL CONTRATANTE suministre, y quedará optimizado para su uso en procesos de generación con inteligencia artificial.</p>`;
         }
         break; }
       case 'archivo':
