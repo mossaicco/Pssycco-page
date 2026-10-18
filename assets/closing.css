@@ -1,0 +1,8 @@
+/* the house mark — five shapes and "a mossaicco company". Same on every pssycco page. */
+footer.closing{padding:120px 6% 110px; text-align:center; background:transparent; border:none;}
+footer.closing .closing-mark{display:inline-flex; flex-direction:column; align-items:center; gap:20px;}
+footer.closing .closing-glyphs{display:flex; align-items:center; justify-content:center; gap:clamp(16px,2.6vw,32px); color:#878a80;}
+footer.closing .closing-glyphs svg{width:clamp(20px,2.2vw,27px); height:auto; display:block; fill:currentColor;}
+footer.closing .closing-sign{margin:0; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:clamp(12px,1vw,13px); line-height:1; letter-spacing:0.01em; color:#878a80; text-transform:none;}
+footer.closing .closing-sign b{font-weight:700;}
+@media print{ footer.closing{display:none;} }
