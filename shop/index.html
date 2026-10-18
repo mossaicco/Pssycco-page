@@ -42,7 +42,7 @@
   nav.topnav .nav-cta:hover{background:var(--deep); color:var(--bg);}
   nav.topnav .nav-cta.cta-members{display:none;}
   nav.topnav .site-tabs{
-    margin-left:28px; margin-right:auto; display:flex; gap:4px; padding:4px; border-radius:20px;
+    margin-left:auto; display:flex; gap:4px; padding:4px; border-radius:20px;
     background:rgba(51,53,47,0.06); border:1px solid var(--line);
   }
   nav.topnav .site-tabs a{
@@ -109,6 +109,7 @@
     font-size:11.5px; color:var(--muted); text-decoration:none; letter-spacing:0.02em; white-space:nowrap;
     border:1px solid var(--line); padding:7px 12px; border-radius:16px; background:transparent;
   }
+  .member-chip:not(.is-member){display:none;}
   .member-chip:hover{color:var(--ink); border-color:var(--ink);}
   .member-chip.is-member{background:var(--ink); color:var(--bg); border-color:var(--ink);}
   .total{display:flex; flex-direction:column; align-items:flex-end; line-height:1.2;}
@@ -532,14 +533,6 @@
   <span class="site-tabs">
     <a href="/">discover</a>
     <a class="active" href="/shop/" aria-current="page">shop</a>
-  </span>
-  <span class="links">
-    <a href="#production">production</a>
-    <a href="#products">products</a>
-    <a href="#memberships">memberships</a>
-    <a href="/members/">members</a>
-    <a class="nav-cta cta-call" href="mailto:mossaicco@gmail.com?subject=Book%20a%20call%20-%20pssycco">book a call</a>
-    <a class="nav-cta cta-members" href="/members/">members</a>
   </span>
 </nav>
 
