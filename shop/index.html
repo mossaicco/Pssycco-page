@@ -94,7 +94,8 @@
   .fan-count small{display:block; font-size:11px; color:var(--muted); opacity:.8;}
 
   .track{display:flex; flex-direction:column; gap:8px; min-width:0;}
-  .track-slots{display:grid; grid-template-columns:repeat(9,1fr); gap:5px; max-width:420px;}
+  .track-slots{display:grid; grid-template-columns:repeat(12,1fr); gap:4px; max-width:440px;}
+  .track-slots i.step{margin-left:6px;}
   .track-slots i{
     height:5px; border-radius:3px; background:rgba(51,53,47,0.1); transition:background .4s ease;
   }
@@ -125,6 +126,7 @@
     .handbar-in{grid-template-columns:auto 1fr auto; gap:14px; padding:10px 16px; min-height:64px;}
     .fan{width:48px; height:44px; --step:2.5px; --cw:30px;}
     .fan .mini,.fan .empty-slot{width:30px; height:44px; top:0;}
+    .fan .mini:nth-child(n+5){display:none;}
     .fan-count{display:none;}
     .fan-n{display:flex; position:absolute; right:-4px; bottom:-4px; z-index:2; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:var(--ink); color:var(--bg); font-size:11px; align-items:center; justify-content:center;}
     .track-slots{gap:3px;}
@@ -404,6 +406,7 @@
 
   .dline{transition:background .3s ease;}
   .dline .layer{margin-top:12px; padding-top:10px;}
+  @media (max-width:640px){ .dline .layer-toggle > span:first-child{display:none;} .dline .layer-toggle{grid-template-columns:1fr auto;} .dline .layer-toggle .ls{text-align:left;} }
   .dline .chip{min-height:30px; font-size:11.5px; padding:3px 10px 3px 4px;}
   .dline .chip .ci{width:20px; height:20px;}
   .dline.flash{background:rgba(51,53,47,0.06);}
@@ -461,8 +464,8 @@
     <a class="active" href="/shop/" aria-current="page">shop</a>
   </span>
   <span class="links">
-    <a href="#products">products</a>
     <a href="#production">production</a>
+    <a href="#products">products</a>
     <a href="#memberships">memberships</a>
     <a href="/members/">members</a>
     <a class="nav-cta cta-call" href="mailto:mossaicco@gmail.com?subject=Book%20a%20call%20-%20pssycco">book a call</a>
@@ -490,15 +493,30 @@
     <div class="hero-card"><img id="hero-joker" src="/assets/shop/joker.webp" alt="the pssycco joker card" width="480" height="720"></div>
     <h1>shop</h1>
     <p>One joker is one piece.</p>
-    <p class="sub">A clip, a short, a brand film, a white sheet — every piece you add becomes a joker in your hand. Collect three, six or nine and the whole hand gets cheaper.</p>
+    <p class="sub">A clip, a short, a brand film, a white sheet — every piece you add becomes a joker in your hand. From your third joker on, every piece costs less — and a hand holds up to twelve.</p>
   </section>
 
   <div class="bundles" id="bundles">
-    <div class="stack" data-tier="3"><div class="stack-cards" data-n="3"></div><div><b>11% off</b><small>3 jokers</small></div></div>
-    <div class="stack" data-tier="6"><div class="stack-cards" data-n="6"></div><div><b>22% off</b><small>6 jokers</small></div></div>
-    <div class="stack" data-tier="9"><div class="stack-cards" data-n="9"></div><div><b>33% off</b><small>9 jokers or more</small></div></div>
+    <div class="stack" data-tier="3"><div class="stack-cards" data-n="3"></div><div><b>11% off</b><small>jokers 3 to 5</small></div></div>
+    <div class="stack" data-tier="6"><div class="stack-cards" data-n="6"></div><div><b>22% off</b><small>jokers 6 to 8</small></div></div>
+    <div class="stack" data-tier="9"><div class="stack-cards" data-n="9"></div><div><b>33% off</b><small>jokers 9 to 12</small></div></div>
     <div class="stack member-tile" data-tier="member"><div><b>+10% off</b><small id="member-note">for members, on top of everything</small><br><a class="signin" id="hero-signin" href="/members/">sign in</a></div></div>
   </div>
+
+  <section class="group" id="production">
+    <div class="group-head">
+      <h2>how it gets made.</h2>
+      <p>Before you choose your pieces, choose how they get made. By default you send us the material you already have, at no extra cost — or attach a 3D register or a filming day to any piece, from its card or from your hand.</p>
+    </div>
+    <div class="how" id="how"></div>
+    <div class="how-demo">
+      <p>Example: an <b>ai short</b> with your product on set — attach a <b>3d register</b> and one <b>traditional day</b>, and the short is made from both.</p>
+      <div class="chips" aria-hidden="true">
+        <span class="chip on"><span class="ci" data-ic="register3d"></span>1 3d register</span>
+        <span class="chip on"><span class="ci" data-ic="dayT"></span>1 traditional day</span>
+      </div>
+    </div>
+  </section>
 
   <section class="group" id="products">
     <div class="group-head">
@@ -511,21 +529,6 @@
     </div>
     <div class="grid" id="grid-material" role="tabpanel" aria-labelledby="tab-material" data-group="pieces"></div>
     <div class="grid" id="grid-immaterial" role="tabpanel" aria-labelledby="tab-immaterial" data-group="ideas" hidden></div>
-  </section>
-
-  <section class="group" id="production">
-    <div class="group-head">
-      <h2>how it gets made.</h2>
-      <p>Every piece starts from the material you already have, at no extra cost. When it needs more, attach a 3D register or a filming day — straight from its card, or from your hand.</p>
-    </div>
-    <div class="how" id="how"></div>
-    <div class="how-demo">
-      <p>Example: an <b>ai short</b> with your product on set — attach a <b>3d register</b> and one <b>traditional day</b>, and the short is made from both.</p>
-      <div class="chips" aria-hidden="true">
-        <span class="chip on"><span class="ci" data-ic="register3d"></span>1 3d register</span>
-        <span class="chip on"><span class="ci" data-ic="dayT"></span>1 traditional day</span>
-      </div>
-    </div>
   </section>
 
   <section class="memberships" id="memberships">
@@ -613,7 +616,7 @@
       return `<span class="chip on">${ic}${P.unitLabel(a,n)}<span class="cq"><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="dec" aria-label="one less ${a.unit[0]}">−</button><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="one more ${a.unit[0]}" ${n>=a.max?'disabled':''}>+</button></span></span>`;
     }).join('');
     if (foldable){
-      const open = openLayers.has(pid) || (foldable === 'hand' && Object.keys(att).length > 0 && !closedLayers.has(pid));
+      const open = openLayers.has(pid) || (foldable === 'hand' && Object.keys(att).some(k=>k!=='own') && !closedLayers.has(pid));
       return `<div class="layer fold ${open?'open':''}"><button type="button" class="layer-toggle" data-fold="${pid}" aria-expanded="${open}">
           <span>how we make it</span><span class="ls">${layerSummary(att)}${extra?` · <b class="num">+${shortCop(extra)}</b>`:''}</span><i aria-hidden="true">+</i></button>
         <div class="chips">${chips}</div></div>`;
@@ -805,11 +808,14 @@
     // fan + track
     renderFan(q.cards);
     const slots = document.getElementById('track');
-    slots.innerHTML = Array.from({length:9},(_,i)=>`<i class="${i<q.cards?'on':''}"></i>`).join('');
+    slots.innerHTML = Array.from({length:P.HAND_MAX},(_,i)=>`<i class="${i<q.cards?'on':''} ${[2,5,8].includes(i)?'step':''}"></i>`).join('');
     let msg;
     if (!q.cards && !q.membership) msg = 'add a piece — every piece is a joker';
-    else if (q.next) msg = `<b>${q.next.cards - q.cards}</b> more for <b>${Math.round(q.next.off*100)}% off</b>` + (q.bundle.off ? ` · ${Math.round(q.bundle.off*100)}% applied` : '');
-    else msg = `<b>${Math.round(q.bundle.off*100)}% off</b> — the full hand`;
+    else if (q.cards < P.HAND_MAX){
+      msg = q.nextRate ? `joker ${q.cards+1} comes <b>${Math.round(q.nextRate*100)}% off</b>` : `from your 3rd joker, <b>11% off</b>`;
+      if (q.bundleOffAmount) msg += ` · saving <b>${cop(q.bundleOffAmount)}</b>`;
+    }
+    else msg = `<b>full hand</b> · saving <b>${cop(q.bundleOffAmount)}</b>` + (q.over ? ` · ${q.over} at list price` : '');
     if (q.memberOff) msg += ` · <b>+10%</b> member`;
     if (!q.cards && q.membership) msg = `<b>${q.membership.plan.name}</b> in your hand · pieces now 10% off`;
     document.getElementById('track-msg').innerHTML = msg;
@@ -877,20 +883,21 @@
     });
 
     // nudge: what the next joker is worth
-    if (q.cards && q.next){
-      const k = q.next.cards - q.cards;
+    if (q.cards && q.cards < P.HAND_MAX && q.nextRate){
       const cheap = P.PRODUCTS.filter(p=>p.group==='pieces').sort((a,b)=>a.price-b.price)[0];
-      const trial = { ...cart, items:{ ...cart.items, [cheap.id]:(cart.items[cheap.id]||0)+k } };
-      const t = P.quote(trial, window.PSSYCCO_MEMBER);
-      const extra = t.total - q.total, more = t.productsOff - q.productsOff;
-      h += `<div class="nudge"><p>Add <b>${P.unitLabel(cheap,k)}</b> and your whole hand drops to <b>${Math.round(q.next.off*100)}% off</b>. ${extra <= 0 ? `Your total actually goes <b>down by ${cop(-extra)}</b>.` : `It adds ${cop(extra)} to your total and takes ${cop(more)} more off.`}</p><button type="button" data-nudge="${cheap.id}" data-k="${k}">add ${k===1?'it':'them'}</button></div>`;
+      const trial = { ...cart, items:{ ...cart.items, [cheap.id]:(cart.items[cheap.id]||0)+1 } };
+      const extra = P.quote(trial, window.PSSYCCO_MEMBER).total - q.total;
+      h += `<div class="nudge"><p>Your next joker comes <b>${Math.round(q.nextRate*100)}% off</b> — one more ${cheap.unit[0]} would add only <b>${cop(extra)}</b>.</p><button type="button" data-nudge="${cheap.id}" data-k="1">add it</button></div>`;
+    } else if (q.cards >= P.HAND_MAX && !q.membership){
+      const u = P.MEMBERSHIPS.ultimate;
+      h += `<div class="nudge"><p>${q.over ? `Your hand is full: the last ${q.over===1?'piece goes':q.over+' pieces go'} at list price.` : 'Your hand is full.'} For a steady flow of pieces, <b>ultimate</b> gives you a year of them — with creative direction — from ${cop(u.monthly*(1-P.TERMS[P.TERMS.length-1].off))} / month.</p><button type="button" id="to-memberships">see memberships</button></div>`;
     }
 
     // totals
     h += '<div class="dsum num">';
     if (q.cards) h += `<div><span>pieces · ${q.cards} ${q.cards===1?'joker':'jokers'}</span><span>${cop(q.subtotal)}</span></div>`;
     if (q.addonLines.length) h += `<div><span>how we make it · ${q.addonLines.length} ${q.addonLines.length===1?'attachment':'attachments'}</span><span>${cop(q.addonSub)}</span></div>`;
-    if (q.bundle.off) h += `<div><span>bundle of ${q.bundle.cards}+ jokers · −${Math.round(q.bundle.off*100)}% on pieces</span><span>−${cop(q.bundleOffAmount)}</span></div>`;
+    if (q.bundleOffAmount) h += `<div><span>joker steps · ${Math.round(q.bundleRate*100)}% off your pieces</span><span>−${cop(q.bundleOffAmount)}</span></div>`;
     if (q.memberOff) h += `<div><span>member · −10%</span><span>−${cop(q.memberOffAmount)}</span></div>`;
     if (q.membership){
       h += `<div><span>${q.membership.plan.name} · ${q.membership.term.months} × ${cop(q.membership.plan.monthly)}</span><span>${cop(q.membership.gross)}</span></div>`;
@@ -909,6 +916,7 @@
     }));
     const rmm = body.querySelector('[data-rm-m]'); if (rmm) rmm.addEventListener('click', ()=>{ const nm = cart.membership; snapshot(); cart.membership=null; P.saveCart(cart); render(); toast(`${nm} membership removed`); });
     body.querySelectorAll('[data-term]').forEach(b=>b.addEventListener('click', ()=>{ cart.term = +b.dataset.term; P.saveCart(cart); render(); }));
+    const tm = body.querySelector('#to-memberships'); if (tm) tm.addEventListener('click', ()=>{ closeHand(); document.getElementById('memberships').scrollIntoView({behavior: reduce?'auto':'smooth'}); });
     const nd = body.querySelector('[data-nudge]'); if (nd) nd.addEventListener('click', ()=>{ const id = nd.dataset.nudge; cart.items[id] = (cart.items[id]||0) + (+nd.dataset.k); P.saveCart(cart); selected = id; render(); });
     body.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click', ()=>{
       selected = (selected===c.dataset.card) ? null : c.dataset.card;
