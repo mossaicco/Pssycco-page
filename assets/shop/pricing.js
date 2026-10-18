@@ -54,16 +54,16 @@
   var ADDONS = [
     { id:'own',        name:'your own material', short:'your material', price:0, toggle:true,
       unit:['your material','your material'], icon:'blank',
-      text:'You send the footage or photos you already have. We elevate them in post-production.' },
+      text:'The default for every piece. You send the footage, photos and references you already have; we elevate them in post-production.' },
     { id:'register3d', name:'3d product register', short:'3d register', price:1800000, max:12,
       unit:['3d register','3d registers'], icon:'outline',
       text:'A 3D register of your product, built for AI prompting so it appears in any scene with full fidelity.' },
     { id:'dayU',       name:'unconventional filming day', short:'unconventional day', price:750000, from:true, max:7,
       unit:['unconventional day','unconventional days'], icon:'dayU',
-      text:'One photographer, light setup — for moments that need to be captured, not staged.' },
+      text:'One photographer, light setup — for moments that need to be captured, not staged. Starting price per day; production costs are borne by the client.' },
     { id:'dayT',       name:'traditional filming day', short:'traditional day', price:1830000, from:true, max:7,
       unit:['traditional day','traditional days'], icon:'dayT',
-      text:'A full crew, anywhere in Colombia. Production expenses are covered by the brand.' }
+      text:'A full crew, anywhere in Colombia. The day rate is a starting price: all production costs — locations, talent, wardrobe, art direction, travel and permits — are borne by the client and quoted in advance.' }
   ];
 
   var BUNDLES = [ { cards:9, off:0.33 }, { cards:6, off:0.22 }, { cards:3, off:0.11 } ];

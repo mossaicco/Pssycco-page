@@ -185,7 +185,7 @@
   .group-head{display:flex; align-items:baseline; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:34px;}
   .group-head h2{font-size:clamp(34px,5vw,56px);}
   .group-head p{font-size:15px; color:var(--muted); max-width:420px; line-height:1.7;}
-  .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;}
+  .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; align-items:start;}
   .grid.two{grid-template-columns:repeat(2,minmax(0,1fr));}
   @media (max-width:980px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
   @media (max-width:760px){ .hero{padding:34px 20px 0;} .hero h1{margin-top:34px;} .hero-card img{width:min(160px,42vw);} .hero p{font-size:20px;} .hero p.sub{font-size:14.5px;} }
@@ -241,6 +241,17 @@
   .layer-label{font-size:11.5px; color:var(--muted); margin-bottom:9px; display:flex; justify-content:space-between; gap:10px;}
   .layer-label b{color:var(--ink); font-weight:400;}
   .chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .kinds{display:inline-flex; gap:4px; padding:5px; border-radius:26px; border:1px solid var(--line); background:rgba(51,53,47,0.05); margin-bottom:28px;}
+  .kinds button{border:none; background:transparent; padding:12px 22px; border-radius:22px; font-size:13.5px; letter-spacing:0.02em; color:var(--muted); transition:background .3s ease, color .3s ease;}
+  .kinds button:hover{color:var(--ink);}
+  .kinds button[aria-selected="true"]{background:var(--ink); color:var(--bg);}
+  .kinds button .kn{font-size:11px; margin-left:6px; opacity:.7;}
+  .grid[hidden]{display:none;}
+  .grid.enter .piece{animation:dealin .55s var(--ease) both;}
+  .grid.enter .piece:nth-child(2){animation-delay:.05s;} .grid.enter .piece:nth-child(3){animation-delay:.1s;}
+  .grid.enter .piece:nth-child(4){animation-delay:.15s;} .grid.enter .piece:nth-child(5){animation-delay:.2s;}
+  @keyframes dealin{from{opacity:0; transform:translateY(18px) rotate(-1deg);} to{opacity:1; transform:none;}}
+  @media (max-width:640px){ .kinds{display:flex;} .kinds button{flex:1; padding:12px 8px; font-size:12.5px;} }
   .layer.fold{padding-top:0; border-top:1px dashed rgba(51,53,47,0.22);}
   .layer-toggle{
     width:100%; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px; padding:13px 0 2px;
@@ -450,8 +461,7 @@
     <a class="active" href="/shop/" aria-current="page">shop</a>
   </span>
   <span class="links">
-    <a href="#immaterial">immaterial</a>
-    <a href="#material">material</a>
+    <a href="#products">products</a>
     <a href="#production">production</a>
     <a href="#memberships">memberships</a>
     <a href="/members/">members</a>
@@ -490,26 +500,23 @@
     <div class="stack member-tile" data-tier="member"><div><b>+10% off</b><small id="member-note">for members, on top of everything</small><br><a class="signin" id="hero-signin" href="/members/">sign in</a></div></div>
   </div>
 
-  <section class="group" id="immaterial">
+  <section class="group" id="products">
     <div class="group-head">
-      <h2>immaterial.</h2>
-      <p>The thinking behind the work: direction, systems and the digital twins your products need to live inside AI.</p>
+      <h2>the products.</h2>
+      <p id="kind-text">The five formats, one by one. Each shape is a format — the same shapes you'll find across every pssycco campaign.</p>
     </div>
-    <div class="grid" data-group="ideas"></div>
-  </section>
-
-  <section class="group" id="material">
-    <div class="group-head">
-      <h2>material.</h2>
-      <p>The five products, one by one. Each shape is a format — the same shapes you'll find across every pssycco campaign.</p>
+    <div class="kinds" role="tablist" aria-label="product type">
+      <button type="button" role="tab" id="tab-material" aria-selected="true" aria-controls="grid-material" data-kind="material">material products</button>
+      <button type="button" role="tab" id="tab-immaterial" aria-selected="false" aria-controls="grid-immaterial" data-kind="immaterial">immaterial products</button>
     </div>
-    <div class="grid" data-group="pieces"></div>
+    <div class="grid" id="grid-material" role="tabpanel" aria-labelledby="tab-material" data-group="pieces"></div>
+    <div class="grid" id="grid-immaterial" role="tabpanel" aria-labelledby="tab-immaterial" data-group="ideas" hidden></div>
   </section>
 
   <section class="group" id="production">
     <div class="group-head">
       <h2>how it gets made.</h2>
-      <p>Every piece can be made from scratch with AI, from your own material, or on set with us. Attach any of these to any piece — straight from its card, or from your hand.</p>
+      <p>Every piece starts from the material you already have, at no extra cost. When it needs more, attach a 3D register or a filming day — straight from its card, or from your hand.</p>
     </div>
     <div class="how" id="how"></div>
     <div class="how-demo">
@@ -592,16 +599,17 @@
   const openLayers = new Set(), closedLayers = new Set();
   function layerSummary(att){
     const on = P.ADDONS.filter(a=>att[a.id]);
-    return on.length ? on.map(a=>P.unitLabel(a, att[a.id])).join(' · ') : 'made with ai';
+    return on.length ? on.map(a=>P.unitLabel(a, att[a.id])).join(' · ') : 'made from scratch with ai';
   }
   function layerHTML(pid, foldable){
-    const att = (cart.addons && cart.addons[pid]) || {};
+    // a piece not yet in the hand shows the default: you send us your material, $0
+    const att = (cart.items[pid] > 0) ? ((cart.addons && cart.addons[pid]) || {}) : { own:1 };
     let extra = 0;
     const chips = P.ADDONS.map(a=>{
       const n = att[a.id] || 0; extra += a.price * n;
       const ic = `<span class="ci">${icon(a.icon)}</span>`;
       if (a.toggle) return `<button type="button" class="chip ${n?'on':''}" data-pid="${pid}" data-a="${a.id}" data-op="toggle" aria-pressed="${!!n}">${ic}${a.short} <small>${shortCop(a.price)}</small></button>`;
-      if (!n) return `<button type="button" class="chip" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="attach a ${a.name}">${ic}+ ${a.short} <small>${a.from?'from ':''}${shortCop(a.price)}</small></button>`;
+      if (!n) return `<button type="button" class="chip" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="attach a ${a.name}">${ic}+ ${a.short} <small>${a.from?'starting at ':''}${shortCop(a.price)}</small></button>`;
       return `<span class="chip on">${ic}${P.unitLabel(a,n)}<span class="cq"><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="dec" aria-label="one less ${a.unit[0]}">−</button><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="one more ${a.unit[0]}" ${n>=a.max?'disabled':''}>+</button></span></span>`;
     }).join('');
     if (foldable){
@@ -621,7 +629,7 @@
     if (next === cur) return;
     // attaching to a piece that isn't in the hand yet adds the piece too
     openLayers.add(pid); closedLayers.delete(pid);
-    if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
+    if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; if (aid !== 'own') att.own = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
     if (next) att[aid] = next; else delete att[aid];
     if (!Object.keys(att).length) delete cart.addons[pid];
     P.saveCart(cart); render();
@@ -641,7 +649,7 @@
   function renderCatalog(){
     document.getElementById('how').innerHTML = P.ADDONS.map(a=>`
       <div class="how-item"><div class="medal">${icon(a.icon)}</div><h3>${a.name}</h3>
-        <div class="hp num">${a.price ? `${a.from?'<span>from</span> ':''}${cop(a.price)}${a.id.startsWith('day')?' <span>/ day</span>':''}` : '$0 <span>— included</span>'}</div>
+        <div class="hp num">${a.price ? `${a.from?'<span>starting at</span> ':''}${cop(a.price)}${a.id.startsWith('day')?' <span>/ day</span>':''}` : '$0 <span>— included</span>'}</div>
         <p>${a.text}</p></div>`).join('');
     document.querySelectorAll('.how-demo .ci[data-ic]').forEach(el=>el.innerHTML = icon(P.addonById(el.dataset.ic).icon));
     document.querySelectorAll('.grid[data-group]').forEach(grid=>{
@@ -673,11 +681,27 @@
     const p = P.byId(id);
     const q = Math.max(0, Math.min(p.max, (cart.items[id]||0) + d));
     if (q === (cart.items[id]||0)) return;
+    const was = cart.items[id] || 0;
     if (q) cart.items[id] = q; else { delete cart.items[id]; if (cart.addons) delete cart.addons[id]; }
+    if (!was && q){ cart.addons = cart.addons || {}; cart.addons[id] = Object.assign({ own:1 }, cart.addons[id] || {}); }
     P.saveCart(cart);
     if (d > 0 && fromEl) fly(fromEl);
     render();
   }
+
+  /* material / immaterial: two doors into the same shop */
+  const KIND_TEXT = {
+    material:"The five formats, one by one. Each shape is a format — the same shapes you'll find across every pssycco campaign.",
+    immaterial:"The thinking behind the work: the direction of a campaign and the system that keeps your brand consistent inside AI."
+  };
+  function showKind(k){
+    document.querySelectorAll('.kinds [data-kind]').forEach(b=>b.setAttribute('aria-selected', b.dataset.kind===k));
+    const g = document.getElementById('grid-'+k), other = document.getElementById('grid-'+(k==='material'?'immaterial':'material'));
+    other.hidden = true; g.hidden = false;
+    document.getElementById('kind-text').textContent = KIND_TEXT[k];
+    if (!reduce){ g.classList.remove('enter'); void g.offsetWidth; g.classList.add('enter'); }
+  }
+  document.querySelectorAll('.kinds [data-kind]').forEach(b=>b.addEventListener('click', ()=>showKind(b.dataset.kind)));
 
   /* the one moment: a card leaves the piece and lands in your hand */
   function fly(fromEl){
@@ -830,7 +854,7 @@
     // the spread
     const items = [];
     if (q.membership) items.push({ key:'m', html:`<span class="rank">${q.membership.term.months}m</span><span class="mname">${q.membership.plan.name}</span><span class="rank b">${q.membership.term.months}m</span>`, cls:'mem', label:q.membership.plan.name+' membership' });
-    q.lines.forEach(l=>items.push({ key:l.p.id, html:`<span class="rank">${l.qty}</span>${cardFace(l.p.icon)}<span class="rank b">${l.qty}</span>${l.addons.length?`<span class="att num">+${l.addons.length}</span>`:''}`, cls:l.addons.length?'with-att att-'+Math.min(3,l.addons.length):'', label:P.unitLabel(l.p,l.qty) + (l.addons.length ? ', with ' + l.addons.map(x=>P.unitLabel(x.a,x.qty)).join(', ') : '') }));
+    q.lines.forEach(l=>items.push({ key:l.p.id, html:`<span class="rank">${l.qty}</span>${cardFace(l.p.icon)}<span class="rank b">${l.qty}</span>${l.addons.filter(x=>x.a.id!=='own').length?`<span class="att num">+${l.addons.filter(x=>x.a.id!=='own').length}</span>`:''}`, cls:l.addons.filter(x=>x.a.id!=='own').length?'with-att att-'+Math.min(3,l.addons.filter(x=>x.a.id!=='own').length):'', label:P.unitLabel(l.p,l.qty) + (l.addons.length ? ', with ' + l.addons.map(x=>P.unitLabel(x.a,x.qty)).join(', ') : '') }));
     const n = items.length;
     let h = '<div class="spread" role="list">' + items.map((it,i)=>{
       const r = n>1 ? ((i-(n-1)/2) * Math.min(5, 24/n)).toFixed(1) : 0;

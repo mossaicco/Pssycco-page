@@ -314,14 +314,14 @@
         }
         q.lines.forEach(l=>{
           rows += `<tr><td>${pname(l.p.name)}</td><td>${l.qty}</td><td class="r">${P.cop(l.p.price)}</td><td class="r">${P.cop(l.total)}</td></tr>`;
-          l.addons.forEach(x=>{ rows += `<tr><td>&nbsp;&nbsp;&nbsp;↳ ${pname(x.a.name)}${x.a.from?' (desde)':''} — para ${pname(l.p.name)}</td><td>${x.a.toggle?'—':x.qty}</td><td class="r">${P.cop(x.a.price)}</td><td class="r">${P.cop(x.total)}</td></tr>`; });
+          l.addons.forEach(x=>{ rows += `<tr><td>&nbsp;&nbsp;&nbsp;↳ ${x.a.id==='own' ? 'Material propio del contratante' : pname(x.a.name)}${x.a.from?' (desde)':''} — para ${pname(l.p.name)}</td><td>${x.a.toggle?'—':x.qty}</td><td class="r">${P.cop(x.a.price)}</td><td class="r">${P.cop(x.total)}</td></tr>`; });
         });
         if (q.bundle.off) rows += `<tr><td>Pssycco bundle — ${q.cards} jokers (−${Math.round(q.bundle.off*100)}% sobre productos)</td><td></td><td></td><td class="r">−${P.cop(q.bundleOffAmount)}</td></tr>`;
         if (q.memberOff) rows += `<tr><td>Beneficio de membresía (−10%)</td><td></td><td></td><td class="r">−${P.cop(q.memberOffAmount)}</td></tr>`;
         rows += `<tr class="sum"><td>Valor total</td><td></td><td></td><td class="r">${P.cop(q.total)}</td></tr>`;
         h += `<p>El valor total del presente contrato corresponde a ${pesos(q.total)}, conforme al siguiente desglose:</p>
           <table class="t"><tr><th>Concepto</th><th>Cant.</th><th>Valor unitario</th><th>Subtotal</th></tr>${rows}</table>`;
-        if (q.addonLines.some(x=>x.a.from)) h += `<p>Los días de rodaje se cotizan con un valor base ("desde"), el cual podrá ajustarse según los requerimientos de producción de cada campaña, previo acuerdo escrito entre las partes. Los gastos de producción serán cubiertos por EL CONTRATANTE.</p>`;
+        if (q.addonLines.some(x=>x.a.from)) h += `<p>Los días de rodaje se cotizan con una tarifa base por día ("desde"), correspondiente a los honorarios de dirección y del equipo de PSSYCCO. La totalidad de los costos de producción —incluyendo, entre otros, locaciones, talento, vestuario, dirección de arte, desplazamientos, viáticos y permisos— serán asumidos por EL CONTRATANTE y presupuestados de manera previa y por escrito, antes del inicio de cada rodaje.</p>`;
         h += `<p>Mientras la facturación del servicio se realice por parte de EL CONTRATISTA en su calidad de persona natural, el valor pactado no causará el Impuesto al Valor Agregado (IVA). A partir del momento en que la facturación se realice a nombre de la sociedad cesionaria, conforme a lo previsto en la ${R('cesion')}, al valor pactado se le adicionará el Impuesto al Valor Agregado (IVA) vigente en Colombia, correspondiente al diecinueve por ciento (19%).</p>
           <p>${m ? `Dicho valor será cancelado de manera anticipada, en un único pago, a más tardar en la fecha de inicio del presente contrato, como condición del beneficio de pago anticipado aquí reconocido.` : `Dicho valor será cancelado de manera anticipada, en un único pago, a más tardar en la fecha de inicio del presente contrato.`} Dicho pago estará sujeto a la previa presentación de los siguientes documentos:</p>
           <div class="sub"><p>a) Cuenta de cobro o factura correspondiente, según corresponda a la calidad de persona natural o jurídica de EL CONTRATISTA al momento del pago, la cual deberá reflejar el valor en pesos colombianos y, cuando aplique, el IVA correspondiente conforme a esta cláusula.</p>
@@ -373,8 +373,8 @@
         const withAddons = q.lines.filter(l=>l.addons.length);
         if (withAddons.length){
           h += `<p>Para la producción de los productos anteriores, las partes acuerdan los siguientes medios de producción:</p>
-            <table class="t"><tr><th>Producto</th><th>Medio de producción</th><th>Cantidad</th></tr>${withAddons.map(l=>l.addons.map(x=>`<tr><td>${pname(l.p.name)}</td><td>${pname(x.a.name)}</td><td>${x.a.toggle?'—':x.qty}</td></tr>`).join('')).join('')}</table>`;
-          if (q.addonLines.some(x=>x.a.id==='own')) h += `<p>Cuando así se indica, EL CONTRATANTE suministrará su propio material audiovisual y fotográfico, el cual PSSYCCO elevará mediante su estudio de postproducción, sin costo adicional.</p>`;
+            <table class="t"><tr><th>Producto</th><th>Medio de producción</th><th>Cantidad</th></tr>${withAddons.map(l=>l.addons.map(x=>`<tr><td>${pname(l.p.name)}</td><td>${x.a.id==='own' ? 'Material suministrado por EL CONTRATANTE' : pname(x.a.name)}</td><td>${x.a.toggle?'—':x.qty}</td></tr>`).join('')).join('')}</table>`;
+          if (q.addonLines.some(x=>x.a.id==='own')) h += `<p>Para los productos en los que así se indica, EL CONTRATANTE suministrará su propio material audiovisual, fotográfico y de referencia, el cual PSSYCCO elevará mediante su estudio de postproducción, sin costo adicional.</p>`;
           if (q.addonLines.some(x=>x.a.id==='register3d')) h += `<p>El Registro 3D de Producto se construirá a partir del producto físico o de la información técnica que EL CONTRATANTE suministre, y quedará optimizado para su uso en procesos de generación con inteligencia artificial.</p>`;
         }
         break; }
