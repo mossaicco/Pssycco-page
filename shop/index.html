@@ -112,10 +112,11 @@
   .member-chip:not(.is-member){display:none;}
   .member-chip:hover{color:var(--ink); border-color:var(--ink);}
   .member-chip.is-member{background:var(--ink); color:var(--bg); border-color:var(--ink);}
-  .total{display:flex; flex-direction:column; align-items:flex-end; line-height:1.2;}
+  .total{position:relative; display:flex; flex-direction:column; align-items:flex-end; line-height:1.2;}
   .cur{position:relative; display:inline-block;}
-  .cur-btn{border:none; background:transparent; font-size:11px; letter-spacing:0.06em; color:var(--muted); padding:6px 4px; border-bottom:1px dotted rgba(51,53,47,0.3);}
-  .cur-btn:hover,.cur.open .cur-btn{color:var(--ink);}
+  .cur-btn{display:inline-flex; align-items:center; gap:5px; border:1px solid var(--line); background:rgba(51,53,47,0.05); font-size:11px; letter-spacing:0.08em; color:var(--muted); padding:5px 10px 5px 11px; border-radius:999px; line-height:1; transition:background .25s ease, color .25s ease, transform .25s ease;}
+  .cur-btn::after{content:''; width:4px; height:4px; border-right:1.2px solid currentColor; border-bottom:1.2px solid currentColor; transform:translateY(-1px) rotate(45deg); opacity:.7;}
+  .cur-btn:hover,.cur.open .cur-btn{color:var(--ink); background:rgba(51,53,47,0.09); transform:translateY(-1px);}
   .cur-menu{
     position:absolute; top:calc(100% + 8px); right:-8px; z-index:120; min-width:118px; padding:6px;
     background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 18px 40px -16px rgba(51,53,47,0.35);
@@ -129,7 +130,7 @@
   .cur-menu button[aria-selected="true"] b{color:rgba(244,242,236,0.6);}
   .dh-right{display:flex; align-items:center; gap:14px;}
   .cur-note{font-size:11.5px; color:var(--muted); padding:4px 0 0; line-height:1.5;}
-  .total small{font-size:11px; color:var(--muted); text-decoration:line-through; min-height:13px;}
+  .total small{position:absolute; right:0; bottom:100%; font-size:11px; color:var(--muted); text-decoration:line-through; white-space:nowrap;}
   .total strong{font-size:20px; font-weight:400; letter-spacing:-0.01em;}
   .hand-btn{
     background:var(--ink); color:var(--bg); border:none; padding:12px 20px; border-radius:22px;
