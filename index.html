@@ -52,8 +52,10 @@
   nav.topnav .nav-cta:hover{background:var(--deep); color:var(--bg);}
   nav.topnav .nav-cta.cta-members{display:none;}
   /* DISCOVER / SHOP — two tabs centred in the top bar, same pill as the call-to-action buttons */
+  nav.topnav .nav-members{margin-left:auto; margin-right:16px; font-size:10.5px; letter-spacing:0.06em; text-transform:lowercase; text-decoration:none; color:var(--muted); opacity:.35; transition:opacity .3s ease;}
+  nav.topnav .nav-members:hover{opacity:.9;}
   nav.topnav .site-tabs{
-    margin-left:28px; margin-right:auto;
+    margin-left:0;
     display:flex; gap:4px; padding:4px; border-radius:20px;
     background:rgba(51,53,47,0.06); border:1px solid var(--line);
   }
@@ -664,20 +666,10 @@
 
 <nav class="topnav">
   <img class="brand-logo" src="assets/logo_glyph.png" alt="pssycco">
+  <a class="nav-members" href="members/">members</a>
   <span class="site-tabs">
     <a class="active" href="/" aria-current="page">discover</a>
     <a href="/shop/">shop</a>
-  </span>
-  <span class="links">
-    <a href="#proof">work</a>
-    <a href="#filosofia">philosophy</a>
-    <a href="#workflow">workflow</a>
-    <a href="#sistema">system</a>
-    <a href="#membresias">memberships</a>
-    <a href="#faq">faq</a>
-    <a href="members/">members</a>
-    <a class="nav-cta cta-call" href="mailto:mossaicco@gmail.com?subject=Book%20a%20call%20-%20pssycco">book a call</a>
-    <a class="nav-cta cta-members" href="members/">members</a>
   </span>
 </nav>
 

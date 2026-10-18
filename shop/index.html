@@ -41,8 +41,10 @@
   }
   nav.topnav .nav-cta:hover{background:var(--deep); color:var(--bg);}
   nav.topnav .nav-cta.cta-members{display:none;}
+  nav.topnav .nav-members{margin-left:auto; margin-right:16px; font-size:10.5px; letter-spacing:0.06em; text-transform:lowercase; text-decoration:none; color:var(--muted); opacity:.35; transition:opacity .3s ease;}
+  nav.topnav .nav-members:hover{opacity:.9;}
   nav.topnav .site-tabs{
-    margin-left:auto; display:flex; gap:4px; padding:4px; border-radius:20px;
+    margin-left:0; display:flex; gap:4px; padding:4px; border-radius:20px;
     background:rgba(51,53,47,0.06); border:1px solid var(--line);
   }
   nav.topnav .site-tabs a{
@@ -538,6 +540,7 @@
 
 <nav class="topnav">
   <a href="/"><img class="brand-logo" src="/assets/logo_glyph.png" alt="pssycco"></a>
+  <a class="nav-members" href="/members/">members</a>
   <span class="site-tabs">
     <a href="/">discover</a>
     <a class="active" href="/shop/" aria-current="page">shop</a>
