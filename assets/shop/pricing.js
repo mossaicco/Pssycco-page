@@ -17,11 +17,11 @@
   /* every unit of a product is one joker card */
   var PRODUCTS = [
     { id:'whitesheet',  group:'ideas', name:'the white sheet', price:5000000, max:12,
-      unit:['white sheet','white sheets'], icon:'blank',
+      unit:['white sheet','white sheets'], icon:'sheet',
       spec:'one campaign, from blank page to brief',
       text:'The creative direction of one campaign: concept, scripts, storyboards, visual references and AI prompts, ready to produce.' },
     { id:'identity',    group:'ideas', name:'ai brand identity system', price:7000000, max:3,
-      unit:['system','systems'], icon:'five',
+      unit:['system','systems'], icon:'identity',
       spec:'your brand’s proprietary ai system',
       text:'The documentation of your brand’s AI methodology: creative standards, visual language, prompting system, character consistency and production workflows.' },
 

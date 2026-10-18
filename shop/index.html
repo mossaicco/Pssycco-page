@@ -434,6 +434,60 @@
   .toast.on{opacity:1; transform:none; pointer-events:auto;}
   .toast button{border:none; background:none; color:var(--bg); text-decoration:underline; font-size:13px;}
 
+
+  /* products: clean tiles — the bare shape on top, nothing around it */
+  .menu{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; align-items:start;}
+  .menu[hidden]{display:none;}
+  .menu .piece{
+    position:relative; display:flex; flex-direction:column; gap:0; padding:30px 24px 22px;
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    transition:border-color .3s ease, box-shadow .3s ease, transform .3s var(--ease);
+  }
+  .menu .piece:hover{transform:translateY(-2px); box-shadow:0 18px 36px -28px rgba(51,53,47,0.4);}
+  .menu .piece.has{border-color:var(--ink);}
+  .menu .medal{width:auto; height:56px; border-radius:0; background:none; border:none; box-shadow:none; justify-content:flex-start; margin-bottom:26px; color:var(--glyph);}
+  .menu .medal svg{width:52px; height:52px;}
+  .menu .medal svg.outline{stroke-width:12;}
+  .menu .pi-name h3{font-size:19px; letter-spacing:-0.01em;}
+  .menu .pi-name .spec{font-size:12.5px; color:var(--muted); margin-top:4px; min-height:2.9em; line-height:1.45;}
+  .menu .pi-name .txt{display:none;}
+  .menu .pi-price{margin:16px 0 18px;}
+  .menu .pi-price .p{font-size:20px; letter-spacing:-0.01em;}
+  .menu .pi-price .mp{display:block; font-size:11.5px; color:var(--muted); margin-top:3px; min-height:14px;}
+  .menu .pi-price .mp b{color:var(--ink); font-weight:700;}
+  .menu .count{display:flex; align-items:center; justify-content:space-between; border:1px solid var(--line); border-radius:24px; padding:3px;}
+  .menu .count button{width:38px; height:38px; border-radius:50%; border:none; background:transparent; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; transition:background .2s ease;}
+  .menu .count button.plus{background:var(--ink); color:var(--bg);}
+  .menu .count button.plus:hover{background:var(--deep);}
+  .menu .count button.minus:hover{background:rgba(51,53,47,0.07);}
+  .menu .count button:disabled{opacity:.25; cursor:default;}
+  .menu .count output{font-size:15px; color:var(--muted);}
+  .menu .piece.has .count output{color:var(--ink);}
+  .menu .layer-slot:empty{display:none;}
+  .menu .layer.fold{margin-top:14px;}
+  .menu .layer-toggle{grid-template-columns:minmax(0,1fr) auto; gap:8px;}
+  .menu .layer-toggle > span:first-child{display:none;}
+  .menu .layer-toggle .ls{text-align:left;}
+  .menu .chip small{display:none;}
+  .menu.enter .piece{animation:dealin .5s var(--ease) both;}
+  .menu.enter .piece:nth-child(2){animation-delay:.05s;} .menu.enter .piece:nth-child(3){animation-delay:.1s;}
+  .menu.enter .piece:nth-child(4){animation-delay:.15s;} .menu.enter .piece:nth-child(5){animation-delay:.2s;}
+  @media (max-width:700px){
+    .menu{grid-template-columns:1fr 1fr; gap:10px;}
+    .menu .piece{padding:22px 14px 14px; border-radius:16px;}
+    .menu .medal{height:40px; margin-bottom:18px;} .menu .medal svg{width:38px; height:38px;}
+    .menu .pi-name h3{font-size:16px;}
+    .menu .pi-name .spec{font-size:11.5px;}
+    .menu .pi-price{margin:12px 0 14px;} .menu .pi-price .p{font-size:16px;}
+    .menu .count button{width:32px; height:32px; font-size:16px;}
+    .menu .chip{font-size:11px; padding:4px 9px 4px 4px;}
+  }
+
+  /* how it gets made: same bare shapes, no circles */
+  .how-item .medal{width:auto; height:44px; border-radius:0; background:none; border:none; box-shadow:none; justify-content:flex-start; color:var(--glyph);}
+  .how-item .medal svg{width:40px; height:40px;}
+  .how-item .medal .blank{width:30px; height:40px; border-radius:4px; background:var(--glyph); border:none; box-shadow:none;}
+
   /* flying card */
   .flying{
     position:fixed; z-index:150; width:46px; height:66px; border-radius:5px; pointer-events:none;
@@ -527,8 +581,8 @@
       <button type="button" role="tab" id="tab-material" aria-selected="true" aria-controls="grid-material" data-kind="material">material products</button>
       <button type="button" role="tab" id="tab-immaterial" aria-selected="false" aria-controls="grid-immaterial" data-kind="immaterial">immaterial products</button>
     </div>
-    <div class="grid" id="grid-material" role="tabpanel" aria-labelledby="tab-material" data-group="pieces"></div>
-    <div class="grid" id="grid-immaterial" role="tabpanel" aria-labelledby="tab-immaterial" data-group="ideas" hidden></div>
+    <div class="menu" id="grid-material" role="tabpanel" aria-labelledby="tab-material" data-group="pieces"></div>
+    <div class="menu" id="grid-immaterial" role="tabpanel" aria-labelledby="tab-immaterial" data-group="ideas" hidden></div>
   </section>
 
   <section class="memberships" id="memberships">
@@ -632,8 +686,12 @@
     if (next === cur) return;
     // attaching to a piece that isn't in the hand yet adds the piece too
     openLayers.add(pid); closedLayers.delete(pid);
-    if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; if (aid !== 'own') att.own = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
+    if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; if (aid === 'register3d') att.own = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
     if (next) att[aid] = next; else delete att[aid];
+    // filming days replace your material; with no days left, your material comes back
+    if ((aid === 'dayU' || aid === 'dayT') && next > 0) delete att.own;
+    if (aid === 'own' && next) { delete att.dayU; delete att.dayT; }
+    if ((aid === 'dayU' || aid === 'dayT') && !att.dayU && !att.dayT && !att.own && cart.items[pid] > 0) att.own = 1;
     if (!Object.keys(att).length) delete cart.addons[pid];
     P.saveCart(cart); render();
     const again = document.querySelector(`.piece[data-id="${pid}"] .chip[data-a="${aid}"], .piece[data-id="${pid}"] .chip.on [data-a="${aid}"]`);
@@ -655,17 +713,14 @@
         <div class="hp num">${a.price ? `${a.from?'<span>starting at</span> ':''}${cop(a.price)}${a.id.startsWith('day')?' <span>/ day</span>':''}` : '$0 <span>— included</span>'}</div>
         <p>${a.text}</p></div>`).join('');
     document.querySelectorAll('.how-demo .ci[data-ic]').forEach(el=>el.innerHTML = icon(P.addonById(el.dataset.ic).icon));
-    document.querySelectorAll('.grid[data-group]').forEach(grid=>{
+    document.querySelectorAll('.menu[data-group]').forEach(grid=>{
       const group = grid.dataset.group;
       grid.innerHTML = P.PRODUCTS.filter(p=>p.group===group).map(p=>`
         <article class="piece" data-id="${p.id}">
-          <span class="jk num"></span>
-          <div class="piece-top">${medal(p.icon)}
-            <div class="piece-name"><h3>${p.name}</h3><div class="spec">${p.spec}</div></div>
-          </div>
-          <p class="piece-text">${p.text}</p>
-          <div class="piece-price">${p.from?'<span class="from">from</span>':''}<span class="p num">${cop(p.price)}</span><span class="mp num"></span></div>
-          <div class="stepper">
+          ${medal(p.icon)}
+          <div class="pi-name"><h3>${p.name}</h3><div class="spec">${p.spec}</div><p class="txt">${p.text}</p></div>
+          <div class="pi-price"><span class="p num">${cop(p.price)}</span><span class="mp num"></span></div>
+          <div class="count">
             <button class="minus" type="button" aria-label="remove one ${p.unit[0]}">−</button>
             <output class="num" aria-live="polite"></output>
             <button class="plus" type="button" aria-label="add one ${p.unit[0]}">+</button>
@@ -797,12 +852,12 @@
     document.querySelectorAll('.piece').forEach(el=>{
       const p = P.byId(el.dataset.id), n = cart.items[p.id]||0;
       el.classList.toggle('has', n>0);
-      el.querySelector('.jk').textContent = n ? (n + (n===1?' joker':' jokers')) : '';
-      el.querySelector('output').textContent = n ? P.unitLabel(p,n) : ('0 ' + p.unit[1]);
+      el.querySelector('output').textContent = n;
+      el.querySelector('output').setAttribute('aria-label', P.unitLabel(p,n));
       el.querySelector('.minus').disabled = n===0;
       el.querySelector('.plus').disabled = n>=p.max;
-      el.querySelector('.layer-slot').innerHTML = layerHTML(p.id, true);
-      el.querySelector('.mp').innerHTML = (member || cart.membership) ? `<b>${cop(p.price*(1-P.MEMBER_OFF))}</b> as member` : '';
+      el.querySelector('.layer-slot').innerHTML = n ? layerHTML(p.id, true) : '';
+      el.querySelector('.mp').innerHTML = (member || cart.membership) ? `<b>${cop(p.price*(1-P.MEMBER_OFF))}</b> as member` : (n ? P.unitLabel(p,n) : '');
     });
 
     // fan + track
