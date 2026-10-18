@@ -74,18 +74,18 @@
     display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:34px;
     padding:14px 5%; min-height:var(--bar-h);
   }
-  .fan{position:relative; width:290px; height:76px; display:flex; align-items:center; --step:15px; --cw:52px;
+  .fan{position:relative; width:290px; height:76px; display:flex; align-items:center; --step:12px; --cw:42px;
     background:none; border:none; padding:0; text-align:left; border-radius:10px;}
-  .fan:not(.is-empty):hover .mini{transform:var(--t) translateY(-4px);}
+  .fan:not(.is-empty):hover .mini{transform:var(--t) translateY(-3px);}
   .fan:not(.is-empty):hover .fan-count{color:var(--ink);}
   .fan .mini{
-    position:absolute; left:6px; top:2px; width:var(--cw); height:74px; border-radius:5px; transform:var(--t);
+    position:absolute; left:8px; top:9px; width:var(--cw); height:60px; border-radius:4px; transform:var(--t);
     background:url('/assets/shop/joker.webp') center/cover no-repeat;
     box-shadow:0 2px 6px rgba(51,53,47,0.18); transform-origin:50% 120%;
     transition:transform .5s var(--ease), opacity .3s ease;
   }
   .fan .empty-slot{
-    position:absolute; left:6px; top:2px; width:var(--cw); height:74px; border-radius:5px;
+    position:absolute; left:8px; top:9px; width:var(--cw); height:60px; border-radius:4px;
     border:1px dashed rgba(51,53,47,0.28);
   }
   .fan-count{position:absolute; left:58px; font-size:12.5px; line-height:1.45; color:var(--muted); white-space:nowrap; letter-spacing:0.02em; transition:left .5s var(--ease);}
@@ -143,11 +143,13 @@
     display:flex; flex-direction:column; align-items:center; text-align:center;
     padding:70px 6% 30px; max-width:1100px; margin:0 auto;
   }
-  .hero h1{font-size:clamp(46px,7vw,92px); letter-spacing:-0.03em; margin-top:56px;}
-  .hero p{font-size:18px; line-height:1.75; color:var(--ink); max-width:540px; margin:22px auto 0;}
+  .hero h1{font-size:15px; letter-spacing:0.08em; margin-top:44px; color:var(--muted);}
+  .hero p{font-size:clamp(20px,2.4vw,26px); line-height:1.5; letter-spacing:-0.01em; color:var(--ink); max-width:620px; margin:14px auto 0;}
+  .hero p.sub{font-size:15px; line-height:1.7; color:var(--muted); max-width:500px; margin-top:16px; letter-spacing:0;}
+  @keyframes drift{ 0%,100%{transform:rotate(-5deg) translateY(0);} 50%{transform:rotate(-2deg) translateY(-8px);} }
   .hero-card{display:flex; justify-content:center; perspective:1200px;}
   .hero-card img{
-    width:min(280px,58vw); height:auto; border-radius:14px;
+    width:min(250px,52vw); height:auto; border-radius:14px;
     box-shadow:0 40px 70px -30px rgba(51,53,47,0.45), 0 2px 6px rgba(51,53,47,0.12);
     transform:rotate(-4deg); transition:transform .8s var(--ease); will-change:transform;
   }
@@ -186,7 +188,8 @@
   .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;}
   .grid.two{grid-template-columns:repeat(2,minmax(0,1fr));}
   @media (max-width:980px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
-  @media (max-width:760px){ .hero{padding:40px 16px 10px;} .hero h1{margin-top:40px;} .hero-card img{width:min(210px,56vw);} .hero p{font-size:16.5px;} }
+  @media (max-width:760px){ .hero{padding:34px 20px 0;} .hero h1{margin-top:34px;} .hero-card img{width:min(160px,42vw);} .hero p{font-size:20px;} .hero p.sub{font-size:14.5px;} }
+  @media (pointer:coarse) and (prefers-reduced-motion:no-preference){ .hero-card img{animation:drift 6s ease-in-out infinite;} }
   @media (max-width:640px){ .grid,.grid.two{grid-template-columns:1fr;} .group{padding:64px 16px 10px;} .hero{padding:60px 16px 40px;} .bundles{padding:10px 16px 30px;} }
 
   .piece{
@@ -233,16 +236,55 @@
   }
   .piece.has .jk{opacity:1; transform:none;}
 
-  .own{
-    display:flex; align-items:center; justify-content:space-between; gap:20px; margin-top:18px;
-    padding:20px 24px; border:1px dashed rgba(51,53,47,0.25); border-radius:18px;
+  /* the production layer — attached to a piece */
+  .layer{border-top:1px dashed rgba(51,53,47,0.22); padding-top:14px; margin-top:2px;}
+  .layer-label{font-size:11.5px; color:var(--muted); margin-bottom:9px; display:flex; justify-content:space-between; gap:10px;}
+  .layer-label b{color:var(--ink); font-weight:400;}
+  .chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .layer.fold{padding-top:0; border-top:1px dashed rgba(51,53,47,0.22);}
+  .layer-toggle{
+    width:100%; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px; padding:13px 0 2px;
+    background:none; border:none; text-align:left; font-size:11.5px; color:var(--muted);
   }
-  .own p{font-size:14px; line-height:1.6;}
-  .own p span{display:block; color:var(--muted); font-size:12.5px;}
-  .switch{position:relative; width:52px; height:30px; flex:none; border-radius:16px; border:none; background:rgba(51,53,47,0.16); transition:background .25s ease;}
-  .switch::after{content:''; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.15); transition:transform .3s var(--ease);}
-  .switch[aria-checked="true"]{background:var(--ink);}
-  .switch[aria-checked="true"]::after{transform:translateX(22px);}
+  .layer-toggle .ls{color:var(--ink); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .layer-toggle .ls b{font-weight:400;}
+  .layer-toggle i{font-style:normal; width:22px; height:22px; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--ink); transition:transform .3s var(--ease);}
+  .layer.fold.open .layer-toggle i{transform:rotate(45deg);}
+  .layer.fold .chips{display:none; padding-top:10px;}
+  .layer.fold.open .chips{display:flex;}
+  .chip{
+    display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:5px 12px 5px 6px; border-radius:18px;
+    border:1px solid var(--line); background:transparent; font-size:12px; color:var(--ink); white-space:nowrap;
+    transition:background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  button.chip:hover{border-color:var(--ink);}
+  .chip .ci{width:22px; height:22px; border-radius:50%; background:#f7f6f2; display:inline-flex; align-items:center; justify-content:center; color:var(--glyph); flex:none; box-shadow:inset 0 0 0 1px rgba(51,53,47,0.08);}
+  .chip .ci svg{width:12px; height:12px; fill:currentColor;}
+  .chip .ci svg.outline{fill:none; stroke:currentColor; stroke-width:16;}
+  .chip .ci .blank{width:8px; height:11px; border-radius:1px; background:#fff; border:1px solid rgba(51,53,47,0.25);}
+  .chip small{color:var(--muted); font-size:11px;}
+  .chip.on{background:var(--ink); border-color:var(--ink); color:var(--bg);}
+  .chip.on small{color:rgba(244,242,236,0.6);}
+  .chip.on .ci{background:var(--bg); color:var(--ink);}
+  .chip .cq{display:inline-flex; align-items:center; gap:2px; margin-left:2px;}
+  .chip .cq button{width:24px; height:24px; border-radius:50%; border:1px solid rgba(244,242,236,0.35); background:transparent; color:var(--bg); font-size:13px; line-height:1; padding:0;}
+  .chip .cq button:hover{background:rgba(244,242,236,0.15);}
+  .chip .cq button:disabled{opacity:.3;}
+  .chip.bump{animation:bump .45s var(--ease);}
+
+  .how{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px;}
+  @media (max-width:980px){ .how{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  @media (max-width:520px){ .how{grid-template-columns:1fr;} }
+  .how-item{padding:22px 0 0; border-top:1px solid var(--line);}
+  .how-item .medal{width:52px; height:52px; margin-bottom:16px;}
+  .how-item h3{font-size:17px;}
+  .how-item .hp{font-size:13px; color:var(--ink); margin:6px 0 10px;}
+  .how-item .hp span{color:var(--muted);}
+  .how-item p{font-size:13px; line-height:1.65; color:var(--ink); opacity:.8;}
+  .how-demo{margin-top:34px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding:18px 22px; border-radius:18px; background:rgba(51,53,47,0.045);}
+  .how-demo p{font-size:14px; line-height:1.6; flex:1; min-width:240px;}
+  .how-demo .chips{flex:none;}
+
 
   /* ---------- memberships ---------- */
   .memberships{max-width:1320px; margin:0 auto; padding:120px 8% 40px;}
@@ -296,7 +338,7 @@
   .drawer-head h2{font-size:30px;}
   .drawer-head button{background:none; border:none; font-size:28px; line-height:1; color:var(--muted);}
   .drawer-body{flex:1; overflow-y:auto; padding:8px 28px 20px;}
-  .dline{display:grid; grid-template-columns:40px 1fr auto; gap:14px; align-items:center; padding:16px 0; border-bottom:1px solid var(--line);}
+  .dline{display:grid; grid-template-columns:40px minmax(0,1fr) auto; gap:14px; align-items:start; padding:16px 0; border-bottom:1px solid var(--line);}
   .dline .medal{width:40px; height:40px; box-shadow:0 6px 14px -6px rgba(51,53,47,0.25);}
   .dline .medal .blank{width:13px; height:18px;}
   .dline .medal .five{grid-template-columns:repeat(3,6px); gap:2px;}
@@ -340,15 +382,24 @@
   .pcard .blank{width:26px; height:36px; border-radius:3px; border:1px solid rgba(51,53,47,0.2);}
   .pcard .five{display:grid; grid-template-columns:repeat(3,12px); gap:4px;}
   .pcard .five svg{width:12px; height:12px;}
+  .pcard.att-1{box-shadow:6px -6px 0 -1px #ebe7dd, 6px -6px 0 0 rgba(51,53,47,0.14), 0 10px 22px -12px rgba(51,53,47,0.35);}
+  .pcard.att-2{box-shadow:6px -6px 0 -1px #ebe7dd, 6px -6px 0 0 rgba(51,53,47,0.14), 12px -12px 0 -1px #e2ddd1, 12px -12px 0 0 rgba(51,53,47,0.12), 0 10px 22px -12px rgba(51,53,47,0.35);}
+  .pcard.att-3{box-shadow:6px -6px 0 -1px #ebe7dd, 6px -6px 0 0 rgba(51,53,47,0.14), 12px -12px 0 -1px #e2ddd1, 12px -12px 0 0 rgba(51,53,47,0.12), 18px -18px 0 -1px #d9d4c7, 18px -18px 0 0 rgba(51,53,47,0.1), 0 10px 22px -12px rgba(51,53,47,0.35);}
+  .pcard.with-att{margin-right:-6px; margin-left:8px;}
+  .pcard .att{position:absolute; bottom:6px; left:8px; font-size:10px; color:var(--bg); background:var(--ink); border-radius:8px; padding:1px 5px;}
   .pcard.mem{background:var(--ink); border-color:var(--ink); color:var(--bg);}
   .pcard.mem .rank{color:var(--bg); font-size:11px; letter-spacing:0.04em;}
   .pcard.mem .mname{font-size:12px; letter-spacing:0.04em; writing-mode:vertical-rl; transform:rotate(180deg);}
 
   .dline{transition:background .3s ease;}
+  .dline .layer{margin-top:12px; padding-top:10px;}
+  .dline .chip{min-height:30px; font-size:11.5px; padding:3px 10px 3px 4px;}
+  .dline .chip .ci{width:20px; height:20px;}
   .dline.flash{background:rgba(51,53,47,0.06);}
   .dline .spec{font-size:11.5px; color:var(--muted); margin-top:2px;}
   .dline .rm{border:none; background:none; color:var(--muted); font-size:11.5px; text-decoration:underline; margin-left:6px; padding:4px;}
   .dline .rm:hover{color:var(--ink);}
+  .dline .dq button.rm{width:auto; height:auto; border:none; border-radius:0;}
   .dline .dp small{display:block; font-size:11px; color:var(--muted);}
 
   .nudge{margin:18px 0 6px; padding:16px 18px; border-radius:14px; background:rgba(51,53,47,0.05); display:flex; gap:14px; align-items:center;}
@@ -401,6 +452,7 @@
   <span class="links">
     <a href="#immaterial">immaterial</a>
     <a href="#material">material</a>
+    <a href="#production">production</a>
     <a href="#memberships">memberships</a>
     <a href="/members/">members</a>
     <a class="nav-cta cta-call" href="mailto:mossaicco@gmail.com?subject=Book%20a%20call%20-%20pssycco">book a call</a>
@@ -426,8 +478,9 @@
 <main>
   <section class="hero">
     <div class="hero-card"><img id="hero-joker" src="/assets/shop/joker.webp" alt="the pssycco joker card" width="480" height="720"></div>
-    <h1>the shop.</h1>
-    <p>Every piece you add is a joker. Collect three, six or nine and the price drops on its own — the more of the house you take, the less each piece costs.</p>
+    <h1>shop</h1>
+    <p>One joker is one piece.</p>
+    <p class="sub">A clip, a short, a brand film, a white sheet — every piece you add becomes a joker in your hand. Collect three, six or nine and the whole hand gets cheaper.</p>
   </section>
 
   <div class="bundles" id="bundles">
@@ -453,15 +506,18 @@
     <div class="grid" data-group="pieces"></div>
   </section>
 
-  <section class="group" id="days">
+  <section class="group" id="production">
     <div class="group-head">
-      <h2>filming days.</h2>
-      <p>For non-AI pieces we either film with you, or we elevate the material you already have.</p>
+      <h2>how it gets made.</h2>
+      <p>Every piece can be made from scratch with AI, from your own material, or on set with us. Attach any of these to any piece — straight from its card, or from your hand.</p>
     </div>
-    <div class="grid two" data-group="days"></div>
-    <div class="own">
-      <p>You bring your own material<span>We elevate it with our post-production. $0 extra.</span></p>
-      <button class="switch" id="own" type="button" role="switch" aria-checked="false" aria-label="I'll bring my own material"></button>
+    <div class="how" id="how"></div>
+    <div class="how-demo">
+      <p>Example: an <b>ai short</b> with your product on set — attach a <b>3d register</b> and one <b>traditional day</b>, and the short is made from both.</p>
+      <div class="chips" aria-hidden="true">
+        <span class="chip on"><span class="ci" data-ic="register3d"></span>1 3d register</span>
+        <span class="chip on"><span class="ci" data-ic="dayT"></span>1 traditional day</span>
+      </div>
     </div>
   </section>
 
@@ -523,8 +579,71 @@
     return '<div class="medal">' + glyphSVG(icon,'g') + '</div>';
   }
 
+  function icon(i){
+    if (i === 'blank') return '<span class="blank"></span>';
+    if (i === 'outline'){ const g = PSSYCCO_GLYPHS.signature; return '<svg class="outline" viewBox="-10 -10 '+(g.s+20)+' '+(g.s+20)+'"><path d="'+g.d+'"/></svg>'; }
+    if (i === 'dayU') return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+    if (i === 'dayT') return '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2.5"/><path d="M17 10.5l4-2.5v8l-4-2.5z"/></svg>';
+    return glyphSVG(i,'g');
+  }
+  const shortCop = n => n === 0 ? '$0' : n >= 1e6 ? '$' + (n/1e6).toFixed(2).replace(/\.?0+$/,'').replace('.',',') + 'M' : '$' + Math.round(n/1000) + 'k';
+
+  /* the production layer of one piece: chips you tap to attach */
+  const openLayers = new Set(), closedLayers = new Set();
+  function layerSummary(att){
+    const on = P.ADDONS.filter(a=>att[a.id]);
+    return on.length ? on.map(a=>P.unitLabel(a, att[a.id])).join(' · ') : 'made with ai';
+  }
+  function layerHTML(pid, foldable){
+    const att = (cart.addons && cart.addons[pid]) || {};
+    let extra = 0;
+    const chips = P.ADDONS.map(a=>{
+      const n = att[a.id] || 0; extra += a.price * n;
+      const ic = `<span class="ci">${icon(a.icon)}</span>`;
+      if (a.toggle) return `<button type="button" class="chip ${n?'on':''}" data-pid="${pid}" data-a="${a.id}" data-op="toggle" aria-pressed="${!!n}">${ic}${a.short} <small>${shortCop(a.price)}</small></button>`;
+      if (!n) return `<button type="button" class="chip" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="attach a ${a.name}">${ic}+ ${a.short} <small>${a.from?'from ':''}${shortCop(a.price)}</small></button>`;
+      return `<span class="chip on">${ic}${P.unitLabel(a,n)}<span class="cq"><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="dec" aria-label="one less ${a.unit[0]}">−</button><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="one more ${a.unit[0]}" ${n>=a.max?'disabled':''}>+</button></span></span>`;
+    }).join('');
+    if (foldable){
+      const open = openLayers.has(pid) || (foldable === 'hand' && Object.keys(att).length > 0 && !closedLayers.has(pid));
+      return `<div class="layer fold ${open?'open':''}"><button type="button" class="layer-toggle" data-fold="${pid}" aria-expanded="${open}">
+          <span>how we make it</span><span class="ls">${layerSummary(att)}${extra?` · <b class="num">+${shortCop(extra)}</b>`:''}</span><i aria-hidden="true">+</i></button>
+        <div class="chips">${chips}</div></div>`;
+    }
+    return `<div class="layer"><div class="layer-label"><span>how we make it</span>${extra?`<b class="num">+${cop(extra)}</b>`:''}</div><div class="chips">${chips}</div></div>`;
+  }
+  function addonOp(pid, aid, op, srcEl){
+    const a = P.addonById(aid);
+    cart.addons = cart.addons || {};
+    const att = cart.addons[pid] = cart.addons[pid] || {};
+    const cur = att[aid] || 0;
+    let next = op==='toggle' ? (cur ? 0 : 1) : op==='inc' ? Math.min(a.max||1, cur+1) : Math.max(0, cur-1);
+    if (next === cur) return;
+    // attaching to a piece that isn't in the hand yet adds the piece too
+    openLayers.add(pid); closedLayers.delete(pid);
+    if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
+    if (next) att[aid] = next; else delete att[aid];
+    if (!Object.keys(att).length) delete cart.addons[pid];
+    P.saveCart(cart); render();
+    const again = document.querySelector(`.piece[data-id="${pid}"] .chip[data-a="${aid}"], .piece[data-id="${pid}"] .chip.on [data-a="${aid}"]`);
+    if (again){ const c = again.closest('.chip'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+  }
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-op][data-a][data-pid]');
+    if (b) addonOp(b.dataset.pid, b.dataset.a, b.dataset.op, b);
+    const f = e.target.closest('[data-fold]');
+    if (f){ const id = f.dataset.fold, was = f.getAttribute('aria-expanded') === 'true';
+      if (was){ openLayers.delete(id); closedLayers.add(id); } else { openLayers.add(id); closedLayers.delete(id); }
+      render(); }
+  });
+
   /* ---------- catalog ---------- */
   function renderCatalog(){
+    document.getElementById('how').innerHTML = P.ADDONS.map(a=>`
+      <div class="how-item"><div class="medal">${icon(a.icon)}</div><h3>${a.name}</h3>
+        <div class="hp num">${a.price ? `${a.from?'<span>from</span> ':''}${cop(a.price)}${a.id.startsWith('day')?' <span>/ day</span>':''}` : '$0 <span>— included</span>'}</div>
+        <p>${a.text}</p></div>`).join('');
+    document.querySelectorAll('.how-demo .ci[data-ic]').forEach(el=>el.innerHTML = icon(P.addonById(el.dataset.ic).icon));
     document.querySelectorAll('.grid[data-group]').forEach(grid=>{
       const group = grid.dataset.group;
       grid.innerHTML = P.PRODUCTS.filter(p=>p.group===group).map(p=>`
@@ -540,6 +659,7 @@
             <output class="num" aria-live="polite"></output>
             <button class="plus" type="button" aria-label="add one ${p.unit[0]}">+</button>
           </div>
+          <div class="layer-slot"></div>
         </article>`).join('');
     });
     document.querySelectorAll('.piece').forEach(el=>{
@@ -553,7 +673,7 @@
     const p = P.byId(id);
     const q = Math.max(0, Math.min(p.max, (cart.items[id]||0) + d));
     if (q === (cart.items[id]||0)) return;
-    if (q) cart.items[id] = q; else delete cart.items[id];
+    if (q) cart.items[id] = q; else { delete cart.items[id]; if (cart.addons) delete cart.addons[id]; }
     P.saveCart(cart);
     if (d > 0 && fromEl) fly(fromEl);
     render();
@@ -635,7 +755,7 @@
     if (!shown) html = '<span class="empty-slot"></span>';
     for (let i=0;i<shown;i++){
       const spread = shown>1 ? (i - (shown-1)/2) : 0;
-      html += `<span class="mini" style="--t:translateX(calc(${i} * var(--step))) rotate(${spread*4}deg)"></span>`;
+      html += `<span class="mini" style="--t:translateX(calc(${i} * var(--step))) rotate(${spread*3}deg)"></span>`;
     }
     html += (n ? `<span class="fan-n num">${n}</span>` : '') + `<span class="fan-count" style="left:calc(var(--cw) + 22px + ${Math.max(0,shown-1)} * var(--step))"><b class="num">${n}</b> ${n===1?'joker':'jokers'}<small>${n ? 'tap to see your hand' : 'your hand is empty'}</small></span>`;
     fan.innerHTML = html;
@@ -654,6 +774,7 @@
       el.querySelector('output').textContent = n ? P.unitLabel(p,n) : ('0 ' + p.unit[1]);
       el.querySelector('.minus').disabled = n===0;
       el.querySelector('.plus').disabled = n>=p.max;
+      el.querySelector('.layer-slot').innerHTML = layerHTML(p.id, true);
       el.querySelector('.mp').innerHTML = (member || cart.membership) ? `<b>${cop(p.price*(1-P.MEMBER_OFF))}</b> as member` : '';
     });
 
@@ -673,7 +794,7 @@
     });
 
     // totals
-    const gross = q.subtotal + (q.membership ? q.membership.gross : 0);
+    const gross = q.subtotal + q.addonSub + (q.membership ? q.membership.gross : 0);
     document.getElementById('bar-total').textContent = cop(q.total);
     document.getElementById('bar-was').textContent = gross > q.total ? cop(gross) : '';
     const count = q.cards + (q.membership?1:0);
@@ -684,7 +805,6 @@
     if (member){ chip.textContent = member + ' member · 10% off'; chip.classList.add('is-member'); chip.href = '/members/dashboard.html';
       document.getElementById('member-note').textContent = `you’re a ${member} member`; const si = document.getElementById('hero-signin'); si.textContent = '10% applied'; si.classList.add('is-member'); }
 
-    document.getElementById('own').setAttribute('aria-checked', !!cart.ownMaterial);
     renderTerms(); renderPlans(); renderDrawer(q);
   }
 
@@ -710,7 +830,7 @@
     // the spread
     const items = [];
     if (q.membership) items.push({ key:'m', html:`<span class="rank">${q.membership.term.months}m</span><span class="mname">${q.membership.plan.name}</span><span class="rank b">${q.membership.term.months}m</span>`, cls:'mem', label:q.membership.plan.name+' membership' });
-    q.lines.forEach(l=>items.push({ key:l.p.id, html:`<span class="rank">${l.qty}</span>${cardFace(l.p.icon)}<span class="rank b">${l.qty}</span>`, cls:'', label:P.unitLabel(l.p,l.qty) }));
+    q.lines.forEach(l=>items.push({ key:l.p.id, html:`<span class="rank">${l.qty}</span>${cardFace(l.p.icon)}<span class="rank b">${l.qty}</span>${l.addons.length?`<span class="att num">+${l.addons.length}</span>`:''}`, cls:l.addons.length?'with-att att-'+Math.min(3,l.addons.length):'', label:P.unitLabel(l.p,l.qty) + (l.addons.length ? ', with ' + l.addons.map(x=>P.unitLabel(x.a,x.qty)).join(', ') : '') }));
     const n = items.length;
     let h = '<div class="spread" role="list">' + items.map((it,i)=>{
       const r = n>1 ? ((i-(n-1)/2) * Math.min(5, 24/n)).toFixed(1) : 0;
@@ -727,10 +847,10 @@
     q.lines.forEach(l=>{
       h += `<div class="dline" data-line="${l.p.id}">${medal(l.p.icon)}
         <div><div class="dn">${l.p.name}</div><div class="spec">${l.p.spec}</div>
-        <div class="dq num"><button type="button" data-d="-1" data-id="${l.p.id}" aria-label="one less ${l.p.unit[0]}">−</button>${P.unitLabel(l.p,l.qty)}<button type="button" data-d="1" data-id="${l.p.id}" aria-label="one more ${l.p.unit[0]}" ${l.qty>=l.p.max?'disabled':''}>+</button><button type="button" class="rm" data-rm="${l.p.id}">remove</button></div></div>
+        <div class="dq num"><button type="button" data-d="-1" data-id="${l.p.id}" aria-label="one less ${l.p.unit[0]}">−</button>${P.unitLabel(l.p,l.qty)}<button type="button" data-d="1" data-id="${l.p.id}" aria-label="one more ${l.p.unit[0]}" ${l.qty>=l.p.max?'disabled':''}>+</button><button type="button" class="rm" data-rm="${l.p.id}">remove</button></div>
+        ${layerHTML(l.p.id, 'hand')}</div>
         <div class="dp num">${cop(l.total)}<small>${cop(l.p.price)} each</small></div></div>`;
     });
-    if (cart.ownMaterial) h += `<div class="dline"><div class="medal"><span class="blank"></span></div><div><div class="dn">your own material</div><div class="dq">elevated in post-production <button type="button" class="rm" data-rm-own>remove</button></div></div><div class="dp num">$0</div></div>`;
 
     // nudge: what the next joker is worth
     if (q.cards && q.next){
@@ -745,8 +865,9 @@
     // totals
     h += '<div class="dsum num">';
     if (q.cards) h += `<div><span>pieces · ${q.cards} ${q.cards===1?'joker':'jokers'}</span><span>${cop(q.subtotal)}</span></div>`;
-    if (q.bundle.off) h += `<div><span>bundle of ${q.bundle.cards}+ jokers · −${Math.round(q.bundle.off*100)}%</span><span>−${cop(q.subtotal*q.bundle.off)}</span></div>`;
-    if (q.memberOff) h += `<div><span>member · −10%</span><span>−${cop(q.subtotal*q.memberOff)}</span></div>`;
+    if (q.addonLines.length) h += `<div><span>how we make it · ${q.addonLines.length} ${q.addonLines.length===1?'attachment':'attachments'}</span><span>${cop(q.addonSub)}</span></div>`;
+    if (q.bundle.off) h += `<div><span>bundle of ${q.bundle.cards}+ jokers · −${Math.round(q.bundle.off*100)}% on pieces</span><span>−${cop(q.bundleOffAmount)}</span></div>`;
+    if (q.memberOff) h += `<div><span>member · −10%</span><span>−${cop(q.memberOffAmount)}</span></div>`;
     if (q.membership){
       h += `<div><span>${q.membership.plan.name} · ${q.membership.term.months} × ${cop(q.membership.plan.monthly)}</span><span>${cop(q.membership.gross)}</span></div>`;
       if (q.membership.off) h += `<div><span>paid ahead · −${Math.round(q.membership.term.off*100)}%</span><span>−${cop(q.membership.off)}</span></div>`;
@@ -759,11 +880,10 @@
     body.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click', ()=>change(b.dataset.id, +b.dataset.d)));
     body.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click', ()=>{
       const id = b.dataset.rm, p = P.byId(id), was = cart.items[id];
-      snapshot(); delete cart.items[id]; P.saveCart(cart); if (selected===id) selected=null; render();
+      snapshot(); delete cart.items[id]; if (cart.addons) delete cart.addons[id]; P.saveCart(cart); if (selected===id) selected=null; render();
       toast(`${P.unitLabel(p,was)} removed`);
     }));
     const rmm = body.querySelector('[data-rm-m]'); if (rmm) rmm.addEventListener('click', ()=>{ const nm = cart.membership; snapshot(); cart.membership=null; P.saveCart(cart); render(); toast(`${nm} membership removed`); });
-    const rmo = body.querySelector('[data-rm-own]'); if (rmo) rmo.addEventListener('click', ()=>{ cart.ownMaterial=false; P.saveCart(cart); render(); });
     body.querySelectorAll('[data-term]').forEach(b=>b.addEventListener('click', ()=>{ cart.term = +b.dataset.term; P.saveCart(cart); render(); }));
     const nd = body.querySelector('[data-nudge]'); if (nd) nd.addEventListener('click', ()=>{ const id = nd.dataset.nudge; cart.items[id] = (cart.items[id]||0) + (+nd.dataset.k); P.saveCart(cart); selected = id; render(); });
     body.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click', ()=>{
@@ -790,7 +910,7 @@
 
   /* share: the whole hand travels inside a link */
   document.getElementById('share-hand').addEventListener('click', async ()=>{
-    const code = btoa(unescape(encodeURIComponent(JSON.stringify({ i:cart.items, m:cart.membership, t:cart.term, o:cart.ownMaterial ? 1 : 0 })))).replace(/=+$/,'');
+    const code = btoa(unescape(encodeURIComponent(JSON.stringify({ i:cart.items, a:cart.addons||{}, m:cart.membership, t:cart.term })))).replace(/=+$/,'');
     const url = location.origin + '/shop/?hand=' + code;
     try { await navigator.clipboard.writeText(url); toast('link copied — send it to your team'); }
     catch(e){ prompt('copy this link', url); }
@@ -804,8 +924,7 @@
   document.getElementById('close-hand').addEventListener('click', closeHand);
   document.getElementById('drawer-bg').addEventListener('click', closeHand);
   document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeHand(); closePlan(); } });
-  document.getElementById('clear-hand').addEventListener('click', ()=>{ snapshot(); cart = { items:{}, membership:null, term:cart.term, ownMaterial:false }; P.saveCart(cart); selected=null; render(); toast('your hand is empty'); });
-  document.getElementById('own').addEventListener('click', ()=>{ cart.ownMaterial = !cart.ownMaterial; P.saveCart(cart); render(); });
+  document.getElementById('clear-hand').addEventListener('click', ()=>{ snapshot(); cart = { items:{}, addons:{}, membership:null, term:cart.term }; P.saveCart(cart); selected=null; render(); toast('your hand is empty'); });
 
   /* bundle stacks: little fans of 3, 6, 9 */
   document.querySelectorAll('.stack-cards[data-n]').forEach(s=>{
@@ -829,7 +948,8 @@
   if (hp){ try {
     const d = JSON.parse(decodeURIComponent(escape(atob(hp))));
     const items = {}; Object.keys(d.i||{}).forEach(id=>{ const p = P.byId(id); if (p) items[id] = Math.max(0, Math.min(p.max, parseInt(d.i[id],10)||0)); });
-    cart = { items, membership: P.MEMBERSHIPS[d.m] ? d.m : null, term: P.TERMS.some(t=>t.months===d.t) ? d.t : 12, ownMaterial: !!d.o };
+    const addons = {}; Object.keys(d.a||{}).forEach(pid=>{ if (!items[pid]) return; const o = {}; Object.keys(d.a[pid]).forEach(aid=>{ const a = P.addonById(aid); if (a) o[aid] = Math.max(0, Math.min(a.max||1, parseInt(d.a[pid][aid],10)||0)); }); if (Object.keys(o).length) addons[pid] = o; });
+    cart = { items, addons, membership: P.MEMBERSHIPS[d.m] ? d.m : null, term: P.TERMS.some(t=>t.months===d.t) ? d.t : 12 };
     P.saveCart(cart); history.replaceState(null, '', '/shop/');
     setTimeout(openHand, 400);
   } catch(e){} }

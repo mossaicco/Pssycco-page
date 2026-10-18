@@ -24,10 +24,6 @@
       unit:['system','systems'], icon:'five',
       spec:'your brand’s proprietary ai system',
       text:'The documentation of your brand’s AI methodology: creative standards, visual language, prompting system, character consistency and production workflows.' },
-    { id:'register3d',  group:'ideas', name:'3d product register', price:1800000, max:12,
-      unit:['product','products'], icon:'outline',
-      spec:'digital future / one product',
-      text:'A 3D register of one of your brand’s products, built specifically for AI prompting so it can appear in any scene with full fidelity.' },
 
     { id:'clip',        group:'pieces', name:'ai clip', price:350000, max:48,
       unit:['clip','clips'], icon:'clip',
@@ -48,16 +44,26 @@
     { id:'signature',   group:'pieces', name:'non-ai signature video', price:4500000, max:12,
       unit:['signature video','signature videos'], icon:'signature',
       spec:'one filming day / real people, real places',
-      text:'Interviews, teams, projects, events, testimonials. One filming day becomes a full content capture session. Post-production not included.' },
+      text:'Interviews, teams, projects, events, testimonials. One filming day becomes a full content capture session. Post-production not included.' }
 
-    { id:'dayunconv',   group:'days', name:'unconventional filming day', price:750000, from:true, max:7,
-      unit:['day','days'], icon:'dayU',
-      spec:'one photographer, light setup',
-      text:'A lean, agile filming day with one photographer — for moments that need to be captured, not staged.' },
-    { id:'daytrad',     group:'days', name:'traditional filming day', price:1830000, from:true, max:7,
-      unit:['day','days'], icon:'dayT',
-      spec:'full crew, anywhere in colombia',
-      text:'A complete production day with crew. Production expenses are covered by the brand.' }
+  ];
+
+
+  /* the production layer: attached to a specific piece, never sold alone.
+     not jokers (they don't count toward bundles); members still take 10% off. */
+  var ADDONS = [
+    { id:'own',        name:'your own material', short:'your material', price:0, toggle:true,
+      unit:['your material','your material'], icon:'blank',
+      text:'You send the footage or photos you already have. We elevate them in post-production.' },
+    { id:'register3d', name:'3d product register', short:'3d register', price:1800000, max:12,
+      unit:['3d register','3d registers'], icon:'outline',
+      text:'A 3D register of your product, built for AI prompting so it appears in any scene with full fidelity.' },
+    { id:'dayU',       name:'unconventional filming day', short:'unconventional day', price:750000, from:true, max:7,
+      unit:['unconventional day','unconventional days'], icon:'dayU',
+      text:'One photographer, light setup — for moments that need to be captured, not staged.' },
+    { id:'dayT',       name:'traditional filming day', short:'traditional day', price:1830000, from:true, max:7,
+      unit:['traditional day','traditional days'], icon:'dayT',
+      text:'A full crew, anywhere in Colombia. Production expenses are covered by the brand.' }
   ];
 
   var BUNDLES = [ { cards:9, off:0.33 }, { cards:6, off:0.22 }, { cards:3, off:0.11 } ];
@@ -74,17 +80,29 @@
 
   /* cart = { items:{id:qty}, membership:'ultimate'|null, term:12, ownMaterial:bool }
      memberPlan = plan of a signed-in member (or null) */
+  function addonById(id){ return ADDONS.filter(function(a){ return a.id===id; })[0]; }
+
+  /* cart = { items:{id:qty}, addons:{pieceId:{own:1, dayT:2, ...}}, membership, term } */
   function quote(cart, memberPlan){
-    var lines = [], cards = 0, sub = 0;
+    var lines = [], cards = 0, sub = 0, addonLines = [], addonSub = 0;
     PRODUCTS.forEach(function(p){
       var q = (cart.items && cart.items[p.id]) || 0;
-      if (q > 0){ lines.push({ p:p, qty:q, total:p.price*q }); cards += q; sub += p.price*q; }
+      if (q > 0){
+        var line = { p:p, qty:q, total:p.price*q, addons:[] };
+        var att = (cart.addons && cart.addons[p.id]) || {};
+        ADDONS.forEach(function(a){
+          var n = att[a.id] || 0;
+          if (n > 0){ var al = { a:a, parent:p, qty:n, total:a.price*n }; line.addons.push(al); addonLines.push(al); addonSub += al.total; }
+        });
+        lines.push(line); cards += q; sub += p.price*q;
+      }
     });
     var b = bundleFor(cards);
     var isMember = !!(memberPlan || cart.membership);
-    var memberOff = (isMember && cards > 0) ? MEMBER_OFF : 0;
+    var memberOff = (isMember && (cards > 0 || addonSub > 0)) ? MEMBER_OFF : 0;
     var productsOff = Math.round(sub * (b.off + memberOff));
-    var productsTotal = sub - productsOff;
+    var addonsOff = Math.round(addonSub * memberOff);
+    var productsTotal = sub - productsOff + addonSub - addonsOff;
 
     var m = null;
     if (cart.membership && MEMBERSHIPS[cart.membership]){
@@ -96,8 +114,10 @@
     }
     return {
       lines:lines, cards:cards, subtotal:sub,
+      addonLines:addonLines, addonSub:addonSub, addonsOff:addonsOff,
       bundle:b, next:nextBundle(cards), memberOff:memberOff, memberSource: memberPlan ? 'account' : (cart.membership ? 'cart' : null),
-      productsOff:productsOff, productsTotal:productsTotal,
+      productsOff:productsOff + addonsOff, bundleOffAmount:Math.round(sub*b.off), memberOffAmount:Math.round(sub*memberOff)+addonsOff,
+      productsTotal:productsTotal,
       membership:m,
       total: productsTotal + (m ? m.total : 0)
     };
@@ -106,17 +126,24 @@
   function cop(n){
     return '$' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
-  function unitLabel(p, q){ return q + ' ' + (q === 1 ? p.unit[0] : p.unit[1]); }
+  function unitLabel(p, q){ return (p.toggle ? '' : q + ' ') + (q === 1 ? p.unit[0] : p.unit[1]); }
 
   var CART_KEY = 'pssycco.cart.v1';
   function loadCart(){
-    try { var c = JSON.parse(localStorage.getItem(CART_KEY)); if (c && c.items) return c; } catch(e){}
-    return { items:{}, membership:null, term:12, ownMaterial:false };
+    try {
+      var c = JSON.parse(localStorage.getItem(CART_KEY));
+      if (c && c.items){
+        Object.keys(c.items).forEach(function(id){ if (!PRODUCTS.some(function(p){ return p.id===id; })) delete c.items[id]; });
+        c.addons = c.addons || {}; delete c.ownMaterial;
+        return c;
+      }
+    } catch(e){}
+    return { items:{}, addons:{}, membership:null, term:12 };
   }
   function saveCart(c){ try { localStorage.setItem(CART_KEY, JSON.stringify(c)); } catch(e){} }
 
   window.PSSYCCO_PRICING = {
-    MEMBERSHIPS:MEMBERSHIPS, TERMS:TERMS, PRODUCTS:PRODUCTS, BUNDLES:BUNDLES, MEMBER_OFF:MEMBER_OFF,
+    MEMBERSHIPS:MEMBERSHIPS, TERMS:TERMS, PRODUCTS:PRODUCTS, ADDONS:ADDONS, addonById:addonById, BUNDLES:BUNDLES, MEMBER_OFF:MEMBER_OFF,
     quote:quote, cop:cop, unitLabel:unitLabel, loadCart:loadCart, saveCart:saveCart,
     byId: function(id){ return PRODUCTS.filter(function(p){ return p.id===id; })[0]; }
   };
