@@ -2,30 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>pssycco — shop</title>
+<link rel="stylesheet" href="/assets/plans.css">
 <style>
   :root{
-    --bg:#f4f2ec; --bg2:#ece8df; --ink:#4b4d45; --deep:#33352f;
-    --muted:#9a9d90; --line:rgba(51,53,47,0.12);
+    --bg:#f4f2ec; --bg2:#ece8df; --card:#faf9f5; --ink:#4b4d45; --deep:#33352f;
+    --muted:#9a9d90; --glyph:#878a80; --line:rgba(51,53,47,0.12);
     --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
-    --c-human:#b5674a; --c-spaces:#7089a0; --c-product:#748049; --c-lifestyle:#c2897e; --c-art:#c79a3d;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --bar-h:76px;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{background:var(--bg); scroll-behavior:smooth;}
-  body{
-    background:transparent; color:var(--ink); font-family:var(--sans);
-    -webkit-font-smoothing:antialiased;
-  }
-
+  html{background:var(--bg); scroll-behavior:smooth; scroll-padding-top:170px;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; overflow-x:hidden;}
   a{color:inherit;}
   img{display:block; max-width:100%;}
+  button{font-family:inherit; color:inherit; cursor:pointer;}
   ::selection{background:var(--ink); color:var(--bg);}
+  :focus-visible{outline:2px solid var(--ink); outline-offset:3px; border-radius:6px;}
+  h1,h2,h3{font-weight:400; text-transform:lowercase; line-height:1.12; letter-spacing:-0.01em;}
+  .num{font-variant-numeric:tabular-nums;}
 
+  /* ---------- top nav (same as discover) ---------- */
   nav.topnav{
     position:fixed; top:0; left:0; right:0; z-index:100;
     display:flex; align-items:center; justify-content:space-between;
-    padding:18px 5%; background:rgba(244,242,236,0.9); backdrop-filter:blur(6px);
+    padding:18px 5%; background:rgba(244,242,236,0.92); backdrop-filter:blur(6px);
     border-bottom:1px solid var(--line); font-size:12px; letter-spacing:0.06em;
   }
   nav.topnav .brand-logo{height:20px; width:auto; display:block;}
@@ -38,10 +41,8 @@
   }
   nav.topnav .nav-cta:hover{background:var(--deep); color:var(--bg);}
   nav.topnav .nav-cta.cta-members{display:none;}
-  /* DISCOVER / SHOP — two tabs centred in the top bar, same pill as the call-to-action buttons */
   nav.topnav .site-tabs{
-    margin-left:28px; margin-right:auto;
-    display:flex; gap:4px; padding:4px; border-radius:20px;
+    margin-left:28px; margin-right:auto; display:flex; gap:4px; padding:4px; border-radius:20px;
     background:rgba(51,53,47,0.06); border:1px solid var(--line);
   }
   nav.topnav .site-tabs a{
@@ -51,43 +52,287 @@
   }
   nav.topnav .site-tabs a:hover{color:var(--ink);}
   nav.topnav .site-tabs a.active{background:var(--ink); color:var(--bg);}
-  @media (max-width:1180px){ nav.topnav .links a[href="#faq"], nav.topnav .links a[href="#sistema"]{display:none;} }
+  @media (max-width:900px){
+    nav.topnav .links a:not(.nav-cta){display:none;}
+    nav.topnav .nav-cta.cta-call{display:none;}
+    nav.topnav .nav-cta.cta-members{display:inline-block; margin-left:0;}
+  }
   @media (max-width:480px){
     nav.topnav{padding:14px 16px;}
     nav.topnav .site-tabs{margin-left:14px;}
     nav.topnav .site-tabs a{padding:7px 13px;}
     nav.topnav .nav-cta.cta-members{padding:9px 14px;}
   }
-  @media (max-width:900px){
-    nav.topnav .links a:not(.nav-cta){display:none;}
-    nav.topnav .nav-cta.cta-call{display:none;}
-    nav.topnav .nav-cta.cta-members{display:inline-block; margin-left:0;}
+
+  /* ---------- the hand: running total bar ---------- */
+  .handbar{
+    position:fixed; left:0; right:0; top:65px; z-index:90;
+    background:rgba(250,249,245,0.94); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .handbar-in{
+    display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:34px;
+    padding:12px 5%; min-height:var(--bar-h);
+  }
+  .fan{position:relative; width:150px; height:52px; display:flex; align-items:center; --step:9px;}
+  .fan .mini{
+    position:absolute; left:6px; top:0; width:36px; height:52px; border-radius:4px;
+    background:url('/assets/shop/joker.webp') center/cover no-repeat;
+    box-shadow:0 2px 6px rgba(51,53,47,0.18); transform-origin:50% 120%;
+    transition:transform .5s var(--ease), opacity .3s ease;
+  }
+  .fan .empty-slot{
+    position:absolute; left:6px; top:0; width:36px; height:52px; border-radius:4px;
+    border:1px dashed rgba(51,53,47,0.28);
+  }
+  .fan-count{position:absolute; left:58px; font-size:12px; color:var(--muted); white-space:nowrap; letter-spacing:0.02em; transition:left .5s var(--ease);}
+  .fan-n{display:none;}
+  .fan-count b{color:var(--ink); font-weight:700;}
+
+  .track{display:flex; flex-direction:column; gap:8px; min-width:0;}
+  .track-slots{display:grid; grid-template-columns:repeat(9,1fr); gap:5px; max-width:420px;}
+  .track-slots i{
+    height:5px; border-radius:3px; background:rgba(51,53,47,0.1); transition:background .4s ease;
+  }
+  .track-slots i.on{background:var(--ink);}
+  .track-slots i.tier{position:relative;}
+  .track-msg{font-size:12px; color:var(--muted); letter-spacing:0.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .track-msg b{color:var(--ink);}
+
+  .bar-right{display:flex; align-items:center; gap:18px;}
+  .member-chip{
+    font-size:11.5px; color:var(--muted); text-decoration:none; letter-spacing:0.02em; white-space:nowrap;
+    border:1px solid var(--line); padding:7px 12px; border-radius:16px; background:transparent;
+  }
+  .member-chip:hover{color:var(--ink); border-color:var(--ink);}
+  .member-chip.is-member{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .total{display:flex; flex-direction:column; align-items:flex-end; line-height:1.2;}
+  .total small{font-size:11px; color:var(--muted); text-decoration:line-through; min-height:13px;}
+  .total strong{font-size:20px; font-weight:400; letter-spacing:-0.01em;}
+  .hand-btn{
+    background:var(--ink); color:var(--bg); border:none; padding:12px 20px; border-radius:22px;
+    font-size:12.5px; letter-spacing:0.04em; text-transform:lowercase; white-space:nowrap;
+  }
+  .hand-btn:hover{background:var(--deep);}
+  .hand-btn:disabled{opacity:.35; cursor:default;}
+
+  @media (max-width:860px){
+    .handbar{top:61px;}
+    .handbar-in{grid-template-columns:auto 1fr auto; gap:14px; padding:10px 16px; min-height:64px;}
+    .fan{width:48px; height:44px; --step:2.5px;}
+    .fan .mini,.fan .empty-slot{width:30px; height:44px;}
+    .fan-count{display:none;}
+    .fan-n{display:flex; position:absolute; right:-4px; bottom:-4px; z-index:2; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:var(--ink); color:var(--bg); font-size:11px; align-items:center; justify-content:center;}
+    .track-slots{gap:3px;}
+    .track-msg{font-size:11px; white-space:normal; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;}
+    .member-chip{display:none;}
+    .total strong{font-size:17px;}
+    .total small{font-size:10px;}
+    .bar-right{gap:12px;}
+    .hand-btn{padding:11px 15px;}
+  }
+  @media (max-width:420px){ .total small{display:none;} .hand-btn span{display:none;} }
+
+  /* ---------- hero ---------- */
+  main{padding-top:150px;}
+  .hero{
+    display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr); align-items:center; gap:6%;
+    padding:90px 8% 70px; max-width:1320px; margin:0 auto;
+  }
+  .hero h1{font-size:clamp(48px,8vw,104px); letter-spacing:-0.03em;}
+  .hero p{font-size:18px; line-height:1.75; color:var(--ink); max-width:480px; margin-top:28px;}
+  .hero .member-line{font-size:14px; color:var(--muted); margin-top:18px;}
+  .hero .member-line a{color:var(--ink);}
+  .hero-card{display:flex; justify-content:center; perspective:1200px;}
+  .hero-card img{
+    width:min(300px,62vw); height:auto; border-radius:14px;
+    box-shadow:0 40px 70px -30px rgba(51,53,47,0.45), 0 2px 6px rgba(51,53,47,0.12);
+    transform:rotate(-4deg); transition:transform .8s var(--ease); will-change:transform;
   }
 
-  section{padding:150px 8% 110px;}
-  .narrow{max-width:760px; margin:0 auto;}
-  .center{text-align:center;}
+  /* the three bundle stacks */
+  .bundles{
+    max-width:1320px; margin:0 auto; padding:10px 8% 40px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:20px;
+  }
+  .stack{display:flex; align-items:center; gap:18px; padding:20px 0; border-top:1px solid var(--line);}
+  .stack-cards{position:relative; width:64px; height:58px; flex:none;}
+  .stack-cards span{
+    position:absolute; left:14px; top:2px; width:36px; height:52px; border-radius:4px;
+    background:url('/assets/shop/joker.webp') center/cover no-repeat; box-shadow:0 2px 5px rgba(51,53,47,0.16);
+    transform-origin:50% 120%;
+  }
+  .stack-cards.member span{background:var(--ink); box-shadow:none;}
+  .stack-cards.member span::after{content:''; position:absolute; inset:9px 7px; border-radius:50%; background:var(--bg); opacity:.18;}
+  .stack b{display:block; font-size:22px; font-weight:400; letter-spacing:-0.01em;}
+  .stack small{font-size:12.5px; color:var(--muted);}
+  .stack.reached{border-top-color:var(--ink);}
+  @media (max-width:860px){ .bundles{grid-template-columns:1fr 1fr; gap:0 18px;} }
 
-  .kicker{font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:20px;}
-  h1,h2,h3{font-weight:400; text-transform:lowercase; line-height:1.15; letter-spacing:-0.01em;}
-  h1{font-size:clamp(38px,6.5vw,76px);}
-  h2{font-size:clamp(30px,5vw,54px);}
-  h3{font-size:22px;}
-  p{font-size:17px; line-height:1.85; color:var(--ink);}
-  p.muted{color:var(--muted);}
-  .signature{font-size:12px; letter-spacing:0.05em; color:var(--muted); text-transform:lowercase;}
-  .signature b{color:var(--ink); font-weight:700;}
+  /* ---------- catalog ---------- */
+  .group{max-width:1320px; margin:0 auto; padding:80px 8% 20px;}
+  .group-head{display:flex; align-items:baseline; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:34px;}
+  .group-head h2{font-size:clamp(34px,5vw,56px);}
+  .group-head p{font-size:15px; color:var(--muted); max-width:420px; line-height:1.7;}
+  .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;}
+  .grid.two{grid-template-columns:repeat(2,minmax(0,1fr));}
+  @media (max-width:980px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  @media (max-width:760px){ .hero{grid-template-columns:1fr; gap:46px;} .hero-card img{width:min(220px,56vw); transform:rotate(-6deg);} .hero p{font-size:17px;} }
+  @media (max-width:640px){ .grid,.grid.two{grid-template-columns:1fr;} .group{padding:64px 16px 10px;} .hero{padding:60px 16px 40px;} .bundles{padding:10px 16px 30px;} }
 
-  .shop-hero{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
-  .shop-hero p{max-width:520px; margin:26px auto 0;}
-  .shop-hero .fade{opacity:0; transform:translateY(20px); animation:rise 1.2s cubic-bezier(.22,.61,.36,1) forwards;}
-  .shop-hero .fade:nth-child(2){animation-delay:.15s;}
-  .shop-hero .fade:nth-child(3){animation-delay:.3s;}
-  @keyframes rise{to{opacity:1; transform:none;}}
-  footer{padding:40px 8% 60px; text-align:center;}
+  .piece{
+    position:relative; background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:26px 24px 22px; display:flex; flex-direction:column; gap:14px;
+    transition:border-color .3s ease, box-shadow .3s ease;
+  }
+  .piece.has{border-color:rgba(51,53,47,0.55); box-shadow:0 18px 40px -26px rgba(51,53,47,0.35);}
+  .piece-top{display:flex; align-items:center; gap:16px;}
+  .medal{
+    width:64px; height:64px; flex:none; border-radius:50%; background:#f7f6f2;
+    border:1px solid rgba(51,53,47,0.08);
+    box-shadow:0 10px 22px -8px rgba(51,53,47,0.22), inset 0 1px 0 #fff;
+    display:flex; align-items:center; justify-content:center; color:var(--glyph);
+  }
+  .medal svg{width:46%; height:46%; fill:currentColor;}
+  .medal .blank{width:22px; height:30px; border-radius:3px; background:#fff; border:1px solid rgba(51,53,47,0.18); box-shadow:0 2px 5px rgba(51,53,47,0.12);}
+  .medal .five{display:grid; grid-template-columns:repeat(3,10px); gap:3px; justify-content:center;}
+  .medal .five svg{width:10px; height:10px;}
+  .medal svg.outline{fill:none; stroke:currentColor; stroke-width:14;}
+  .piece-name h3{font-size:19px; letter-spacing:-0.005em;}
+  .piece-name .spec{font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .piece-text{font-size:13.5px; line-height:1.65; color:var(--ink); opacity:.85; flex:1;}
+  .piece-price{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .piece-price .p{font-size:22px; letter-spacing:-0.01em;}
+  .piece-price .from{font-size:12px; color:var(--muted);}
+  .piece-price .mp{font-size:12px; color:var(--muted);}
+  .piece-price .mp b{color:var(--ink); font-weight:700;}
+  .stepper{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px; border-top:1px solid var(--line); padding-top:16px;}
+  .stepper button{
+    width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:transparent;
+    font-size:20px; line-height:1; display:flex; align-items:center; justify-content:center;
+    transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .stepper button.plus{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .stepper button.plus:hover{background:var(--deep);}
+  .stepper button.minus:hover{border-color:var(--ink);}
+  .stepper button:disabled{opacity:.3; cursor:default;}
+  .stepper output{font-size:14px; text-align:center; flex:1; color:var(--muted); letter-spacing:0.01em;}
+  .piece.has .stepper output{color:var(--ink);}
+  .piece .jk{
+    position:absolute; top:18px; right:18px; font-size:11px; color:var(--bg); background:var(--ink);
+    border-radius:12px; padding:4px 9px; opacity:0; transform:scale(.8); transition:opacity .3s ease, transform .3s var(--ease);
+  }
+  .piece.has .jk{opacity:1; transform:none;}
+
+  .own{
+    display:flex; align-items:center; justify-content:space-between; gap:20px; margin-top:18px;
+    padding:20px 24px; border:1px dashed rgba(51,53,47,0.25); border-radius:18px;
+  }
+  .own p{font-size:14px; line-height:1.6;}
+  .own p span{display:block; color:var(--muted); font-size:12.5px;}
+  .switch{position:relative; width:52px; height:30px; flex:none; border-radius:16px; border:none; background:rgba(51,53,47,0.16); transition:background .25s ease;}
+  .switch::after{content:''; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.15); transition:transform .3s var(--ease);}
+  .switch[aria-checked="true"]{background:var(--ink);}
+  .switch[aria-checked="true"]::after{transform:translateX(22px);}
+
+  /* ---------- memberships ---------- */
+  .memberships{max-width:1320px; margin:0 auto; padding:120px 8% 40px;}
+  .terms{display:inline-flex; gap:4px; padding:4px; border-radius:24px; border:1px solid var(--line); background:rgba(51,53,47,0.05); margin-bottom:34px;}
+  .terms button{border:none; background:transparent; padding:10px 18px; border-radius:20px; font-size:13px; color:var(--muted); letter-spacing:0.02em;}
+  .terms button small{font-size:11px; margin-left:6px;}
+  .terms button[aria-pressed="true"]{background:var(--ink); color:var(--bg);}
+  .plans{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;}
+  @media (max-width:980px){ .plans{grid-template-columns:1fr;} }
+  @media (max-width:640px){ .memberships{padding:90px 16px 30px;} .terms{display:flex;} .terms button{flex:1; padding:10px 6px;} }
+  .plan-card{
+    background:var(--card); border:1px solid var(--line); border-radius:18px; padding:30px 28px 26px;
+    display:flex; flex-direction:column; position:relative; transition:border-color .3s ease, box-shadow .3s ease;
+  }
+  .plan-card.mid{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .plan-card.chosen{box-shadow:0 0 0 2px var(--ink), 0 24px 50px -30px rgba(51,53,47,0.5);}
+  .plan-card.mid.chosen{box-shadow:0 0 0 2px var(--bg), 0 0 0 4px var(--ink), 0 24px 50px -30px rgba(51,53,47,0.5);}
+  .plan-card .ptag{position:absolute; top:24px; right:24px; font-size:11px; letter-spacing:0.04em; opacity:.7;}
+  .plan-card h3{font-size:30px;}
+  .plan-card .psub{font-size:13px; opacity:.65; margin:8px 0 26px; line-height:1.5;}
+  .plan-card .pprice{font-size:34px; letter-spacing:-0.02em;}
+  .plan-card .pprice small{font-size:13px; opacity:.6;}
+  .plan-card .pterm{font-size:12.5px; opacity:.65; margin:6px 0 24px; min-height:18px;}
+  .plan-card ul{list-style:none; flex:1; margin-bottom:24px;}
+  .plan-card li{font-size:13.5px; padding:11px 0; border-top:1px solid rgba(127,127,127,0.22);}
+  .plan-card li:first-child{border-top:none;}
+  .plan-actions{display:flex; gap:10px;}
+  .plan-actions button{
+    flex:1; padding:13px 10px; border-radius:22px; font-size:12.5px; letter-spacing:0.04em; text-transform:lowercase;
+    border:1px solid currentColor; background:transparent;
+  }
+  .plan-actions .take{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .plan-card.mid .plan-actions .take{background:var(--bg); color:var(--ink); border-color:var(--bg);}
+  .plan-card .discover-link{display:inline-block; margin-top:14px; font-size:12px; opacity:.6; text-decoration:none;}
+  .plan-card .discover-link:hover{opacity:1; text-decoration:underline;}
+  .mem-note{font-size:13.5px; color:var(--muted); margin-top:26px; line-height:1.7; max-width:640px;}
+
+  /* ---------- the hand drawer ---------- */
+  .drawer-bg{position:fixed; inset:0; z-index:200; background:rgba(51,53,47,0.45); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .3s ease;}
+  .drawer{
+    position:fixed; top:0; right:0; bottom:0; z-index:210; width:min(460px,100%);
+    background:var(--bg); display:flex; flex-direction:column;
+    transform:translateX(100%); transition:transform .45s var(--ease), visibility 0s .45s; visibility:hidden;
+  }
+  body.drawer-open .drawer-bg{opacity:1; pointer-events:auto;}
+  body.drawer-open .drawer{transform:none; visibility:visible; transition:transform .45s var(--ease); box-shadow:-30px 0 60px rgba(0,0,0,0.12);}
+  @media (max-width:640px){
+    .drawer{top:auto; left:0; width:100%; max-height:88vh; border-radius:22px 22px 0 0; transform:translateY(100%);}
+  }
+  .drawer-head{display:flex; align-items:center; justify-content:space-between; padding:26px 28px 18px; border-bottom:1px solid var(--line);}
+  .drawer-head h2{font-size:30px;}
+  .drawer-head button{background:none; border:none; font-size:28px; line-height:1; color:var(--muted);}
+  .drawer-body{flex:1; overflow-y:auto; padding:8px 28px 20px;}
+  .dline{display:grid; grid-template-columns:40px 1fr auto; gap:14px; align-items:center; padding:16px 0; border-bottom:1px solid var(--line);}
+  .dline .medal{width:40px; height:40px; box-shadow:0 6px 14px -6px rgba(51,53,47,0.25);}
+  .dline .medal .blank{width:13px; height:18px;}
+  .dline .medal .five{grid-template-columns:repeat(3,6px); gap:2px;}
+  .dline .medal .five svg{width:6px; height:6px;}
+  .dline .dn{font-size:14px;}
+  .dline .dq{display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:var(--muted);}
+  .dline .dq button{width:26px; height:26px; border-radius:50%; border:1px solid var(--line); background:transparent; font-size:14px; line-height:1;}
+  .dline .dp{font-size:14px; text-align:right;}
+  .dline.member .medal{background:var(--ink); color:var(--bg); font-size:11px;}
+  .dsum{padding:18px 0 4px;}
+  .dsum div{display:flex; justify-content:space-between; font-size:13.5px; padding:6px 0; color:var(--muted);}
+  .dsum div.grand{color:var(--ink); font-size:22px; padding-top:14px; margin-top:8px; border-top:1px solid var(--line);}
+  .dempty{padding:40px 0; text-align:center; color:var(--muted); font-size:14px; line-height:1.7;}
+  .dempty .blank-card{width:60px; height:86px; margin:0 auto 20px; border-radius:6px; border:1px dashed rgba(51,53,47,0.3);}
+  .drawer-foot{padding:18px 28px calc(22px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); display:flex; flex-direction:column; gap:12px;}
+  .drawer-foot a.go{
+    display:block; text-align:center; background:var(--ink); color:var(--bg); text-decoration:none;
+    padding:16px; border-radius:26px; font-size:13.5px; letter-spacing:0.04em; text-transform:lowercase;
+  }
+  .drawer-foot a.go[aria-disabled="true"]{opacity:.35; pointer-events:none;}
+  .drawer-foot .clear{background:none; border:none; font-size:12px; color:var(--muted); text-decoration:underline;}
+
+  /* flying card */
+  .flying{
+    position:fixed; z-index:150; width:46px; height:66px; border-radius:5px; pointer-events:none;
+    background:url('/assets/shop/joker.webp') center/cover no-repeat; box-shadow:0 10px 24px rgba(51,53,47,0.3);
+  }
+  .bump{animation:bump .5s var(--ease);}
+  @keyframes bump{40%{transform:scale(1.08);} }
+
+  /* closing */
+  footer.closing{padding:130px 6% 120px; text-align:center;}
+  .closing-mark{display:inline-flex; flex-direction:column; align-items:center; gap:20px;}
+  .closing-glyphs{display:flex; align-items:center; justify-content:center; gap:clamp(16px,2.6vw,32px); color:var(--glyph);}
+  .closing-glyphs svg{width:clamp(20px,2.2vw,27px); height:auto; display:block; fill:currentColor;}
+  .closing-sign{font-size:clamp(12px,1vw,13px); line-height:1; letter-spacing:0.01em; color:var(--glyph);}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important; animation:none !important;}
+    html{scroll-behavior:auto;}
+  }
 </style>
 </head>
 <body>
+
 <nav class="topnav">
   <a href="/"><img class="brand-logo" src="/assets/logo_glyph.png" alt="pssycco"></a>
   <span class="site-tabs">
@@ -95,18 +340,392 @@
     <a class="active" href="/shop/" aria-current="page">shop</a>
   </span>
   <span class="links">
+    <a href="#immaterial">immaterial</a>
+    <a href="#material">material</a>
+    <a href="#memberships">memberships</a>
     <a href="/members/">members</a>
     <a class="nav-cta cta-call" href="mailto:mossaicco@gmail.com?subject=Book%20a%20call%20-%20pssycco">book a call</a>
     <a class="nav-cta cta-members" href="/members/">members</a>
   </span>
 </nav>
 
-<section class="shop-hero">
-  <div class="kicker fade">pssycco shop</div>
-  <h1 class="fade">the shop.</h1>
-  <p class="muted fade">opening soon.</p>
-</section>
+<div class="handbar" role="region" aria-label="your hand">
+  <div class="handbar-in">
+    <div class="fan" id="fan" aria-hidden="true"></div>
+    <div class="track">
+      <div class="track-slots" id="track" aria-hidden="true"></div>
+      <div class="track-msg" id="track-msg" aria-live="polite"></div>
+    </div>
+    <div class="bar-right">
+      <a class="member-chip" id="member-chip" href="/members/">member? sign in</a>
+      <div class="total num" aria-live="polite"><small id="bar-was"></small><strong id="bar-total">$0</strong></div>
+      <button class="hand-btn" id="open-hand" type="button">your hand <span id="hand-n"></span></button>
+    </div>
+  </div>
+</div>
 
-<footer><p class="signature">a <b>mossaicco</b> company / kingdom of shapes</p></footer>
+<main>
+  <section class="hero">
+    <div>
+      <h1>the shop.</h1>
+      <p>Every piece you add is a joker. Collect three, six or nine and the price drops on its own — the more of the house you take, the less each piece costs.</p>
+      <p class="member-line" id="hero-member">Already a member? <a href="/members/">Sign in</a> and 10% comes off every piece.</p>
+    </div>
+    <div class="hero-card"><img id="hero-joker" src="/assets/shop/joker.webp" alt="the pssycco joker card" width="480" height="720"></div>
+  </section>
+
+  <div class="bundles" id="bundles">
+    <div class="stack" data-tier="3"><div class="stack-cards" data-n="3"></div><div><b>11% off</b><small>3 jokers</small></div></div>
+    <div class="stack" data-tier="6"><div class="stack-cards" data-n="6"></div><div><b>22% off</b><small>6 jokers</small></div></div>
+    <div class="stack" data-tier="9"><div class="stack-cards" data-n="9"></div><div><b>33% off</b><small>9 jokers or more</small></div></div>
+    <div class="stack" data-tier="member"><div class="stack-cards member" data-n="1"></div><div><b>+10% off</b><small>for members, on top</small></div></div>
+  </div>
+
+  <section class="group" id="immaterial">
+    <div class="group-head">
+      <h2>immaterial.</h2>
+      <p>The thinking behind the work: direction, systems and the digital twins your products need to live inside AI.</p>
+    </div>
+    <div class="grid" data-group="ideas"></div>
+  </section>
+
+  <section class="group" id="material">
+    <div class="group-head">
+      <h2>material.</h2>
+      <p>The five products, one by one. Each shape is a format — the same shapes you'll find across every pssycco campaign.</p>
+    </div>
+    <div class="grid" data-group="pieces"></div>
+  </section>
+
+  <section class="group" id="days">
+    <div class="group-head">
+      <h2>filming days.</h2>
+      <p>For non-AI pieces we either film with you, or we elevate the material you already have.</p>
+    </div>
+    <div class="grid two" data-group="days"></div>
+    <div class="own">
+      <p>You bring your own material<span>We elevate it with our post-production. $0 extra.</span></p>
+      <button class="switch" id="own" type="button" role="switch" aria-checked="false" aria-label="I'll bring my own material"></button>
+    </div>
+  </section>
+
+  <section class="memberships" id="memberships">
+    <div class="group-head">
+      <h2>memberships.</h2>
+      <p>Or let the house run your whole year. Pay ahead and the year gets lighter.</p>
+    </div>
+    <div class="terms" id="terms" role="group" aria-label="pay ahead"></div>
+    <div class="plans" id="plans"></div>
+    <p class="mem-note">Memberships are paid ahead for the term you choose (three months minimum). While you hold one, every extra piece in your hand comes with 10% off.</p>
+  </section>
+</main>
+
+<footer class="closing">
+  <div class="closing-mark">
+    <div class="closing-glyphs" id="closing-glyphs" aria-hidden="true"></div>
+    <p class="closing-sign">a <b>mossaicco</b> company</p>
+  </div>
+</footer>
+
+<!-- the hand -->
+<div class="drawer-bg" id="drawer-bg"></div>
+<aside class="drawer" id="drawer" aria-label="your hand" aria-hidden="true">
+  <div class="drawer-head"><h2>your hand.</h2><button type="button" id="close-hand" aria-label="close">×</button></div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot">
+    <a class="go" id="go-contract" href="/shop/contrato.html">review &amp; download your contract</a>
+    <button class="clear" id="clear-hand" type="button">empty my hand</button>
+  </div>
+</aside>
+
+<!-- membership detail (same content as discover) -->
+<div id="plan-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-panel">
+    <button class="modal-close" id="modal-close" aria-label="close">×</button>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="/assets/shop/glyphs.js"></script>
+<script src="/assets/shop/pricing.js"></script>
+<script src="/assets/plans.js"></script>
+<script>
+(function(){
+  const P = window.PSSYCCO_PRICING, cop = P.cop;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let cart = P.loadCart();
+  window.PSSYCCO_MEMBER = window.PSSYCCO_MEMBER || null; // set by firebase module below
+
+  /* ---------- icons ---------- */
+  function medal(icon){
+    if (icon === 'blank') return '<div class="medal"><span class="blank"></span></div>';
+    if (icon === 'five')  return '<div class="medal"><span class="five">' + ['brandfilm','short','clip','photostudio','signature'].map(k=>glyphSVG(k,'g')).join('') + '</span></div>';
+    if (icon === 'outline') { const g = PSSYCCO_GLYPHS.signature; return '<div class="medal"><svg class="outline" viewBox="-10 -10 '+(g.s+20)+' '+(g.s+20)+'"><path d="'+g.d+'"/></svg></div>'; }
+    if (icon === 'dayU') return '<div class="medal"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>';
+    if (icon === 'dayT') return '<div class="medal"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2.5"/><path d="M17 10.5l4-2.5v8l-4-2.5z"/></svg></div>';
+    return '<div class="medal">' + glyphSVG(icon,'g') + '</div>';
+  }
+
+  /* ---------- catalog ---------- */
+  function renderCatalog(){
+    document.querySelectorAll('.grid[data-group]').forEach(grid=>{
+      const group = grid.dataset.group;
+      grid.innerHTML = P.PRODUCTS.filter(p=>p.group===group).map(p=>`
+        <article class="piece" data-id="${p.id}">
+          <span class="jk num"></span>
+          <div class="piece-top">${medal(p.icon)}
+            <div class="piece-name"><h3>${p.name}</h3><div class="spec">${p.spec}</div></div>
+          </div>
+          <p class="piece-text">${p.text}</p>
+          <div class="piece-price">${p.from?'<span class="from">from</span>':''}<span class="p num">${cop(p.price)}</span><span class="mp num"></span></div>
+          <div class="stepper">
+            <button class="minus" type="button" aria-label="remove one ${p.unit[0]}">−</button>
+            <output class="num" aria-live="polite"></output>
+            <button class="plus" type="button" aria-label="add one ${p.unit[0]}">+</button>
+          </div>
+        </article>`).join('');
+    });
+    document.querySelectorAll('.piece').forEach(el=>{
+      const id = el.dataset.id;
+      el.querySelector('.plus').addEventListener('click', (e)=>change(id, +1, el.querySelector('.medal')));
+      el.querySelector('.minus').addEventListener('click', ()=>change(id, -1));
+    });
+  }
+
+  function change(id, d, fromEl){
+    const p = P.byId(id);
+    const q = Math.max(0, Math.min(p.max, (cart.items[id]||0) + d));
+    if (q === (cart.items[id]||0)) return;
+    if (q) cart.items[id] = q; else delete cart.items[id];
+    P.saveCart(cart);
+    if (d > 0 && fromEl) fly(fromEl);
+    render();
+  }
+
+  /* the one moment: a card leaves the piece and lands in your hand */
+  function fly(fromEl){
+    if (reduce) return;
+    const a = fromEl.getBoundingClientRect();
+    const fan = document.getElementById('fan').getBoundingClientRect();
+    const c = document.createElement('div'); c.className = 'flying';
+    c.style.left = (a.left + a.width/2 - 23) + 'px'; c.style.top = (a.top + a.height/2 - 33) + 'px';
+    document.body.appendChild(c);
+    const dx = (fan.left + 10) - (a.left + a.width/2 - 23), dy = (fan.top - 6) - (a.top + a.height/2 - 33);
+    const anim = c.animate([
+      { transform:'translate(0,0) rotate(0deg) scale(.6)', opacity:0 },
+      { transform:`translate(${dx*0.35}px,${dy*0.55 - 60}px) rotate(-14deg) scale(1.05)`, opacity:1, offset:.35 },
+      { transform:`translate(${dx}px,${dy}px) rotate(8deg) scale(.72)`, opacity:1 }
+    ], { duration:720, easing:'cubic-bezier(.3,.7,.3,1)' });
+    anim.onfinish = ()=>{ c.remove(); const f = document.getElementById('fan'); f.classList.remove('bump'); void f.offsetWidth; f.classList.add('bump'); };
+  }
+
+  /* ---------- memberships ---------- */
+  function renderTerms(){
+    document.getElementById('terms').innerHTML = P.TERMS.map(t=>
+      `<button type="button" data-m="${t.months}" aria-pressed="${cart.term===t.months}">${t.months} months${t.off?`<small>−${Math.round(t.off*100)}%</small>`:''}</button>`).join('');
+    document.querySelectorAll('#terms button').forEach(b=>b.addEventListener('click', ()=>{
+      cart.term = +b.dataset.m; P.saveCart(cart); render();
+    }));
+  }
+  function renderPlans(){
+    const t = P.TERMS.find(x=>x.months===cart.term) || P.TERMS[2];
+    document.getElementById('plans').innerHTML = Object.keys(P.MEMBERSHIPS).map(k=>{
+      const m = P.MEMBERSHIPS[k], chosen = cart.membership===k;
+      const monthly = m.monthly*(1-t.off), total = monthly*t.months;
+      return `<article class="plan-card ${k==='ultimate'?'mid':''} ${chosen?'chosen':''}" data-plan="${k}">
+        ${m.tag?`<span class="ptag">${m.tag}</span>`:''}
+        <h3>${m.name}</h3><div class="psub">${m.sub}</div>
+        <div class="pprice num">${cop(monthly)} <small>/ month</small></div>
+        <div class="pterm num">${cop(total)} for ${t.months} months${t.off?` · you save ${cop(m.monthly*t.months - total)}`:''}</div>
+        <ul>${m.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>
+        <div class="plan-actions">
+          <button type="button" class="detail">full plan</button>
+          <button type="button" class="take" aria-pressed="${chosen}">${chosen?'in your hand ✓':'add to hand'}</button>
+        </div>
+        <a class="discover-link" href="/#membresias">see it on discover</a>
+      </article>`;
+    }).join('');
+    document.querySelectorAll('.plan-card').forEach(card=>{
+      const k = card.dataset.plan;
+      card.querySelector('.detail').addEventListener('click', ()=>openPlan(k));
+      card.querySelector('.take').addEventListener('click', (e)=>{
+        const adding = cart.membership !== k;
+        cart.membership = adding ? k : null; P.saveCart(cart);
+        render();
+        if (adding){ document.getElementById('open-hand').classList.add('bump'); setTimeout(()=>document.getElementById('open-hand').classList.remove('bump'),500); }
+      });
+    });
+  }
+
+  const modal = document.getElementById('plan-modal'), modalBody = document.getElementById('modal-body');
+  function openPlan(k){
+    const chosen = cart.membership===k;
+    modalBody.innerHTML = (window.PSSYCCO_PLANS[k]||'') +
+      `<div class="mshop"><button type="button" class="mshop-btn" id="mtake" style="border:none">${chosen?'in your hand ✓':'add '+k+' to my hand'}</button><span>${cop(P.MEMBERSHIPS[k].monthly)} / month</span></div>`;
+    modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; modal.scrollTop=0;
+    document.getElementById('mtake').addEventListener('click', ()=>{ cart.membership = k; P.saveCart(cart); render(); closePlan(); });
+    modalBody.querySelectorAll('.mvideo').forEach(v=>v.addEventListener('click', ()=>{ const vid=v.querySelector('video'); vid.muted=false; vid.currentTime=0; vid.play(); }));
+  }
+  function closePlan(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  document.getElementById('modal-close').addEventListener('click', closePlan);
+  modal.addEventListener('click', e=>{ if(e.target===modal) closePlan(); });
+
+  /* ---------- the bar, the fan, the drawer ---------- */
+  function renderFan(n){
+    const fan = document.getElementById('fan');
+    const shown = Math.min(n, 9);
+    let html = '';
+    if (!shown) html = '<span class="empty-slot"></span>';
+    for (let i=0;i<shown;i++){
+      const spread = shown>1 ? (i - (shown-1)/2) : 0;
+      html += `<span class="mini" style="transform:translateX(calc(${i} * var(--step))) rotate(${spread*5}deg)"></span>`;
+    }
+    html += (n ? `<span class="fan-n num">${n}</span>` : '') + `<span class="fan-count" style="left:${50 + Math.max(0,shown-1)*9}px"><b class="num">${n}</b> ${n===1?'joker':'jokers'}</span>`;
+    fan.innerHTML = html;
+  }
+
+  function render(){
+    const q = P.quote(cart, window.PSSYCCO_MEMBER);
+    const member = window.PSSYCCO_MEMBER;
+
+    // catalog state
+    document.querySelectorAll('.piece').forEach(el=>{
+      const p = P.byId(el.dataset.id), n = cart.items[p.id]||0;
+      el.classList.toggle('has', n>0);
+      el.querySelector('.jk').textContent = n ? (n + (n===1?' joker':' jokers')) : '';
+      el.querySelector('output').textContent = n ? P.unitLabel(p,n) : ('0 ' + p.unit[1]);
+      el.querySelector('.minus').disabled = n===0;
+      el.querySelector('.plus').disabled = n>=p.max;
+      el.querySelector('.mp').innerHTML = (member || cart.membership) ? `<b>${cop(p.price*(1-P.MEMBER_OFF))}</b> as member` : '';
+    });
+
+    // fan + track
+    renderFan(q.cards);
+    const slots = document.getElementById('track');
+    slots.innerHTML = Array.from({length:9},(_,i)=>`<i class="${i<q.cards?'on':''}"></i>`).join('');
+    let msg;
+    if (!q.cards && !q.membership) msg = 'add a piece — every piece is a joker';
+    else if (q.next) msg = `<b>${q.next.cards - q.cards}</b> more for <b>${Math.round(q.next.off*100)}% off</b>` + (q.bundle.off ? ` · ${Math.round(q.bundle.off*100)}% applied` : '');
+    else msg = `<b>${Math.round(q.bundle.off*100)}% off</b> — the full hand`;
+    if (q.memberOff) msg += ` · <b>+10%</b> member`;
+    if (!q.cards && q.membership) msg = `<b>${q.membership.plan.name}</b> in your hand · pieces now 10% off`;
+    document.getElementById('track-msg').innerHTML = msg;
+    document.querySelectorAll('.stack').forEach(s=>{
+      const t = s.dataset.tier; s.classList.toggle('reached', t==='member' ? !!q.memberOff || !!member || !!cart.membership : q.cards >= +t);
+    });
+
+    // totals
+    const gross = q.subtotal + (q.membership ? q.membership.gross : 0);
+    document.getElementById('bar-total').textContent = cop(q.total);
+    document.getElementById('bar-was').textContent = gross > q.total ? cop(gross) : '';
+    const count = q.cards + (q.membership?1:0);
+    document.getElementById('hand-n').textContent = count ? '· ' + count : '';
+
+    // member chip
+    const chip = document.getElementById('member-chip');
+    if (member){ chip.textContent = member + ' member · 10% off'; chip.classList.add('is-member'); chip.href = '/members/dashboard.html';
+      document.getElementById('hero-member').innerHTML = `You’re signed in as a <b>${member}</b> member — 10% is already off every piece.`; }
+
+    document.getElementById('own').setAttribute('aria-checked', !!cart.ownMaterial);
+    renderTerms(); renderPlans(); renderDrawer(q);
+  }
+
+  function renderDrawer(q){
+    const body = document.getElementById('drawer-body');
+    const go = document.getElementById('go-contract');
+    if (!q.lines.length && !q.membership){
+      body.innerHTML = '<div class="dempty"><div class="blank-card"></div>Your hand is empty.<br>Add a piece or a membership to start.</div>';
+      go.setAttribute('aria-disabled','true'); return;
+    }
+    go.removeAttribute('aria-disabled');
+    let h = '';
+    if (q.membership){
+      const m = q.membership;
+      h += `<div class="dline member"><div class="medal">${m.plan.name[0]}</div>
+        <div><div class="dn">${m.plan.name} membership</div><div class="dq">${m.term.months} months, paid ahead <button type="button" data-rm-m aria-label="remove membership">×</button></div></div>
+        <div class="dp num">${cop(m.total)}</div></div>`;
+    }
+    q.lines.forEach(l=>{
+      h += `<div class="dline">${medal(l.p.icon)}
+        <div><div class="dn">${l.p.name}</div><div class="dq num"><button type="button" data-d="-1" data-id="${l.p.id}" aria-label="one less">−</button>${P.unitLabel(l.p,l.qty)}<button type="button" data-d="1" data-id="${l.p.id}" aria-label="one more">+</button></div></div>
+        <div class="dp num">${cop(l.total)}</div></div>`;
+    });
+    if (cart.ownMaterial) h += `<div class="dline"><div class="medal"><span class="blank"></span></div><div><div class="dn">your own material</div><div class="dq">elevated in post-production</div></div><div class="dp num">$0</div></div>`;
+    h += '<div class="dsum num">';
+    if (q.cards) h += `<div><span>pieces · ${q.cards} ${q.cards===1?'joker':'jokers'}</span><span>${cop(q.subtotal)}</span></div>`;
+    if (q.bundle.off) h += `<div><span>bundle of ${q.bundle.cards}+ jokers · −${Math.round(q.bundle.off*100)}%</span><span>−${cop(q.subtotal*q.bundle.off)}</span></div>`;
+    if (q.memberOff) h += `<div><span>member · −10%</span><span>−${cop(q.subtotal*q.memberOff)}</span></div>`;
+    if (q.membership){
+      h += `<div><span>${q.membership.plan.name} · ${q.membership.term.months} × ${cop(q.membership.plan.monthly)}</span><span>${cop(q.membership.gross)}</span></div>`;
+      if (q.membership.off) h += `<div><span>paid ahead · −${Math.round(q.membership.term.off*100)}%</span><span>−${cop(q.membership.off)}</span></div>`;
+    }
+    h += `<div class="grand"><span>total</span><span>${cop(q.total)}</span></div></div>`;
+    body.innerHTML = h;
+    body.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click', ()=>change(b.dataset.id, +b.dataset.d)));
+    const rm = body.querySelector('[data-rm-m]'); if (rm) rm.addEventListener('click', ()=>{ cart.membership=null; P.saveCart(cart); render(); });
+  }
+
+  function openHand(){ document.body.classList.add('drawer-open'); document.getElementById('drawer').setAttribute('aria-hidden','false'); document.getElementById('close-hand').focus(); }
+  function closeHand(){ document.body.classList.remove('drawer-open'); document.getElementById('drawer').setAttribute('aria-hidden','true'); }
+  document.getElementById('open-hand').addEventListener('click', openHand);
+  document.getElementById('close-hand').addEventListener('click', closeHand);
+  document.getElementById('drawer-bg').addEventListener('click', closeHand);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeHand(); closePlan(); } });
+  document.getElementById('clear-hand').addEventListener('click', ()=>{ cart = { items:{}, membership:null, term:cart.term, ownMaterial:false }; P.saveCart(cart); render(); });
+  document.getElementById('own').addEventListener('click', ()=>{ cart.ownMaterial = !cart.ownMaterial; P.saveCart(cart); render(); });
+
+  /* bundle stacks: little fans of 3, 6, 9 */
+  document.querySelectorAll('.stack-cards').forEach(s=>{
+    const n = +s.dataset.n, shown = Math.min(n,5);
+    s.innerHTML = Array.from({length:shown},(_,i)=>`<span style="transform:translateX(${(i-(shown-1)/2)*4}px) rotate(${(i-(shown-1)/2)*7}deg)"></span>`).join('');
+  });
+  document.getElementById('closing-glyphs').innerHTML = ['brandfilm','short','clip','photostudio','signature'].map(k=>glyphSVG(k,'g')).join('');
+
+  /* hero card follows the pointer, gently */
+  const hj = document.getElementById('hero-joker');
+  if (!reduce && window.matchMedia('(pointer:fine)').matches){
+    document.querySelector('.hero').addEventListener('pointermove', e=>{
+      const r = hj.getBoundingClientRect(), x = (e.clientX - (r.left+r.width/2))/r.width, y = (e.clientY - (r.top+r.height/2))/r.height;
+      hj.style.transform = `rotate(-4deg) rotateY(${x*12}deg) rotateX(${-y*10}deg)`;
+    });
+    document.querySelector('.hero').addEventListener('pointerleave', ()=>{ hj.style.transform=''; });
+  }
+
+  /* arriving from discover with ?plan= */
+  const qp = new URLSearchParams(location.search).get('plan');
+  if (qp && P.MEMBERSHIPS[qp]){ cart.membership = qp; P.saveCart(cart); }
+
+  renderCatalog(); render();
+  window.PSSYCCO_RENDER = render;
+})();
+</script>
+
+<!-- members: if you're signed in, the shop knows your membership -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  const app = initializeApp({
+    apiKey: "AIzaSyClZ8vQRjpavUCovCKkm7G2TKlDtu-ROo8",
+    authDomain: "pietra-41149.firebaseapp.com",
+    projectId: "pietra-41149",
+    storageBucket: "pietra-41149.firebasestorage.app",
+    messagingSenderId: "965119942981",
+    appId: "1:965119942981:web:b72072ed543fe3282f5e2c"
+  });
+  const auth = getAuth(app), db = getFirestore(app);
+  onAuthStateChanged(auth, async (user)=>{
+    if (!user) return;
+    try{
+      const snap = await getDoc(doc(db, "members", user.email.toLowerCase()));
+      const plan = snap.exists() ? (snap.data().plan || '') : '';
+      if (['leaders','ultimate','signature'].includes(plan)){
+        window.PSSYCCO_MEMBER = plan;
+        try { sessionStorage.setItem('pssycco.member', plan); } catch(e){}
+        window.PSSYCCO_RENDER && window.PSSYCCO_RENDER();
+      }
+    }catch(e){}
+  });
+</script>
 </body>
 </html>

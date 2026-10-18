@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pssycco — tu contrato</title>
+<style>
+  :root{
+    --bg:#f4f2ec; --ink:#4b4d45; --deep:#33352f; --muted:#9a9d90; --line:rgba(51,53,47,0.12);
+    --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    /* the contract's own palette (from the IngeAr document) */
+    --doc-text:#6e6e6e; --doc-head:#808080; --doc-rule:#1f3a5c; --doc-navy:#1b3456; --doc-stripe:#edf1f5; --doc-faint:#c4c4c4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--bg);}
+  body{font-family:var(--sans); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+
+  /* ---------- screen: the form ---------- */
+  .ui{max-width:1080px; margin:0 auto; padding:28px 5% 10px;}
+  .ui-top{display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:40px;}
+  .ui-top a{font-size:12.5px; color:var(--muted); text-decoration:none; letter-spacing:0.04em;}
+  .ui-top a:hover{color:var(--ink);}
+  .ui-top img{height:20px;}
+  .ui h1{font-size:clamp(34px,5vw,54px); font-weight:400; letter-spacing:-0.02em; text-transform:lowercase;}
+  .ui .lead{font-size:16px; line-height:1.7; color:var(--ink); max-width:620px; margin:16px 0 34px;}
+  form{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 20px;}
+  .f{display:flex; flex-direction:column; gap:7px;}
+  .f.full{grid-column:1/-1;}
+  .f label{font-size:12px; color:var(--muted); letter-spacing:0.02em;}
+  .f input,.f select{
+    width:100%; padding:13px 14px; border:1px solid var(--line); background:#faf9f5; color:var(--ink);
+    font-family:var(--sans); font-size:15px; border-radius:10px; outline:none;
+  }
+  .f input:focus,.f select:focus{border-color:var(--ink);}
+  .seg{display:flex; gap:4px; padding:4px; border:1px solid var(--line); border-radius:12px; background:rgba(51,53,47,0.04);}
+  .seg button{flex:1; border:none; background:transparent; padding:10px; border-radius:9px; font-size:13.5px; color:var(--muted); font-family:var(--sans); cursor:pointer;}
+  .seg button[aria-pressed="true"]{background:var(--ink); color:var(--bg);}
+  .actions{grid-column:1/-1; display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-top:10px;}
+  .actions button.dl{
+    background:var(--ink); color:var(--bg); border:none; padding:16px 28px; border-radius:26px; cursor:pointer;
+    font-size:14px; letter-spacing:0.04em; text-transform:lowercase; font-family:var(--sans);
+  }
+  .actions button.dl:hover{background:var(--deep);}
+  .actions small{font-size:12.5px; color:var(--muted); line-height:1.6; max-width:420px;}
+  .empty{padding:60px 0; font-size:16px; color:var(--muted);}
+  .empty a{color:var(--ink);}
+  @media (max-width:700px){ form{grid-template-columns:1fr;} .ui{padding:20px 16px 10px;} }
+  .preview-label{max-width:1080px; margin:60px auto 18px; padding:0 5%; font-size:12px; color:var(--muted); letter-spacing:0.04em;}
+
+  /* ---------- the document ---------- */
+  .doc{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; color:var(--doc-text); font-size:10.6pt; line-height:1.42;}
+  .doc b,.doc strong{font-weight:700; color:#6a6a6a;}
+  .doc p{margin:0 0 11pt; text-align:justify; hyphens:manual;}
+  .doc h2{
+    font-size:11.2pt; font-weight:700; color:var(--doc-head); text-transform:uppercase; letter-spacing:0;
+    border-bottom:0.9pt solid var(--doc-rule); padding-bottom:2pt; margin:20pt 0 10pt; break-after:avoid;
+  }
+  .doc ol{margin:0 0 11pt 22pt;}
+  .doc ol li{margin:0 0 5pt; text-align:justify; padding-left:4pt;}
+  .doc .sub{margin-left:38pt;}
+  .doc .sub p{margin-bottom:9pt;}
+  .doc table.t{width:100%; border-collapse:collapse; margin:6pt 0 14pt; font-size:10.2pt; break-inside:avoid;}
+  .doc table.t th{background:var(--doc-navy); color:#a9b0ba; font-weight:700; padding:6pt 8pt; border:0.8pt solid #222; text-align:center;}
+  .doc table.t td{padding:5pt 8pt; border:0.8pt solid #222; color:var(--doc-text); text-align:center;}
+  .doc table.t td:first-child{text-align:left;}
+  .doc table.t tr:nth-child(even) td{background:var(--doc-stripe);}
+  .doc table.t tr.sum td{font-weight:700; color:#5d5d5d;}
+  .doc table.t td.r{text-align:right;}
+  .sign{display:grid; grid-template-columns:1fr 1fr; gap:60pt; margin-top:110pt; text-align:center; break-inside:avoid;}
+  .sign div{border-top:0.8pt solid var(--doc-faint); padding-top:8pt; font-size:9.6pt; line-height:1.45;}
+  .sign b{display:block; color:#6a6a6a;}
+
+  .page-hd{display:flex; justify-content:space-between; align-items:flex-start; height:0.9in; padding:0.42in 0 0;}
+  .page-hd .glyphs{display:flex; gap:10pt; color:#b3b3b3;}
+  .page-hd .glyphs svg{width:13pt; height:13pt; fill:currentColor;}
+  .page-hd .tier{font-size:9pt; color:#c3c3c3; margin-top:-6pt;}
+  .page-hd .tier b{color:#b5b5b5;}
+  .page-ft{height:0.75in; text-align:center; font-size:8pt; color:#d0d0d0; padding-top:0.25in;}
+  .page-ft b{color:#c4c4c4;}
+
+  .cover,.backpage{display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; background:#fff;}
+  .cover img{width:3.9in; height:auto; margin-top:1.5in;}
+  .cover .ctitle{margin-top:0.9in; font-size:9.4pt; color:#8c8c8c; letter-spacing:0.01em;}
+  .cover .ctitle b{color:#7a7a7a;}
+  .cover .cfoot,.backpage .bfoot{position:absolute; left:0; right:0; text-align:center; font-size:8.6pt; color:#cdcdcd;}
+  .cover .cfoot{bottom:1.15in;}
+  .cover .cfoot b,.backpage .bfoot b{color:#bdbdbd;}
+  .backpage .bmark{display:flex; flex-direction:column; align-items:center; gap:10pt; padding:24pt 40pt; background:#fbfbfb;}
+  .backpage .bmark .glyphs{display:flex; gap:14pt; color:#a9a9a9;}
+  .backpage .bmark .glyphs svg{width:17pt; height:17pt; fill:currentColor;}
+  .backpage .bmark span{font-size:10pt; color:#a9a9a9;}
+  .backpage .bfoot{bottom:1.05in; font-size:8.2pt;}
+
+  /* screen: show the document as letter sheets */
+  @media screen{
+    .sheets{max-width:8.5in; margin:0 auto 80px; padding:0 12px;}
+    .sheet{background:#fff; box-shadow:0 30px 60px -30px rgba(51,53,47,0.35), 0 1px 3px rgba(0,0,0,0.06); margin:0 auto 26px; width:100%;}
+    .cover,.backpage{aspect-ratio:8.5/11;}
+    .body-sheet{padding:0 0.95in 0.4in;}
+    .body-sheet .page-ft{display:none;}
+    .print-only{display:none;}
+    @media (max-width:720px){
+      .doc{font-size:9.6pt;} .body-sheet{padding:0 22px 20px;}
+      .cover img{width:58%; margin-top:0;} .cover .ctitle{margin-top:12%; font-size:8.6pt;} .cover .cfoot{bottom:7%; font-size:7.6pt;} .backpage .bfoot{bottom:7%;} .sign{gap:20pt; margin-top:60pt;}
+    }
+  }
+
+  /* print: real letter pages, header & footer repeat on every page */
+  @page{size:letter; margin:0;}
+  @media print{
+    html,body{background:#fff;}
+    .ui,.preview-label{display:none !important;}
+    .sheets{margin:0; padding:0;}
+    .sheet{box-shadow:none; margin:0;}
+    .cover,.backpage{width:8.5in; height:11in; break-after:page; z-index:5;}
+    .backpage{break-before:page; break-after:auto;}
+    .cover .cfoot{bottom:1.15in;}
+    .screen-only{display:none;}
+    table.frame{width:100%; border-collapse:collapse;}
+    table.frame > thead > tr > td, table.frame > tfoot > tr > td{padding:0;}
+    table.frame > tbody > tr > td{padding:0 0.95in;}
+    .fixed-hd{position:fixed; top:0; left:0.95in; right:0.95in;}
+    .fixed-ft{position:fixed; bottom:0; left:0; right:0;}
+    .spacer-hd{height:1.15in;} .spacer-ft{height:0.8in;}
+    .doc h2{break-after:avoid;}
+    .doc p{orphans:3; widows:3;}
+  }
+  @media screen{ .fixed-hd,.fixed-ft,.spacer-hd,.spacer-ft{display:none;} table.frame{width:100%; border-collapse:collapse; table-layout:fixed;} .body-sheet{overflow:hidden;} .doc span{overflow-wrap:anywhere;} }
+</style>
+</head>
+<body>
+
+<section class="ui" id="ui">
+  <div class="ui-top">
+    <a href="/shop/">← back to the shop</a>
+    <img src="/assets/logo_glyph.png" alt="pssycco">
+  </div>
+  <div id="ui-main"></div>
+</section>
+
+<div class="preview-label screen-only" id="preview-label">vista previa del contrato — se actualiza mientras escribes</div>
+<div class="sheets" id="sheets"></div>
+
+<script src="/assets/shop/glyphs.js"></script>
+<script src="/assets/shop/pricing.js"></script>
+<script>
+(function(){
+  const P = window.PSSYCCO_PRICING;
+  const cart = P.loadCart();
+  let member = null; try { member = sessionStorage.getItem('pssycco.member'); } catch(e){}
+  const q = P.quote(cart, member);
+  const hasMem = !!q.membership;
+  const ui = document.getElementById('ui-main');
+
+  if (!q.lines.length && !hasMem){
+    ui.innerHTML = '<h1>your contract.</h1><p class="empty">Your hand is empty. <a href="/shop/">Go back to the shop</a> and add a piece or a membership first.</p>';
+    document.getElementById('preview-label').remove();
+    return;
+  }
+
+  /* ---------- spanish helpers ---------- */
+  const U = ['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'];
+  const D = ['','','','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
+  const C = ['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
+  function w999(n){
+    if (n===0) return ''; if (n===100) return 'cien';
+    const c = Math.floor(n/100), r = n%100; let s = C[c];
+    if (r){ s += (s?' ':'') + (r<30 ? U[r] : D[Math.floor(r/10)] + (r%10 ? ' y ' + U[r%10] : '')); }
+    return s;
+  }
+  function words(n){
+    n = Math.round(n); if (n===0) return 'cero';
+    const mm = Math.floor(n/1e6), th = Math.floor((n%1e6)/1000), un = n%1000; let s = [];
+    if (mm) s.push(mm===1 ? 'un millón' : w999(mm).replace(/uno$/,'un') + ' millones');
+    if (th) s.push(th===1 ? 'mil' : w999(th).replace(/uno$/,'un') + ' mil');
+    if (un) s.push(w999(un));
+    return s.join(' ');
+  }
+  function pesos(n){ const w = words(n); return w + ((/millón$|millones$/.test(w)) ? ' de pesos' : ' pesos') + ' colombianos (COP ' + P.cop(n) + ')'; }
+  function cnt(n){ return words(n).replace(/^uno$/,'uno') + ' (' + n + ')'; }
+  const ORD = ['PRIMERA','SEGUNDA','TERCERA','CUARTA','QUINTA','SEXTA','SÉPTIMA','OCTAVA','NOVENA','DÉCIMA','DÉCIMA PRIMERA','DÉCIMA SEGUNDA','DÉCIMA TERCERA','DÉCIMA CUARTA','DÉCIMA QUINTA','DÉCIMA SEXTA','DÉCIMA SÉPTIMA','DÉCIMA OCTAVA','DÉCIMA NOVENA','VIGÉSIMA'];
+  const MES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  function fecha(d){ return d.getDate() + ' de ' + MES[d.getMonth()] + ' de ' + d.getFullYear(); }
+  function addMonths(d, m){ const x = new Date(d); x.setMonth(x.getMonth()+m); return x; }
+  function esc(s){ return String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const pname = s => s.split(' ').map(w => /^(ai|non-ai|3d)$/i.test(w) ? w.toUpperCase().replace('NON-AI','Non-AI') : cap(w)).join(' ');
+
+  /* ---------- the form ---------- */
+  const today = new Date();
+  const start0 = new Date(today.getFullYear(), today.getMonth()+1, 15);
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  const st = { kind:'empresa', name:'', idType:'NIT', idNum:'', city:'', country:'Colombia', rep:'', repId:'', email:'', start:iso(start0) };
+  try { Object.assign(st, JSON.parse(localStorage.getItem('pssycco.client') || '{}')); } catch(e){}
+
+  const title = hasMem ? q.membership.plan.name + ' membership' : 'pssycco bundle';
+  ui.innerHTML = `
+    <h1>your contract.</h1>
+    <p class="lead">Fill in who is signing. Your contract is written as you type, below — when it looks right, download it as a PDF.</p>
+    <form id="f" autocomplete="on" onsubmit="return false">
+      <div class="f full"><label>the client is</label>
+        <div class="seg" id="kind"><button type="button" data-k="empresa">a company</button><button type="button" data-k="persona">a person</button></div></div>
+      <div class="f full"><label for="name" id="name-l">legal name of the company</label><input id="name" name="organization" required></div>
+      <div class="f"><label for="idType">id type</label><select id="idType"><option>NIT</option><option>EIN</option><option>C.C.</option><option>C.E.</option><option>Pasaporte</option><option>Tax ID</option></select></div>
+      <div class="f"><label for="idNum">id number</label><input id="idNum" inputmode="text"></div>
+      <div class="f"><label for="city">city</label><input id="city" name="address-level2"></div>
+      <div class="f"><label for="country">country</label><input id="country" name="country-name"></div>
+      <div class="f rep"><label for="rep">legal representative</label><input id="rep" name="name"></div>
+      <div class="f rep"><label for="repId">representative’s id (C.C. / passport)</label><input id="repId"></div>
+      <div class="f"><label for="email">email</label><input id="email" type="email" name="email"></div>
+      <div class="f"><label for="start">start date</label><input id="start" type="date"></div>
+      <div class="actions">
+        <button class="dl" type="button" id="dl">download contract (pdf)</button>
+        <small>Your browser opens its print window — choose “Save as PDF”. Signed copies go to mossaicco@gmail.com.</small>
+      </div>
+    </form>`;
+  const $ = id => document.getElementById(id);
+  ['name','idType','idNum','city','country','rep','repId','email','start'].forEach(k=>{
+    $(k).value = st[k] || ''; $(k).addEventListener('input', ()=>{ st[k] = $(k).value; save(); draw(); });
+  });
+  function syncKind(){
+    document.querySelectorAll('#kind button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.k===st.kind));
+    $('name-l').textContent = st.kind==='empresa' ? 'legal name of the company' : 'full name';
+    document.querySelectorAll('.f.rep').forEach(el=>el.style.display = st.kind==='empresa' ? '' : 'none');
+  }
+  document.querySelectorAll('#kind button').forEach(b=>b.addEventListener('click', ()=>{
+    st.kind = b.dataset.k; if (st.kind==='persona' && st.idType==='NIT'){ st.idType='C.C.'; $('idType').value='C.C.'; }
+    save(); syncKind(); draw();
+  }));
+  function save(){ try { localStorage.setItem('pssycco.client', JSON.stringify(st)); } catch(e){} }
+  syncKind();
+
+  /* ---------- the document ---------- */
+  const glyphs = ['brandfilm','short','clip','photostudio','signature'].map(k=>glyphSVG(k,'g')).join('');
+  const tierHTML = hasMem ? `${q.membership.plan.name} <b>membership</b>` : `pssycco <b>bundle</b>`;
+  const header = `<div class="page-hd"><div class="glyphs">${glyphs}</div><div class="tier">${tierHTML}</div></div>`;
+  const footer = `<div class="page-ft">a <b>mossaicco</b> company / kingdom of shapes</div>`;
+
+  function clauses(){
+    const c = []; let n = 0;
+    const H = t => `<h2>CLÁUSULA ${ORD[n++]} – ${t}</h2>`;
+    const ref = {}; // clause numbers for cross references
+    const blank = v => v ? esc(v) : '<span style="color:#b9b9b9">__________</span>';
+    const clientName = st.name ? esc(st.name) : '<span style="color:#b9b9b9">[nombre del contratante]</span>';
+    const start = st.start ? new Date(st.start + 'T12:00:00') : start0;
+    const m = q.membership, months = m ? m.term.months : 0;
+    const planLabel = m ? `"${cap(m.plan.name)} Pssycco Membership"` : '';
+
+    // pre-compute clause order so cross references are right
+    const order = ['objeto','duracion','cesion','valor','filosofia'];
+    if (m) order.push('ensamble');
+    order.push('entregables'); if (m) order.push('archivo');
+    order.push('oblContratista','oblContratante','independencia','pi','confidencialidad');
+    if (m && m.key !== 'leaders') order.push('ainonai');
+    order.push('terminacion','ley','conflictos','suscripcion');
+    order.forEach((k,i)=>ref[k] = ORD[i].charAt(0) + ORD[i].slice(1).toLowerCase());
+    const R = k => 'Cláusula ' + ref[k].replace(/(\s)(\w)/g,(a,b,c)=>b+c.toUpperCase());
+    const ClTitle = {
+      objeto:'OBJETO DEL CONTRATO', duracion:'DURACIÓN', cesion:'CESIÓN ANTICIPADA DEL CONTRATO A PERSONA JURÍDICA',
+      valor:'VALOR Y CONDICIONES COMERCIALES', filosofia:'FILOSOFÍA Y PROMESA DE MARCA', ensamble:'MES DE ENSAMBLE',
+      entregables:'ENTREGABLES', archivo:'ARCHIVO CREATIVO DE MARCA', oblContratista:'OBLIGACIONES DEL CONTRATISTA',
+      oblContratante:'OBLIGACIONES DEL CONTRATANTE', independencia:'INDEPENDENCIA Y AUTONOMÍA', pi:'PROPIEDAD INTELECTUAL',
+      confidencialidad:'CONFIDENCIALIDAD', ainonai:'CONTENIDO AI Y NON-AI', terminacion:'TERMINACIÓN',
+      ley:'LEY APLICABLE', conflictos:'SOLUCIÓN DE CONFLICTOS', suscripcion:'SUSCRIPCIÓN'
+    };
+
+    // parties
+    let contratante;
+    if (st.kind==='empresa'){
+      contratante = `<p><b>CONTRATANTE:</b> ${clientName}, sociedad legalmente constituida conforme a las leyes de ${blank(st.country)}, identificada con ${esc(st.idType)} ${blank(st.idNum)}, domiciliada en ${blank(st.city)}, ${blank(st.country)}${st.rep ? `, representada legalmente por ${esc(st.rep)}${st.repId ? ', identificado con ' + esc(st.repId) : ''}` : ''}, en adelante denominada "EL CONTRATANTE".</p>`;
+    } else {
+      contratante = `<p><b>CONTRATANTE:</b> ${clientName}, identificado con ${esc(st.idType)} N.° ${blank(st.idNum)}, domiciliado en ${blank(st.city)}, ${blank(st.country)}, en adelante denominado "EL CONTRATANTE".</p>`;
+    }
+    const objetoLine = m
+      ? `en virtud de la contratación por parte de EL CONTRATANTE de la membresía denominada <span style="font-size:9.6pt">${planLabel}</span>${q.lines.length ? ', junto con los productos adicionales detallados en la ' + R('entregables') : ''}`
+      : `en virtud de la contratación por parte de EL CONTRATANTE de los productos detallados en la ${R('entregables')}`;
+    c.push(`<h2 style="margin-top:6pt">PARTES CONTRATANTES</h2>
+      ${contratante}
+      <p><b>CONTRATISTA:</b> MATEO VASQUEZ ARISTIZABAL, en nombre de PSSYCCO AI Studios, en adelante denominado "EL CONTRATISTA".</p>
+      <p>Las partes anteriormente descritas, obrando en sus propias calidades, acuerdan celebrar el presente Contrato de Prestación de Servicios, ${objetoLine}, el cual se regirá por las siguientes cláusulas:</p>`);
+
+    order.forEach(k=>{
+      let h = H(ClTitle[k]);
+      switch(k){
+      case 'objeto':
+        h += `<p>EL CONTRATISTA se compromete a prestar a EL CONTRATANTE los servicios propios de un estudio de producción potenciado por inteligencia artificial, especializado en el posicionamiento de marcas de lujo y en la venta de aspiración, orientados a la construcción del patrimonio inmaterial de la marca de EL CONTRATANTE, cuya promesa central es el prestigio y la autoridad de marca alcanzados a través del contenido cinemático.</p>`;
+        h += m
+          ? `<p>Sobre esta base, EL CONTRATISTA desarrollará una planeación editorial estructurada en ciclos trimestrales, mensuales y semanales, acompañada de dirección estratégica continua durante toda la vigencia del contrato, orientada a la gestión de los activos invisibles de la marca y a la producción de su contenido. En virtud de lo anterior, EL CONTRATISTA actúa como ingeniero de la percepción al servicio de compañías cuyo valor de mercado depende, de manera sustancial, de su reputación.</p>`
+          : `<p>Sobre esta base, EL CONTRATISTA conceptualizará, producirá y postproducirá los activos de marca detallados en la ${R('entregables')}, actuando como ingeniero de la percepción al servicio de compañías cuyo valor de mercado depende, de manera sustancial, de su reputación.</p>`;
+        h += `<p>La prestación de los servicios se realizará de manera autónoma e independiente, sin que ello implique vínculo laboral alguno entre las partes.</p>`;
+        break;
+      case 'duracion':
+        if (m){
+          const end = addMonths(start, months+1), ens = addMonths(start, 1);
+          h += `<p>El presente contrato tendrá una duración de ${cnt(months+1)} meses contados a partir del ${fecha(start)}, fecha de inicio de la prestación de los servicios, y se extenderá hasta el ${fecha(end)}, pudiendo ser prorrogado por mutuo acuerdo escrito de las partes con anterioridad a su vencimiento.</p>
+                <p>De dicho plazo, el primer mes (del ${fecha(start)} al ${fecha(ens)}) corresponderá al mes de ensamble descrito en la ${R('ensamble')}, y los ${cnt(months)} meses restantes (del ${fecha(ens)} al ${fecha(end)}) corresponderán a la ejecución de las campañas publicitarias objeto del presente contrato.</p>`;
+        } else {
+          h += `<p>El presente contrato iniciará el ${fecha(start)} y se extenderá hasta la entrega de la totalidad de los activos de marca descritos en la ${R('entregables')}, conforme al cronograma de producción que las partes acuerden por escrito al inicio de la prestación de los servicios.</p>`;
+        }
+        break;
+      case 'cesion':
+        h += `<p>EL CONTRATANTE reconoce que EL CONTRATISTA se encuentra actualmente en proceso de constitución de una sociedad comercial bajo las leyes colombianas, "PSSYCCO AI STUDIOS S.A.S." de la cual EL CONTRATISTA será representante legal y socio.</p>
+          <p>En virtud de lo anterior, EL CONTRATANTE autoriza, desde ahora y de manera anticipada, la cesión total del presente contrato —incluyendo la totalidad de los derechos y obligaciones aquí pactados— a favor de dicha sociedad, una vez esta se encuentre legalmente constituida, conforme a lo dispuesto en los artículos 887 y siguientes del Código de Comercio colombiano.</p>
+          <p>Dicha cesión se perfeccionará mediante simple comunicación escrita que EL CONTRATISTA dirija a EL CONTRATANTE, informando la constitución de la sociedad y su intención de ceder el contrato, sin que se requiera la firma de un nuevo contrato, otrosí, o autorización adicional distinta a la aquí conferida. A partir de la fecha de dicha comunicación, la sociedad cesionaria asumirá la totalidad de las obligaciones y derechos derivados de este contrato en los mismos términos y condiciones aquí pactados, incluyendo las cláusulas de confidencialidad, propiedad intelectual y demás disposiciones vigentes.</p>
+          <p>Las partes dejan constancia de que esta autorización no obliga a EL CONTRATISTA a realizar la cesión en un plazo determinado, pudiendo ésta perfeccionarse en cualquier momento durante la vigencia del contrato, una vez culminado el proceso de constitución de la sociedad.</p>
+          <p>Se deja expresa constancia de que, una vez perfeccionada la cesión, la facturación del servicio se realizará conforme al régimen tributario aplicable a personas jurídicas, incluyendo la expedición de factura electrónica con IVA cuando corresponda, en reemplazo del esquema de cuenta de cobro y planilla de seguridad social previsto en la ${R('valor')} para personas naturales.</p>`;
+        break;
+      case 'valor': {
+        let rows = '';
+        if (m){
+          rows += `<tr><td>${cap(m.plan.name)} Pssycco Membership — ${m.term.months} meses</td><td>${m.term.months}</td><td class="r">${P.cop(m.plan.monthly)}</td><td class="r">${P.cop(m.gross)}</td></tr>`;
+          if (m.off) rows += `<tr><td>Pago anticipado de ${m.term.months} meses (−${Math.round(m.term.off*100)}%)</td><td></td><td></td><td class="r">−${P.cop(m.off)}</td></tr>`;
+        }
+        q.lines.forEach(l=>{ rows += `<tr><td>${pname(l.p.name)}${l.p.from?' (desde)':''}</td><td>${l.qty}</td><td class="r">${P.cop(l.p.price)}</td><td class="r">${P.cop(l.total)}</td></tr>`; });
+        if (q.bundle.off) rows += `<tr><td>Pssycco bundle — ${q.cards} jokers (−${Math.round(q.bundle.off*100)}% sobre productos)</td><td></td><td></td><td class="r">−${P.cop(Math.round(q.subtotal*q.bundle.off))}</td></tr>`;
+        if (q.memberOff) rows += `<tr><td>Beneficio de membresía (−10% sobre productos)</td><td></td><td></td><td class="r">−${P.cop(Math.round(q.subtotal*q.memberOff))}</td></tr>`;
+        rows += `<tr class="sum"><td>Valor total</td><td></td><td></td><td class="r">${P.cop(q.total)}</td></tr>`;
+        h += `<p>El valor total del presente contrato corresponde a ${pesos(q.total)}, conforme al siguiente desglose:</p>
+          <table class="t"><tr><th>Concepto</th><th>Cant.</th><th>Valor unitario</th><th>Subtotal</th></tr>${rows}</table>`;
+        if (q.lines.some(l=>l.p.from)) h += `<p>Los días de rodaje se cotizan con un valor base ("desde"), el cual podrá ajustarse según los requerimientos de producción de cada campaña, previo acuerdo escrito entre las partes. Los gastos de producción serán cubiertos por EL CONTRATANTE.</p>`;
+        h += `<p>Mientras la facturación del servicio se realice por parte de EL CONTRATISTA en su calidad de persona natural, el valor pactado no causará el Impuesto al Valor Agregado (IVA). A partir del momento en que la facturación se realice a nombre de la sociedad cesionaria, conforme a lo previsto en la ${R('cesion')}, al valor pactado se le adicionará el Impuesto al Valor Agregado (IVA) vigente en Colombia, correspondiente al diecinueve por ciento (19%).</p>
+          <p>${m ? `Dicho valor será cancelado de manera anticipada, en un único pago, a más tardar en la fecha de inicio del presente contrato, como condición del beneficio de pago anticipado aquí reconocido.` : `Dicho valor será cancelado de manera anticipada, en un único pago, a más tardar en la fecha de inicio del presente contrato.`} Dicho pago estará sujeto a la previa presentación de los siguientes documentos:</p>
+          <div class="sub"><p>a) Cuenta de cobro o factura correspondiente, según corresponda a la calidad de persona natural o jurídica de EL CONTRATISTA al momento del pago, la cual deberá reflejar el valor en pesos colombianos y, cuando aplique, el IVA correspondiente conforme a esta cláusula.</p>
+          <p>b) Planilla de pago de seguridad social como trabajador independiente (salud y pensión), conforme a la normativa vigente, mientras EL CONTRATISTA facture en su calidad de persona natural.</p></div>
+          <p>En caso de mora superior a treinta (30) días calendario, PSSYCCO AI Studios podrá pausar el estatus activo de la marca de EL CONTRATANTE dentro del portafolio, reactivándolo en su prioridad habitual una vez el pago correspondiente se regularice, sin perjuicio de los intereses de mora a la tasa máxima legal permitida en Colombia que se causen desde el día siguiente a su vencimiento.</p>`;
+        break; }
+      case 'filosofia':
+        h += `<p>PSSYCCO AI Studios es, primordialmente, un estudio de inteligencia artificial creado para ofrecer el servicio de conceptualización, producción y post producción de contenido editorial/ cinematográfico a compañías premium que desean consolidar una presencia visual coherente. Dicha presencia se materializa a través de activos de marca —piezas audiovisuales y narrativas— concebidos para abarcar todos los medios de exposición posibles: prensa, página web, medios impresos y digitales, pantallas físicas, y cualquier otro canal de distribución pertinente para la marca de EL CONTRATANTE.</p>
+          <p>Bajo esta lógica de distribución integral, el fin último de PSSYCCO es el desarrollo del patrimonio de marca de EL CONTRATANTE, entendido como el conjunto acumulado de activos audiovisuales y narrativos que consolidan su prestigio y valor en el mercado de la percepción. Este propósito responde a la Teoría de Autoridad ("Authority Theory") que rige la práctica de PSSYCCO, conforme a la cual el objetivo frente a toda marca cliente es la generación de prestigio, significado y deseo. El compromiso de PSSYCCO consiste en posicionar o, según corresponda, consolidar y expandir la posición de EL CONTRATANTE como referente aspiracional de su industria, a través de contenido de lujo.</p>
+          <p>En este sentido, PSSYCCO no opera como una agencia de crecimiento digital o growth marketing, orientada primordialmente a métricas de alcance, tráfico o conversión. No obstante, cuenta con un Laboratorio de Impacto, a través del cual podrá recomendar a EL CONTRATANTE, en caso de que este manifieste el deseo de complementar su posicionamiento con un crecimiento medible en cifras y alcance, estrategias e inversiones de capital adicionales tales como colaboraciones con creadores de contenido e influencers del sector desde el que opera EL CONTRATANTE, pauta digital paga, activaciones o marketing experiencial, entre otras.</p>
+          <p>PSSYCCO asume la responsabilidad integral de cada activo de marca (pieza audiovisual o narrativa entregable) a lo largo de todo su proceso de producción —preproducción, producción y postproducción— en ejercicio de su labor como estudio de producción especializado.${m ? ' Adicionalmente, PSSYCCO se encarga exclusivamente de la publicación de estos activos en redes sociales, mientras que EL CONTRATANTE conserva plena libertad para disponer de ellos, sin restricción alguna, en cualquiera de los demás medios de exposición referidos en esta cláusula —prensa, página web, pantallas físicas y demás canales—, ya sea de manera directa o a través de los terceros que designe para ello.' : ' EL CONTRATANTE conserva plena libertad para disponer de ellos, sin restricción alguna, en cualquiera de los medios de exposición referidos en esta cláusula, ya sea de manera directa o a través de los terceros que designe para ello.'}</p>`;
+        break;
+      case 'ensamble': {
+        const quarters = months/3;
+        h += `<p>El primer mes de vigencia del presente contrato constituirá un "mes de ensamble", destinado a la planeación, estructuración y preparación de las campañas publicitarias que se ejecutarán durante los ${cnt(months)} meses subsiguientes, cuya ejecución iniciará el mes calendario inmediatamente posterior a la finalización del mes de ensamble.</p>
+          <p>Durante el mes de ensamble, EL CONTRATISTA se dedicará a la recepción y análisis de la información, lineamientos y materiales suministrados por EL CONTRATANTE; a la realización de entrevistas al equipo de trabajo y a los fundadores de la marca, mediante las cuales estos últimos compartirán con PSSYCCO la historia de la marca, incluyendo la trayectoria y el legado acumulado durante los últimos años o décadas, como insumo para que PSSYCCO lo capture y lo multiplique a través de sus metodologías; a la elaboración de libretos, guiones y pautas generales de contenido; y a la estructuración de la escaleta o esqueleto de trabajo para ${quarters===1 ? 'el trimestre' : 'cada uno de los ' + cnt(quarters) + ' trimestres'} que ${quarters===1?'compone':'componen'} los ${cnt(months)} meses de ejecución.</p>`;
+        if (quarters === 4){
+          h += `<p>El mes de ensamble se distribuirá en cuatro (4) semanas, cada una de las cuales estará destinada a la redacción y construcción de la escaleta o esqueleto correspondiente a uno (1) de los cuatro (4) trimestres de los doce (12) meses de ejecución, conforme a la siguiente distribución:</p>
+            <div class="sub"><p>a) Semana 1: Escaleta y esqueleto del primer trimestre (meses 1 a 3 de ejecución).</p><p>b) Semana 2: Escaleta y esqueleto del segundo trimestre (meses 4 a 6 de ejecución).</p><p>c) Semana 3: Escaleta y esqueleto del tercer trimestre (meses 7 a 9 de ejecución).</p><p>d) Semana 4: Escaleta y esqueleto del cuarto trimestre (meses 10 a 12 de ejecución) y producción de la primera semana de parrilla correspondiente al mes 2 de ejecución, de forma que dicho mes cuente con contenido listo desde su inicio.</p></div>`;
+        } else {
+          h += `<p>Las cuatro (4) semanas del mes de ensamble se distribuirán entre la construcción de ${quarters===1?'dicha escaleta':'dichas escaletas'} y la producción de la primera semana de parrilla correspondiente al mes 2 de ejecución, de forma que dicho mes cuente con contenido listo desde su inicio.</p>`;
+        }
+        h += `<p>A excepción de la primera semana de la parrilla correspondiente al mes 2 de ejecución: durante el mes de ensamble no se generarán entregables finales de campaña, sin perjuicio de los productos de planeación (libretos, pautas y escaletas) que EL CONTRATISTA deberá entregar a EL CONTRATANTE al cierre de cada semana, para su revisión y aprobación previa al inicio de la ejecución.</p>`;
+        break; }
+      case 'entregables': {
+        if (m){
+          if (m.key === 'leaders'){
+            const rowsL = [['Narrativa anual de marca', 1, '—'], ['Campañas trimestrales (dirección creativa, libretos y prompts)', months/3, 'cada 3 meses'], ['Campañas mensuales', months, '1'], ['Campañas semanales', months*4, '4'], ['Sistema de Identidad de Marca IA', 1, '—'], ['Archivo Creativo de Marca', 1, 'al cierre']];
+            h += `<p>EL CONTRATISTA entregará, de forma equitativa y proporcional durante ${cnt(months)} meses, el paquete creativo completo de cada campaña —libretos, guiones, storyboards, referencias visuales y prompts de IA— listo para que la agencia de IA de EL CONTRATANTE lo produzca, postproduzca y publique:</p>
+              <table class="t"><tr><th>Entregable</th><th>Total</th><th>Promedio Mensual</th></tr>${rowsL.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table>
+              <p>La producción de los activos no está incluida en esta membresía y podrá contratarse por solicitud, conforme a las tarifas vigentes de PSSYCCO.</p>`;
+          } else {
+            const rowsM = [['Shorts (4 shots / 25 segundos)', 4*months, '4'], ['Photo Studios (5 imágenes)', 2*months, '2'], ['Brand Films (unlimited shots / 100 segundos)', months/3, '(cada 3 meses)'], ['Graphics (5 imágenes)', months, '1'], ['Clips (2 shots / 15 segundos)', 4*months, '4']];
+            if (m.key === 'signature') rowsM.push(['Signature Commercials non-AI (1 día de rodaje)', months, '1']);
+            h += `<p>EL CONTRATISTA entregará mensualmente, de forma equitativa y proporcional durante ${cnt(months)} meses, los siguientes productos, basados en los cinco (5) tipos de campañas propuestas:</p>
+              <table class="t"><tr><th>Entregable</th><th>Total</th><th>Promedio Mensual</th></tr>${rowsM.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table>
+              <p>Para efectos de esta cláusula, el contenido producido sin inteligencia artificial (non-AI) se nutrirá del propio material de marca de EL CONTRATANTE, el cual PSSYCCO elevará mediante su estudio de postproducción de video e imágenes, potenciando así la autenticidad de dicho material con un acabado cinematográfico propio de PSSYCCO.</p>
+              <p>PSSYCCO ofrece, como parte de sus servicios estándar, la posibilidad de sustituir contenido generado por inteligencia artificial por contenido producido sin inteligencia artificial dentro de una misma categoría de entregable. En consecuencia, el Total de cada categoría se mantendrá invariable, y su composición podrá distribuirse entre contenido producido con inteligencia artificial y contenido producido sin inteligencia artificial, según se acuerde entre las partes, sin que el número total de entregables por categoría se vea incrementado por dicha sustitución.</p>
+              ${m.key==='signature' ? `<p>Se incluye un (1) día de rodaje dedicado cada mes para la producción del Signature Commercial mensual, en cualquier lugar de Colombia. Días de rodaje adicionales y producciones internacionales se cotizarán por separado. Los gastos de producción serán cubiertos por EL CONTRATANTE.</p>` : ''}
+              <p>Semanalmente: junto con la entrega de los activos de marca correspondientes a la parrilla del mes, PSSYCCO hará entrega de las bandas sonoras utilizadas, divididas en “stems” para su futura reproducción o reedición, así como de los efectos de sonido (SFX) y de los archivos originales de los planos (shots) utilizados, sin postproducción aplicada, para que EL CONTRATANTE pueda disponer de ellos libremente en cualquier otro contexto que requiera.</p>
+              <p>EL CONTRATISTA trabajará bajo un mecanismo de planeación y entrega con una (1) semana de antelación, así: durante la reunión semanal de seguimiento operativo del primer día hábil de cada semana, se planeará la parrilla de contenido correspondiente a la semana siguiente; dicha parrilla será entregada a EL CONTRATANTE el viernes de esa misma semana, para efectos de su revisión y aprobación. De esta manera, al iniciar cada semana, la parrilla correspondiente a dicha semana se encontrará ya aprobada y lista para su publicación.</p>`;
+          }
+        }
+        if (q.lines.length){
+          h += `<p>${m ? 'Adicionalmente, EL CONTRATISTA entregará los siguientes productos:' : 'EL CONTRATISTA entregará los siguientes productos:'}</p>
+            <table class="t"><tr><th>Entregable</th><th>Cantidad</th></tr>${q.lines.map(l=>`<tr><td>${pname(l.p.name)} (${l.p.spec})</td><td>${l.qty}</td></tr>`).join('')}</table>`;
+          if (q.lines.some(l=>l.p.id==='signature')) h += `<p>Los Signature Videos non-AI no incluyen postproducción, salvo acuerdo escrito en contrario.</p>`;
+        }
+        if (cart.ownMaterial) h += `<p>EL CONTRATANTE suministrará su propio material audiovisual y fotográfico, el cual PSSYCCO elevará mediante su estudio de postproducción, sin costo adicional.</p>`;
+        break; }
+      case 'archivo':
+        h += `<p>Además de los entregables periódicos establecidos en el presente contrato, PSSYCCO construirá de manera progresiva un <b>Archivo Creativo de Marca</b> (Annual Brand Archive), el cual se irá consolidando a medida que avance la ejecución del proyecto y se desarrollen las diferentes campañas, producciones y procesos creativos.</p>
+          <p>Este archivo reunirá y organizará todos los activos creativos e intelectuales generados durante la prestación del servicio; libretos originales correspondientes a los Brand Films desarrollados durante los ciclos de ensamble, así como el <b>Sistema Operativo Creativo de IA de la Marca</b>, compuesto por la documentación metodológica, prompts, referencias visuales, estructuras narrativas, lineamientos de storytelling, perfiles de narración, criterios de dirección creativa, referencias musicales, metodologías de producción y demás activos creativos generados durante la ejecución del contrato.</p>
+          <p>De igual forma, el Archivo Creativo de Marca incorporará todos los activos digitales producidos en el marco de la membresía, organizados mediante una estructura documental clara que facilite su consulta, reutilización y continuidad por parte de EL CONTRATANTE o de futuros equipos creativos.</p>
+          <p>Más allá de las piezas publicadas durante la vigencia del contrato, el archivo constituye un patrimonio creativo y estratégico de la compañía, diseñado para conservar el conocimiento acumulado, proteger la consistencia de la identidad de marca y facilitar la continuidad de su comunicación en los años posteriores.</p>`;
+        break;
+      case 'oblContratista': {
+        const it = [
+          'Ejecutar los servicios objeto del presente contrato con la diligencia e idoneidad profesional propias de su actividad, y conforme a los lineamientos generales de resultado impartidos por EL CONTRATANTE mencionados en este contrato.',
+          `Entregar los activos de marca pactados en la ${R('entregables')} dentro de los plazos acordados y con los estándares de calidad exigidos para la construcción del patrimonio de marca de EL CONTRATANTE.`,
+          `Guardar reserva y confidencialidad sobre la información, datos y activos de marca de EL CONTRATANTE a los que tenga acceso con ocasión de la ejecución del contrato, en los términos de la ${R('confidencialidad')}.`,
+          `Asumir, por su propia cuenta y en su condición de trabajador independiente, el pago de sus obligaciones al Sistema de Seguridad Social Integral (salud, pensión y riesgos laborales), conforme a la Ley 100 de 1993 y demás normas concordantes, obligación que regirá exclusivamente mientras no se haya perfeccionado la cesión del contrato a la sociedad cesionaria, conforme a lo previsto en la ${R('cesion')}.`,
+          `Presentar la cuenta de cobro o factura y la planilla de pago de seguridad social, como requisito previo para la exigibilidad de la contraprestación acordada en la ${R('valor')}, requisito que aplicará únicamente mientras la facturación del servicio se realice por parte de EL CONTRATISTA en su calidad de persona natural.`,
+          'Informar oportunamente a EL CONTRATANTE sobre cualquier circunstancia que pueda afectar la ejecución, calidad o cronograma de producción de los activos de marca.'];
+        if (m){
+          it.push(`Asegurar que el “Brand Lead” asignado a la marca de EL CONTRATANTE, o cualquier otro miembro del equipo de EL CONTRATISTA que este designe, asista a una (1) reunión semanal de seguimiento operativo, a realizarse el primer día hábil de la semana. Dicha reunión estará destinada, entre otros asuntos, a la planeación de la parrilla de contenido correspondiente a la semana siguiente, conforme al mecanismo de trabajo con una semana de antelación descrito en la ${R('entregables')}.`);
+          it.push('Asegurar que el “Brand Lead” asignado a la marca de EL CONTRATANTE, o cualquier otro miembro del equipo de EL CONTRATISTA que este designe, asista a una (1) reunión trimestral de planeación estratégica, destinada a programar, revisar o definir el Comercial para TV (Brand Film) del trimestre correspondiente, en el marco de la construcción continua del patrimonio de marca de EL CONTRATANTE.');
+        }
+        h += `<ol>${it.map(x=>`<li>${x}</li>`).join('')}</ol>`;
+        break; }
+      case 'oblContratante': {
+        const it = [
+          `Pagar oportunamente la contraprestación pactada en la ${R('valor')}, dentro de los cinco (5) días siguientes a la presentación completa de los documentos exigidos por EL CONTRATISTA.`,
+          'Suministrar a EL CONTRATISTA la información, lineamientos y material de marca necesarios para la adecuada construcción del patrimonio de marca objeto del presente contrato.',
+          'Revisar y aprobar los activos de marca dentro de un plazo razonable, comunicando sus observaciones de manera oportuna y concreta.'];
+        if (m){
+          it.push('Asegurar que el Delegado de Marca designado por EL CONTRATANTE, o cualquier otro miembro de su equipo que este designe, asista a una (1) reunión semanal de seguimiento operativo, a realizarse el primer día hábil de la semana, la cual se llevará a cabo de manera presencial cuando ambas partes se encuentren en la misma ciudad, en el lugar que éstas acuerden.');
+          it.push('Asegurar que el Delegado de Marca designado por EL CONTRATANTE, o cualquier otro miembro de su equipo que este designe, asista de manera presencial a una (1) reunión trimestral de planeación estratégica, destinada a programar, revisar o definir el Comercial para TV (Brand Film) del trimestre correspondiente.');
+        }
+        h += `<ol>${it.map(x=>`<li>${x}</li>`).join('')}</ol>`;
+        break; }
+      case 'independencia':
+        h += `<p>EL CONTRATISTA presta sus servicios como contratista independiente, en los términos del contrato de prestación de servicios regulado por el Código Civil colombiano. La relación entre las partes no configura contrato de trabajo, por cuanto no concurren los elementos previstos en el artículo 23 del Código Sustantivo del Trabajo: subordinación continuada, prestación personal exclusiva del servicio y remuneración salarial. En consecuencia, EL CONTRATISTA ejerce su rol con su propia organización y metodología de trabajo, sujeto únicamente a las directrices generales de resultado señaladas en este contrato que imparta EL CONTRATANTE, sin que ello altere su autonomía técnica y administrativa.</p>
+          <p>En consecuencia, EL CONTRATANTE queda exonerado de toda obligación propia de un empleador, incluyendo prestaciones sociales, aportes parafiscales y demás cargas laborales previstas en el Código Sustantivo del Trabajo.</p>
+          <p>Lo anterior no exime a ninguna de las partes del cumplimiento pleno de las demás obligaciones, plazos y condiciones pactados en este contrato.</p>`;
+        break;
+      case 'pi':
+        h += `<p>Los activos de marca generados por PSSYCCO AI Studios: contenidos, obras y creaciones que EL CONTRATISTA genere en desarrollo del presente contrato serán de propiedad exclusiva de EL CONTRATANTE, quien podrá hacer uso de ellos sin restricción alguna. EL CONTRATISTA cede desde ahora a favor de EL CONTRATANTE todos los derechos patrimoniales de autor sobre las obras producidas en virtud de este contrato.</p>
+          <p>${m ? `El Sistema Operativo Creativo de IA de la Marca, descrito en la ${R('archivo')}, junto con las metodologías, procesos, prompts y estructuras narrativas de PSSYCCO, permanecen` : 'Las metodologías, procesos, prompts y estructuras narrativas de PSSYCCO permanecen'} como patrimonio de PSSYCCO AI Studios, lo cual garantiza a EL CONTRATANTE los más altos estándares de excelencia y mejora continua. La propiedad exclusiva de EL CONTRATANTE recae, en su totalidad, sobre los activos de marca finales entregados —Brand Films, Shorts, Clips, Photo Studios, Gráficos y demás piezas—, que son, en definitiva, lo que construye y proyecta su patrimonio de marca en el mercado.</p>
+          <p>La cesión de los derechos patrimoniales de autor sobre cada activo se formaliza ${m ? 'mes a mes, en línea con el ciclo mensual de producción descrito en la ' + R('entregables') : 'con la entrega de cada activo'}, garantizando a EL CONTRATANTE la entrega ordenada y documentada de su patrimonio de marca a lo largo de toda la vigencia del contrato.</p>
+          <p>Se deja constancia de que los derechos patrimoniales sobre los activos de marca son y seguirán siendo de titularidad exclusiva de EL CONTRATANTE. La autorización que EL CONTRATANTE confiere a PSSYCCO AI Studios en el párrafo siguiente constituye una cesión limitada de uso, exclusivamente para fines de exposición en el portafolio de PSSYCCO AI Studios, sin que ello implique transferencia, renuncia o pérdida alguna de la titularidad de dichos derechos en cabeza de EL CONTRATANTE.</p>
+          <p>En virtud de lo anterior, EL CONTRATANTE autoriza a PSSYCCO AI Studios, a reproducir los activos de marca producidos en virtud de este contrato en su portafolio comercial. Esta cesión de uso se otorga en beneficio mutuo de las partes, entendiéndose que dicha exposición en sus canales de distribución de PSSYCCO AI Studios también contribuye al crecimiento y visibilidad de la marca de EL CONTRATANTE. Esta autorización se mantendrá vigente aun después de la terminación del presente contrato, salvo pacto expreso y por escrito en contrario entre las partes.</p>`;
+        break;
+      case 'confidencialidad':
+        h += `<p>EL CONTRATISTA se obliga a mantener la más estricta confidencialidad sobre toda la información empresarial, estratégica, comercial y de cualquier otra índole a la que tenga acceso durante la ejecución del presente contrato.</p>
+          <p>Asimismo, todo el material suministrado por EL CONTRATANTE, incluyendo el material audiovisual, fotográfico y de referencia, deberá ser manejado por PSSYCCO bajo estrictas condiciones de confidencialidad y vigilancia. Garantizando que el mismo sea utilizado única y exclusivamente para la producción de activos propios y exclusivos de la marca de EL CONTRATANTE que lo suministró.</p>
+          <p>Esta obligación de confidencialidad tendrá carácter indefinido y perpetuo, manteniéndose plenamente vigente aun después de la terminación del presente contrato, por cualquier causa que esta ocurra, sin límite de tiempo.</p>
+          <p>Por su parte, EL CONTRATANTE se compromete a mantener la exclusividad y reserva sobre los procesos de discovery, indagación estratégica, investigación de mercado y demás metodologías propietarias de recopilación y análisis de información que PSSYCCO AI Studios utiliza en el desarrollo de sus servicios con sus clientes, al igual que material comercial, propuestas comerciales absteniéndose de divulgar, reproducir o compartir dicha información con terceros ajenos al presente contrato.</p>`;
+        break;
+      case 'ainonai':
+        h += `<p>Los Brand Films deberán ser producidos en su totalidad mediante métodos de inteligencia artificial ("fully AI brand films"), sin excepción.</p>
+          <p>En el caso de los Shorts, Clips, Photo Studios y Graphics, EL CONTRATANTE podrá elegir, a su entera discreción y preferencia, la proporción de contenido producido con inteligencia artificial y contenido producido sin inteligencia artificial ("non-AI") dentro de cada categoría, conforme a lo dispuesto en la ${R('entregables')}.</p>`;
+        break;
+      case 'terminacion':
+        h += `<p>El presente contrato podrá darse por terminado de manera anticipada por las siguientes causales:</p>
+          <div class="sub"><p>a) Por mutuo acuerdo escrito entre las partes.</p>
+          <p>b) Por incumplimiento grave de las obligaciones de cualquiera de las partes, previo aviso escrito de quince (15) días calendario.</p>
+          <p>c) Por vencimiento del plazo pactado sin prórroga.</p>
+          <p>d) Por mora en el pago superior a sesenta (60) días calendario, sin que EL CONTRATANTE haya regularizado su situación pese al aviso previsto en la ${R('valor')}.</p>
+          ${m ? `<p>e) Por decisión unilateral de EL CONTRATANTE, sin justa causa, caso en el cual EL CONTRATANTE reconocerá a EL CONTRATISTA, a título de compensación por la interrupción anticipada, un valor equivalente al veinte por ciento (20%) del valor correspondiente a los meses restantes del contrato a la fecha de terminación.</p>` : ''}</div>`;
+        break;
+      case 'ley':
+        h += `<p>El presente contrato se rige por las leyes de la República de Colombia, en especial por las disposiciones del Código Civil, el Código de Comercio y las normas aplicables a la prestación de servicios independientes.</p>`;
+        break;
+      case 'conflictos':
+        h += `<p>Las diferencias o controversias que surjan entre las partes con ocasión del presente contrato serán resueltas, en primera instancia, mediante negociación directa. De no llegarse a un acuerdo en un término de quince (15) días hábiles, las partes acuerdan someter la controversia a arbitraje internacional, administrado por el Centro de Arbitraje y Conciliación de la Cámara de Comercio de Bogotá, con árbitro único, que decidirá en derecho conforme a las leyes de la República de Colombia, en idioma español, con sede en Bogotá, Colombia. El laudo arbitral que se profiera será definitivo y vinculante para las partes, y podrá hacerse ejecutable conforme a la Convención de Nueva York de 1958 sobre Reconocimiento y Ejecución de Sentencias Arbitrales Extranjeras.</p>`;
+        break;
+      case 'suscripcion':
+        h += `<p>En constancia de lo anterior, las partes suscriben el presente Contrato de Prestación de Servicios en la ciudad de Bogotá a los ${today.getDate()} días del mes de ${MES[today.getMonth()]} de ${today.getFullYear()}.</p>
+          <div class="sign">
+            <div><b>${st.name ? esc(st.name).toUpperCase() : 'EL CONTRATANTE'}</b>${esc(st.idType)} ${esc(st.idNum)}${st.kind==='empresa' && st.rep ? '<br>' + esc(st.rep) : ''}<br>EL CONTRATANTE</div>
+            <div><b>MATEO VASQUEZ ARISTIZABAL</b>PSSYCCO AI Studios<br>EL CONTRATISTA</div>
+          </div>`;
+        break;
+      }
+      c.push(h);
+    });
+    return c.join('');
+  }
+
+  function draw(){
+    const body = clauses();
+    document.getElementById('sheets').innerHTML = `
+      <div class="sheet cover">
+        <img src="/assets/shop/contract-logo.jpg" alt="pssycco AI studios">
+        <div class="ctitle"><b>CONTRATO</b> DE PRESTACIÓN DE SERVICIOS</div>
+        <div class="cfoot">a <b>mossaicco</b> company / kingdom of shapes</div>
+      </div>
+      <div class="sheet body-sheet doc">
+        <div class="fixed-hd">${header}</div>
+        <div class="fixed-ft">${footer}</div>
+        <table class="frame">
+          <thead><tr><td><div class="spacer-hd"></div></td></tr></thead>
+          <tfoot><tr><td><div class="spacer-ft"></div></td></tr></tfoot>
+          <tbody><tr><td><div class="screen-only">${header}</div>${body}</td></tr></tbody>
+        </table>
+      </div>
+      <div class="sheet backpage">
+        <div class="bmark"><div class="glyphs">${glyphs}</div><span>a <b>mossaicco</b> company</span></div>
+        <div class="bfoot">part of the <b>KINGDOM</b> <i>of</i> <b>SHAPES</b> franchise</div>
+      </div>`;
+  }
+  draw();
+
+  document.getElementById('dl').addEventListener('click', ()=>{
+    const prev = document.title;
+    document.title = 'pssycco — contrato — ' + (st.name || 'cliente');
+    window.print();
+    setTimeout(()=>{ document.title = prev; }, 1000);
+    window.PSSYCCO_SAVE_QUOTE && window.PSSYCCO_SAVE_QUOTE({ client:st, cart:cart, total:q.total, membership: q.membership ? q.membership.key : null, term: q.membership ? q.membership.term.months : null, cards:q.cards });
+  });
+})();
+</script>
+
+<!-- keep a copy of every downloaded quote in firebase (collection "quotes") -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  const app = initializeApp({
+    apiKey: "AIzaSyClZ8vQRjpavUCovCKkm7G2TKlDtu-ROo8",
+    authDomain: "pietra-41149.firebaseapp.com",
+    projectId: "pietra-41149",
+    storageBucket: "pietra-41149.firebasestorage.app",
+    messagingSenderId: "965119942981",
+    appId: "1:965119942981:web:b72072ed543fe3282f5e2c"
+  });
+  const db = getFirestore(app);
+  window.PSSYCCO_SAVE_QUOTE = async (data)=>{
+    try { await addDoc(collection(db, "quotes"), { ...data, createdAt: serverTimestamp(), page: location.href }); }
+    catch(e){ console.warn('quote not saved', e && e.code); }
+  };
+</script>
+</body>
+</html>

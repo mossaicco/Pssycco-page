@@ -42,7 +42,7 @@
 
   form{display:flex; flex-direction:column; gap:14px; margin-top:26px;}
   label{font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; display:block;}
-  input, textarea{
+  input, textarea, select{
     width:100%; padding:12px 14px; border:1px solid var(--line); background:var(--bg2);
     color:var(--ink); font-family:var(--sans); font-size:14.5px; outline:none; transition:.2s;
   }
@@ -103,7 +103,7 @@
   th{text-align:left; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); padding:10px 8px 10px 0; border-bottom:1px solid var(--line);}
   td{padding:12px 8px 12px 0; border-bottom:1px solid var(--line); vertical-align:middle;}
   td.email{color:var(--ink); word-break:break-word; font-size:12.5px;}
-  td.name input, td.folder input{font-size:12.5px; padding:8px 10px;}
+  td.name input, td.folder input, td.plan select{font-size:12.5px; padding:8px 10px;}
   td.logo img{height:22px; width:auto; display:block;}
   td.logo span{color:var(--muted);}
   td.action{text-align:right; white-space:nowrap;}
@@ -181,6 +181,17 @@
         </div>
       </div>
       <div class="field">
+        <label for="as-plan">membership</label>
+        <select id="as-plan">
+          <option value="">— keep current —</option>
+          <option value="leaders">leaders</option>
+          <option value="ultimate">ultimate</option>
+          <option value="signature">signature</option>
+          <option value="none">no membership</option>
+        </select>
+        <div class="hint">members get 10% off every piece in the shop, and the shop shows which membership they have.</div>
+      </div>
+      <div class="field">
         <label for="as-logo-file">brand logo</label>
         <input id="as-logo-file" type="file" accept="image/*">
         <div class="hint">choose an image from your computer — ideally under 500kb. it's saved directly, no hosting or extra setup needed.</div>
@@ -197,7 +208,7 @@
     </form>
 
     <table>
-      <tr><th>email</th><th>display name</th><th>drive folder id</th><th>logo</th><th></th></tr>
+      <tr><th>email</th><th>display name</th><th>drive folder id</th><th>membership</th><th>logo</th><th></th></tr>
       <tbody id="members-body"></tbody>
     </table>
   </div>
@@ -365,11 +376,11 @@
 
   async function loadMembers(){
     const body = document.getElementById('members-body');
-    body.innerHTML = '<tr><td colspan="5" class="muted">loading…</td></tr>';
+    body.innerHTML = '<tr><td colspan="6" class="muted">loading…</td></tr>';
     try{
       const snaps = await getDocs(collection(db, "members"));
       if(snaps.empty){
-        body.innerHTML = '<tr><td colspan="5" class="muted">no members yet.</td></tr>';
+        body.innerHTML = '<tr><td colspan="6" class="muted">no members yet.</td></tr>';
         return;
       }
       body.innerHTML = '';
@@ -380,6 +391,7 @@
           '<td class="email">'+escapeHtml(snap.id)+'</td>'+
           '<td class="name"><input type="text" value="'+escapeAttr(data.displayName||'')+'" data-email="'+snap.id+'" data-field="name"></td>'+
           '<td class="folder"><input type="text" value="'+escapeAttr(data.driveFolderId||'')+'" data-email="'+snap.id+'" data-field="folder"></td>'+
+          '<td class="plan"><select data-email="'+snap.id+'" data-field="plan">'+['','leaders','ultimate','signature'].map(v=>'<option value="'+v+'"'+((data.plan||'')===v?' selected':'')+'>'+(v||'—')+'</option>').join('')+'</select></td>'+
           '<td class="logo">'+(data.logoUrl ? '<img src="'+escapeAttr(data.logoUrl)+'" alt="">' : '<span>—</span>')+'</td>'+
           '<td class="action"><button type="button" class="btn-update" data-email="'+snap.id+'">update</button><button type="button" class="btn-delete" data-email="'+snap.id+'">eliminar</button></td>';
         body.appendChild(tr);
@@ -389,11 +401,13 @@
           const email = btn.getAttribute('data-email');
           const nameInput = body.querySelector('input[data-email="'+email+'"][data-field="name"]');
           const folderInput = body.querySelector('input[data-email="'+email+'"][data-field="folder"]');
+          const planInput = body.querySelector('select[data-email="'+email+'"][data-field="plan"]');
           btn.disabled = true; btn.textContent = 'saving…';
           try{
             await setDoc(doc(db, "members", email), {
               displayName: nameInput.value.trim(),
-              driveFolderId: folderInput.value.trim()
+              driveFolderId: folderInput.value.trim(),
+              plan: planInput ? planInput.value : ''
             }, { merge:true });
             btn.textContent = 'saved';
           }catch(err){
@@ -416,7 +430,7 @@
         });
       });
     }catch(err){
-      body.innerHTML = '<tr><td colspan="5" class="msg error">couldn\'t load members.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" class="msg error">couldn\'t load members.</td></tr>';
     }
   }
 
@@ -439,6 +453,8 @@
     try{
       const payload = { displayName: name, driveFolderId: folder };
       if(logoUrl) payload.logoUrl = logoUrl;
+      const plan = document.getElementById('as-plan').value;
+      if(plan) payload.plan = (plan === 'none') ? '' : plan;
 
       await Promise.all(emails.map(email => setDoc(doc(db, "members", email), payload, { merge:true })));
 
