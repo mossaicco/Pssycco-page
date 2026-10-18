@@ -11,10 +11,10 @@
     --muted:#9a9d90; --glyph:#878a80; --line:rgba(51,53,47,0.12);
     --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
     --ease:cubic-bezier(.22,.61,.36,1);
-    --bar-h:76px;
+    --bar-h:104px;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{background:var(--bg); scroll-behavior:smooth; scroll-padding-top:170px;}
+  html{background:var(--bg); scroll-behavior:smooth; scroll-padding-top:200px;}
   body{background:var(--bg); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; overflow-x:hidden;}
   a{color:inherit;}
   img{display:block; max-width:100%;}
@@ -72,22 +72,26 @@
   }
   .handbar-in{
     display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:34px;
-    padding:12px 5%; min-height:var(--bar-h);
+    padding:14px 5%; min-height:var(--bar-h);
   }
-  .fan{position:relative; width:150px; height:52px; display:flex; align-items:center; --step:9px;}
+  .fan{position:relative; width:290px; height:76px; display:flex; align-items:center; --step:15px; --cw:52px;
+    background:none; border:none; padding:0; text-align:left; border-radius:10px;}
+  .fan:not(.is-empty):hover .mini{transform:var(--t) translateY(-4px);}
+  .fan:not(.is-empty):hover .fan-count{color:var(--ink);}
   .fan .mini{
-    position:absolute; left:6px; top:0; width:36px; height:52px; border-radius:4px;
+    position:absolute; left:6px; top:2px; width:var(--cw); height:74px; border-radius:5px; transform:var(--t);
     background:url('/assets/shop/joker.webp') center/cover no-repeat;
     box-shadow:0 2px 6px rgba(51,53,47,0.18); transform-origin:50% 120%;
     transition:transform .5s var(--ease), opacity .3s ease;
   }
   .fan .empty-slot{
-    position:absolute; left:6px; top:0; width:36px; height:52px; border-radius:4px;
+    position:absolute; left:6px; top:2px; width:var(--cw); height:74px; border-radius:5px;
     border:1px dashed rgba(51,53,47,0.28);
   }
-  .fan-count{position:absolute; left:58px; font-size:12px; color:var(--muted); white-space:nowrap; letter-spacing:0.02em; transition:left .5s var(--ease);}
+  .fan-count{position:absolute; left:58px; font-size:12.5px; line-height:1.45; color:var(--muted); white-space:nowrap; letter-spacing:0.02em; transition:left .5s var(--ease);}
   .fan-n{display:none;}
   .fan-count b{color:var(--ink); font-weight:700;}
+  .fan-count small{display:block; font-size:11px; color:var(--muted); opacity:.8;}
 
   .track{display:flex; flex-direction:column; gap:8px; min-width:0;}
   .track-slots{display:grid; grid-template-columns:repeat(9,1fr); gap:5px; max-width:420px;}
@@ -119,8 +123,8 @@
   @media (max-width:860px){
     .handbar{top:61px;}
     .handbar-in{grid-template-columns:auto 1fr auto; gap:14px; padding:10px 16px; min-height:64px;}
-    .fan{width:48px; height:44px; --step:2.5px;}
-    .fan .mini,.fan .empty-slot{width:30px; height:44px;}
+    .fan{width:48px; height:44px; --step:2.5px; --cw:30px;}
+    .fan .mini,.fan .empty-slot{width:30px; height:44px; top:0;}
     .fan-count{display:none;}
     .fan-n{display:flex; position:absolute; right:-4px; bottom:-4px; z-index:2; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:var(--ink); color:var(--bg); font-size:11px; align-items:center; justify-content:center;}
     .track-slots{gap:3px;}
@@ -134,25 +138,23 @@
   @media (max-width:420px){ .total small{display:none;} .hand-btn span{display:none;} }
 
   /* ---------- hero ---------- */
-  main{padding-top:150px;}
+  main{padding-top:170px;}
   .hero{
-    display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr); align-items:center; gap:6%;
-    padding:90px 8% 70px; max-width:1320px; margin:0 auto;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    padding:70px 6% 30px; max-width:1100px; margin:0 auto;
   }
-  .hero h1{font-size:clamp(48px,8vw,104px); letter-spacing:-0.03em;}
-  .hero p{font-size:18px; line-height:1.75; color:var(--ink); max-width:480px; margin-top:28px;}
-  .hero .member-line{font-size:14px; color:var(--muted); margin-top:18px;}
-  .hero .member-line a{color:var(--ink);}
+  .hero h1{font-size:clamp(46px,7vw,92px); letter-spacing:-0.03em; margin-top:56px;}
+  .hero p{font-size:18px; line-height:1.75; color:var(--ink); max-width:540px; margin:22px auto 0;}
   .hero-card{display:flex; justify-content:center; perspective:1200px;}
   .hero-card img{
-    width:min(300px,62vw); height:auto; border-radius:14px;
+    width:min(280px,58vw); height:auto; border-radius:14px;
     box-shadow:0 40px 70px -30px rgba(51,53,47,0.45), 0 2px 6px rgba(51,53,47,0.12);
     transform:rotate(-4deg); transition:transform .8s var(--ease); will-change:transform;
   }
 
   /* the three bundle stacks */
   .bundles{
-    max-width:1320px; margin:0 auto; padding:10px 8% 40px;
+    max-width:1100px; margin:0 auto; padding:40px 6% 40px;
     display:grid; grid-template-columns:repeat(4,1fr); gap:20px;
   }
   .stack{display:flex; align-items:center; gap:18px; padding:20px 0; border-top:1px solid var(--line);}
@@ -167,6 +169,13 @@
   .stack b{display:block; font-size:22px; font-weight:400; letter-spacing:-0.01em;}
   .stack small{font-size:12.5px; color:var(--muted);}
   .stack.reached{border-top-color:var(--ink);}
+  .stack.member-tile{align-items:flex-start;}
+  .stack .signin{
+    display:inline-block; margin-top:12px; font-size:12px; letter-spacing:0.04em; text-transform:lowercase; text-decoration:none;
+    border:1px solid var(--ink); color:var(--ink); padding:8px 16px; border-radius:16px; transition:background .2s ease, color .2s ease;
+  }
+  .stack .signin:hover{background:var(--ink); color:var(--bg);}
+  .stack .signin.is-member{background:var(--ink); color:var(--bg); pointer-events:none;}
   @media (max-width:860px){ .bundles{grid-template-columns:1fr 1fr; gap:0 18px;} }
 
   /* ---------- catalog ---------- */
@@ -177,7 +186,7 @@
   .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;}
   .grid.two{grid-template-columns:repeat(2,minmax(0,1fr));}
   @media (max-width:980px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
-  @media (max-width:760px){ .hero{grid-template-columns:1fr; gap:46px;} .hero-card img{width:min(220px,56vw); transform:rotate(-6deg);} .hero p{font-size:17px;} }
+  @media (max-width:760px){ .hero{padding:40px 16px 10px;} .hero h1{margin-top:40px;} .hero-card img{width:min(210px,56vw);} .hero p{font-size:16.5px;} }
   @media (max-width:640px){ .grid,.grid.two{grid-template-columns:1fr;} .group{padding:64px 16px 10px;} .hero{padding:60px 16px 40px;} .bundles{padding:10px 16px 30px;} }
 
   .piece{
@@ -274,7 +283,7 @@
   /* ---------- the hand drawer ---------- */
   .drawer-bg{position:fixed; inset:0; z-index:200; background:rgba(51,53,47,0.45); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .3s ease;}
   .drawer{
-    position:fixed; top:0; right:0; bottom:0; z-index:210; width:min(460px,100%);
+    position:fixed; top:0; right:0; bottom:0; z-index:210; width:min(540px,100%);
     background:var(--bg); display:flex; flex-direction:column;
     transform:translateX(100%); transition:transform .45s var(--ease), visibility 0s .45s; visibility:hidden;
   }
@@ -293,10 +302,11 @@
   .dline .medal .five{grid-template-columns:repeat(3,6px); gap:2px;}
   .dline .medal .five svg{width:6px; height:6px;}
   .dline .dn{font-size:14px;}
-  .dline .dq{display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:var(--muted);}
+  .dline .dq{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:6px; font-size:12px; color:var(--muted);}
   .dline .dq button{width:26px; height:26px; border-radius:50%; border:1px solid var(--line); background:transparent; font-size:14px; line-height:1;}
   .dline .dp{font-size:14px; text-align:right;}
-  .dline.member .medal{background:var(--ink); color:var(--bg); font-size:11px;}
+  .dline.member .medal{background:#f7f6f2;}
+  .mini-mem{width:14px; height:20px; border-radius:2px; background:var(--ink);}
   .dsum{padding:18px 0 4px;}
   .dsum div{display:flex; justify-content:space-between; font-size:13.5px; padding:6px 0; color:var(--muted);}
   .dsum div.grand{color:var(--ink); font-size:22px; padding-top:14px; margin-top:8px; border-top:1px solid var(--line);}
@@ -309,6 +319,55 @@
   }
   .drawer-foot a.go[aria-disabled="true"]{opacity:.35; pointer-events:none;}
   .drawer-foot .clear{background:none; border:none; font-size:12px; color:var(--muted); text-decoration:underline;}
+
+
+  /* the spread: one playing card per line in your hand */
+  .spread{display:flex; gap:0; padding:38px 4px 26px; overflow-x:auto; scroll-snap-type:x proximity; margin:0 -28px; padding-left:28px; padding-right:28px;}
+  .spread::-webkit-scrollbar{display:none;}
+  .pcard{
+    flex:none; position:relative; width:78px; height:112px; margin-right:-18px; border-radius:8px; scroll-snap-align:start;
+    background:#fff; border:1px solid rgba(51,53,47,0.14); box-shadow:0 10px 22px -12px rgba(51,53,47,0.35);
+    display:flex; align-items:center; justify-content:center; color:var(--glyph);
+    transform:rotate(var(--r)) translateY(0); transition:transform .35s var(--ease), box-shadow .35s ease, margin .35s var(--ease);
+    cursor:pointer;
+  }
+  .pcard:hover,.pcard:focus-visible{transform:rotate(0deg) translateY(-10px); z-index:3; margin-right:2px; margin-left:12px;}
+  .pcard[aria-pressed="true"]{transform:rotate(0deg) translateY(-14px); z-index:4; margin-right:4px; margin-left:14px; box-shadow:0 0 0 2px var(--ink), 0 18px 30px -14px rgba(51,53,47,0.45);}
+  .pcard .rank{position:absolute; top:6px; left:8px; font-size:15px; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums;}
+  .pcard .rank.b{top:auto; left:auto; bottom:6px; right:8px; transform:rotate(180deg);}
+  .pcard svg{width:34px; height:34px; fill:currentColor;}
+  .pcard svg.outline{fill:none; stroke:currentColor; stroke-width:14;}
+  .pcard .blank{width:26px; height:36px; border-radius:3px; border:1px solid rgba(51,53,47,0.2);}
+  .pcard .five{display:grid; grid-template-columns:repeat(3,12px); gap:4px;}
+  .pcard .five svg{width:12px; height:12px;}
+  .pcard.mem{background:var(--ink); border-color:var(--ink); color:var(--bg);}
+  .pcard.mem .rank{color:var(--bg); font-size:11px; letter-spacing:0.04em;}
+  .pcard.mem .mname{font-size:12px; letter-spacing:0.04em; writing-mode:vertical-rl; transform:rotate(180deg);}
+
+  .dline{transition:background .3s ease;}
+  .dline.flash{background:rgba(51,53,47,0.06);}
+  .dline .spec{font-size:11.5px; color:var(--muted); margin-top:2px;}
+  .dline .rm{border:none; background:none; color:var(--muted); font-size:11.5px; text-decoration:underline; margin-left:6px; padding:4px;}
+  .dline .rm:hover{color:var(--ink);}
+  .dline .dp small{display:block; font-size:11px; color:var(--muted);}
+
+  .nudge{margin:18px 0 6px; padding:16px 18px; border-radius:14px; background:rgba(51,53,47,0.05); display:flex; gap:14px; align-items:center;}
+  .nudge p{font-size:13px; line-height:1.55; flex:1;}
+  .nudge p b{font-weight:700;}
+  .nudge button{flex:none; border:none; background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:18px; font-size:12px; letter-spacing:0.03em; text-transform:lowercase;}
+
+  .hand-tools{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .hand-tools button{background:none; border:none; font-size:12px; color:var(--muted); text-decoration:underline; padding:4px 0;}
+  .hand-tools button:hover{color:var(--ink);}
+
+  .toast{
+    position:absolute; left:28px; right:28px; bottom:calc(150px + env(safe-area-inset-bottom)); z-index:5;
+    background:var(--deep); color:var(--bg); border-radius:14px; padding:13px 16px; font-size:13px;
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .25s ease, transform .3s var(--ease);
+  }
+  .toast.on{opacity:1; transform:none; pointer-events:auto;}
+  .toast button{border:none; background:none; color:var(--bg); text-decoration:underline; font-size:13px;}
 
   /* flying card */
   .flying{
@@ -351,7 +410,7 @@
 
 <div class="handbar" role="region" aria-label="your hand">
   <div class="handbar-in">
-    <div class="fan" id="fan" aria-hidden="true"></div>
+    <button class="fan" id="fan" type="button" aria-label="open your hand"></button>
     <div class="track">
       <div class="track-slots" id="track" aria-hidden="true"></div>
       <div class="track-msg" id="track-msg" aria-live="polite"></div>
@@ -366,19 +425,16 @@
 
 <main>
   <section class="hero">
-    <div>
-      <h1>the shop.</h1>
-      <p>Every piece you add is a joker. Collect three, six or nine and the price drops on its own — the more of the house you take, the less each piece costs.</p>
-      <p class="member-line" id="hero-member">Already a member? <a href="/members/">Sign in</a> and 10% comes off every piece.</p>
-    </div>
     <div class="hero-card"><img id="hero-joker" src="/assets/shop/joker.webp" alt="the pssycco joker card" width="480" height="720"></div>
+    <h1>the shop.</h1>
+    <p>Every piece you add is a joker. Collect three, six or nine and the price drops on its own — the more of the house you take, the less each piece costs.</p>
   </section>
 
   <div class="bundles" id="bundles">
     <div class="stack" data-tier="3"><div class="stack-cards" data-n="3"></div><div><b>11% off</b><small>3 jokers</small></div></div>
     <div class="stack" data-tier="6"><div class="stack-cards" data-n="6"></div><div><b>22% off</b><small>6 jokers</small></div></div>
     <div class="stack" data-tier="9"><div class="stack-cards" data-n="9"></div><div><b>33% off</b><small>9 jokers or more</small></div></div>
-    <div class="stack" data-tier="member"><div class="stack-cards member" data-n="1"></div><div><b>+10% off</b><small>for members, on top</small></div></div>
+    <div class="stack member-tile" data-tier="member"><div><b>+10% off</b><small id="member-note">for members, on top of everything</small><br><a class="signin" id="hero-signin" href="/members/">sign in</a></div></div>
   </div>
 
   <section class="group" id="immaterial">
@@ -432,9 +488,10 @@
 <aside class="drawer" id="drawer" aria-label="your hand" aria-hidden="true">
   <div class="drawer-head"><h2>your hand.</h2><button type="button" id="close-hand" aria-label="close">×</button></div>
   <div class="drawer-body" id="drawer-body"></div>
+  <div class="toast" id="toast" role="status"><span id="toast-msg"></span><button type="button" id="toast-undo">undo</button></div>
   <div class="drawer-foot">
     <a class="go" id="go-contract" href="/shop/contrato">review &amp; download your contract</a>
-    <button class="clear" id="clear-hand" type="button">empty my hand</button>
+    <div class="hand-tools"><button id="share-hand" type="button">copy a link to this hand</button><button id="clear-hand" type="button">empty my hand</button></div>
   </div>
 </aside>
 
@@ -510,7 +567,7 @@
     const c = document.createElement('div'); c.className = 'flying';
     c.style.left = (a.left + a.width/2 - 23) + 'px'; c.style.top = (a.top + a.height/2 - 33) + 'px';
     document.body.appendChild(c);
-    const dx = (fan.left + 10) - (a.left + a.width/2 - 23), dy = (fan.top - 6) - (a.top + a.height/2 - 33);
+    const dx = (fan.left + 14) - (a.left + a.width/2 - 23), dy = (fan.top + 4) - (a.top + a.height/2 - 33);
     const anim = c.animate([
       { transform:'translate(0,0) rotate(0deg) scale(.6)', opacity:0 },
       { transform:`translate(${dx*0.35}px,${dy*0.55 - 60}px) rotate(-14deg) scale(1.05)`, opacity:1, offset:.35 },
@@ -578,10 +635,11 @@
     if (!shown) html = '<span class="empty-slot"></span>';
     for (let i=0;i<shown;i++){
       const spread = shown>1 ? (i - (shown-1)/2) : 0;
-      html += `<span class="mini" style="transform:translateX(calc(${i} * var(--step))) rotate(${spread*5}deg)"></span>`;
+      html += `<span class="mini" style="--t:translateX(calc(${i} * var(--step))) rotate(${spread*4}deg)"></span>`;
     }
-    html += (n ? `<span class="fan-n num">${n}</span>` : '') + `<span class="fan-count" style="left:${50 + Math.max(0,shown-1)*9}px"><b class="num">${n}</b> ${n===1?'joker':'jokers'}</span>`;
+    html += (n ? `<span class="fan-n num">${n}</span>` : '') + `<span class="fan-count" style="left:calc(var(--cw) + 22px + ${Math.max(0,shown-1)} * var(--step))"><b class="num">${n}</b> ${n===1?'joker':'jokers'}<small>${n ? 'tap to see your hand' : 'your hand is empty'}</small></span>`;
     fan.innerHTML = html;
+    fan.classList.toggle('is-empty', !n);
   }
 
   function render(){
@@ -624,33 +682,67 @@
     // member chip
     const chip = document.getElementById('member-chip');
     if (member){ chip.textContent = member + ' member · 10% off'; chip.classList.add('is-member'); chip.href = '/members/dashboard.html';
-      document.getElementById('hero-member').innerHTML = `You’re signed in as a <b>${member}</b> member — 10% is already off every piece.`; }
+      document.getElementById('member-note').textContent = `you’re a ${member} member`; const si = document.getElementById('hero-signin'); si.textContent = '10% applied'; si.classList.add('is-member'); }
 
     document.getElementById('own').setAttribute('aria-checked', !!cart.ownMaterial);
     renderTerms(); renderPlans(); renderDrawer(q);
   }
+
+  function cardFace(icon){
+    if (icon === 'blank') return '<span class="blank"></span>';
+    if (icon === 'five')  return '<span class="five">' + ['brandfilm','short','clip','photostudio','signature'].map(k=>glyphSVG(k,'g')).join('') + '</span>';
+    if (icon === 'outline'){ const g = PSSYCCO_GLYPHS.signature; return '<svg class="outline" viewBox="-10 -10 '+(g.s+20)+' '+(g.s+20)+'"><path d="'+g.d+'"/></svg>'; }
+    if (icon === 'dayU') return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+    if (icon === 'dayT') return '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2.5"/><path d="M17 10.5l4-2.5v8l-4-2.5z"/></svg>';
+    return glyphSVG(icon,'g');
+  }
+  let selected = null;
 
   function renderDrawer(q){
     const body = document.getElementById('drawer-body');
     const go = document.getElementById('go-contract');
     if (!q.lines.length && !q.membership){
       body.innerHTML = '<div class="dempty"><div class="blank-card"></div>Your hand is empty.<br>Add a piece or a membership to start.</div>';
-      go.setAttribute('aria-disabled','true'); return;
+      go.setAttribute('aria-disabled','true'); document.getElementById('share-hand').style.visibility='hidden'; return;
     }
-    go.removeAttribute('aria-disabled');
-    let h = '';
+    go.removeAttribute('aria-disabled'); document.getElementById('share-hand').style.visibility='';
+
+    // the spread
+    const items = [];
+    if (q.membership) items.push({ key:'m', html:`<span class="rank">${q.membership.term.months}m</span><span class="mname">${q.membership.plan.name}</span><span class="rank b">${q.membership.term.months}m</span>`, cls:'mem', label:q.membership.plan.name+' membership' });
+    q.lines.forEach(l=>items.push({ key:l.p.id, html:`<span class="rank">${l.qty}</span>${cardFace(l.p.icon)}<span class="rank b">${l.qty}</span>`, cls:'', label:P.unitLabel(l.p,l.qty) }));
+    const n = items.length;
+    let h = '<div class="spread" role="list">' + items.map((it,i)=>{
+      const r = n>1 ? ((i-(n-1)/2) * Math.min(5, 24/n)).toFixed(1) : 0;
+      return `<button type="button" role="listitem" class="pcard ${it.cls}" style="--r:${r}deg" data-card="${it.key}" aria-pressed="${selected===it.key}" aria-label="${it.label}">${it.html}</button>`;
+    }).join('') + '</div>';
+
+    // lines
     if (q.membership){
       const m = q.membership;
-      h += `<div class="dline member"><div class="medal">${m.plan.name[0]}</div>
-        <div><div class="dn">${m.plan.name} membership</div><div class="dq">${m.term.months} months, paid ahead <button type="button" data-rm-m aria-label="remove membership">×</button></div></div>
-        <div class="dp num">${cop(m.total)}</div></div>`;
+      h += `<div class="dline member" data-line="m"><div class="medal"><span class="mini-mem"></span></div>
+        <div><div class="dn">${m.plan.name} membership</div><div class="dq">${P.TERMS.map(t=>`<button type="button" data-term="${t.months}" aria-pressed="${t.months===m.term.months}" style="width:auto;padding:0 8px;border-radius:12px;${t.months===m.term.months?'background:var(--ink);color:var(--bg);border-color:var(--ink)':''}">${t.months}m</button>`).join('')}<button type="button" class="rm" data-rm-m>remove</button></div></div>
+        <div class="dp num">${cop(m.total)}${m.off?`<small>−${Math.round(m.term.off*100)}% paid ahead</small>`:''}</div></div>`;
     }
     q.lines.forEach(l=>{
-      h += `<div class="dline">${medal(l.p.icon)}
-        <div><div class="dn">${l.p.name}</div><div class="dq num"><button type="button" data-d="-1" data-id="${l.p.id}" aria-label="one less">−</button>${P.unitLabel(l.p,l.qty)}<button type="button" data-d="1" data-id="${l.p.id}" aria-label="one more">+</button></div></div>
-        <div class="dp num">${cop(l.total)}</div></div>`;
+      h += `<div class="dline" data-line="${l.p.id}">${medal(l.p.icon)}
+        <div><div class="dn">${l.p.name}</div><div class="spec">${l.p.spec}</div>
+        <div class="dq num"><button type="button" data-d="-1" data-id="${l.p.id}" aria-label="one less ${l.p.unit[0]}">−</button>${P.unitLabel(l.p,l.qty)}<button type="button" data-d="1" data-id="${l.p.id}" aria-label="one more ${l.p.unit[0]}" ${l.qty>=l.p.max?'disabled':''}>+</button><button type="button" class="rm" data-rm="${l.p.id}">remove</button></div></div>
+        <div class="dp num">${cop(l.total)}<small>${cop(l.p.price)} each</small></div></div>`;
     });
-    if (cart.ownMaterial) h += `<div class="dline"><div class="medal"><span class="blank"></span></div><div><div class="dn">your own material</div><div class="dq">elevated in post-production</div></div><div class="dp num">$0</div></div>`;
+    if (cart.ownMaterial) h += `<div class="dline"><div class="medal"><span class="blank"></span></div><div><div class="dn">your own material</div><div class="dq">elevated in post-production <button type="button" class="rm" data-rm-own>remove</button></div></div><div class="dp num">$0</div></div>`;
+
+    // nudge: what the next joker is worth
+    if (q.cards && q.next){
+      const k = q.next.cards - q.cards;
+      const cheap = P.PRODUCTS.filter(p=>p.group==='pieces').sort((a,b)=>a.price-b.price)[0];
+      const trial = { ...cart, items:{ ...cart.items, [cheap.id]:(cart.items[cheap.id]||0)+k } };
+      const t = P.quote(trial, window.PSSYCCO_MEMBER);
+      const extra = t.total - q.total, more = t.productsOff - q.productsOff;
+      h += `<div class="nudge"><p>Add <b>${P.unitLabel(cheap,k)}</b> and your whole hand drops to <b>${Math.round(q.next.off*100)}% off</b>. ${extra <= 0 ? `Your total actually goes <b>down by ${cop(-extra)}</b>.` : `It adds ${cop(extra)} to your total and takes ${cop(more)} more off.`}</p><button type="button" data-nudge="${cheap.id}" data-k="${k}">add ${k===1?'it':'them'}</button></div>`;
+    }
+
+    // totals
     h += '<div class="dsum num">';
     if (q.cards) h += `<div><span>pieces · ${q.cards} ${q.cards===1?'joker':'jokers'}</span><span>${cop(q.subtotal)}</span></div>`;
     if (q.bundle.off) h += `<div><span>bundle of ${q.bundle.cards}+ jokers · −${Math.round(q.bundle.off*100)}%</span><span>−${cop(q.subtotal*q.bundle.off)}</span></div>`;
@@ -659,23 +751,64 @@
       h += `<div><span>${q.membership.plan.name} · ${q.membership.term.months} × ${cop(q.membership.plan.monthly)}</span><span>${cop(q.membership.gross)}</span></div>`;
       if (q.membership.off) h += `<div><span>paid ahead · −${Math.round(q.membership.term.off*100)}%</span><span>−${cop(q.membership.off)}</span></div>`;
     }
+    const saved = q.productsOff + (q.membership ? q.membership.off : 0);
+    if (saved) h += `<div><span>you save</span><span>${cop(saved)}</span></div>`;
     h += `<div class="grand"><span>total</span><span>${cop(q.total)}</span></div></div>`;
     body.innerHTML = h;
+
     body.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click', ()=>change(b.dataset.id, +b.dataset.d)));
-    const rm = body.querySelector('[data-rm-m]'); if (rm) rm.addEventListener('click', ()=>{ cart.membership=null; P.saveCart(cart); render(); });
+    body.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click', ()=>{
+      const id = b.dataset.rm, p = P.byId(id), was = cart.items[id];
+      snapshot(); delete cart.items[id]; P.saveCart(cart); if (selected===id) selected=null; render();
+      toast(`${P.unitLabel(p,was)} removed`);
+    }));
+    const rmm = body.querySelector('[data-rm-m]'); if (rmm) rmm.addEventListener('click', ()=>{ const nm = cart.membership; snapshot(); cart.membership=null; P.saveCart(cart); render(); toast(`${nm} membership removed`); });
+    const rmo = body.querySelector('[data-rm-own]'); if (rmo) rmo.addEventListener('click', ()=>{ cart.ownMaterial=false; P.saveCart(cart); render(); });
+    body.querySelectorAll('[data-term]').forEach(b=>b.addEventListener('click', ()=>{ cart.term = +b.dataset.term; P.saveCart(cart); render(); }));
+    const nd = body.querySelector('[data-nudge]'); if (nd) nd.addEventListener('click', ()=>{ const id = nd.dataset.nudge; cart.items[id] = (cart.items[id]||0) + (+nd.dataset.k); P.saveCart(cart); selected = id; render(); });
+    body.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click', ()=>{
+      selected = (selected===c.dataset.card) ? null : c.dataset.card;
+      body.querySelectorAll('.pcard').forEach(x=>x.setAttribute('aria-pressed', x.dataset.card===selected));
+      const line = body.querySelector(`[data-line="${c.dataset.card}"]`);
+      if (line && selected){ line.scrollIntoView({ block:'nearest', behavior: reduce ? 'auto' : 'smooth' }); line.classList.add('flash'); setTimeout(()=>line.classList.remove('flash'), 900); }
+    }));
   }
+
+  /* undo: every removal can be taken back for a few seconds */
+  let undoState = null, toastTimer = null;
+  function snapshot(){ undoState = JSON.stringify(cart); }
+  function toast(msg){
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('on'); clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{ t.classList.remove('on'); undoState = null; }, 6000);
+  }
+  document.getElementById('toast-undo').addEventListener('click', ()=>{
+    if (!undoState) return; cart = JSON.parse(undoState); undoState = null; P.saveCart(cart); render();
+    document.getElementById('toast').classList.remove('on');
+  });
+
+  /* share: the whole hand travels inside a link */
+  document.getElementById('share-hand').addEventListener('click', async ()=>{
+    const code = btoa(unescape(encodeURIComponent(JSON.stringify({ i:cart.items, m:cart.membership, t:cart.term, o:cart.ownMaterial ? 1 : 0 })))).replace(/=+$/,'');
+    const url = location.origin + '/shop/?hand=' + code;
+    try { await navigator.clipboard.writeText(url); toast('link copied — send it to your team'); }
+    catch(e){ prompt('copy this link', url); }
+    document.getElementById('toast-undo').style.display = 'none'; setTimeout(()=>document.getElementById('toast-undo').style.display='', 6000);
+  });
 
   function openHand(){ document.body.classList.add('drawer-open'); document.getElementById('drawer').setAttribute('aria-hidden','false'); document.getElementById('close-hand').focus(); }
   function closeHand(){ document.body.classList.remove('drawer-open'); document.getElementById('drawer').setAttribute('aria-hidden','true'); }
   document.getElementById('open-hand').addEventListener('click', openHand);
+  document.getElementById('fan').addEventListener('click', ()=>{ if (!document.getElementById('fan').classList.contains('is-empty')) openHand(); });
   document.getElementById('close-hand').addEventListener('click', closeHand);
   document.getElementById('drawer-bg').addEventListener('click', closeHand);
   document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeHand(); closePlan(); } });
-  document.getElementById('clear-hand').addEventListener('click', ()=>{ cart = { items:{}, membership:null, term:cart.term, ownMaterial:false }; P.saveCart(cart); render(); });
+  document.getElementById('clear-hand').addEventListener('click', ()=>{ snapshot(); cart = { items:{}, membership:null, term:cart.term, ownMaterial:false }; P.saveCart(cart); selected=null; render(); toast('your hand is empty'); });
   document.getElementById('own').addEventListener('click', ()=>{ cart.ownMaterial = !cart.ownMaterial; P.saveCart(cart); render(); });
 
   /* bundle stacks: little fans of 3, 6, 9 */
-  document.querySelectorAll('.stack-cards').forEach(s=>{
+  document.querySelectorAll('.stack-cards[data-n]').forEach(s=>{
     const n = +s.dataset.n, shown = Math.min(n,5);
     s.innerHTML = Array.from({length:shown},(_,i)=>`<span style="transform:translateX(${(i-(shown-1)/2)*4}px) rotate(${(i-(shown-1)/2)*7}deg)"></span>`).join('');
   });
@@ -686,12 +819,20 @@
   if (!reduce && window.matchMedia('(pointer:fine)').matches){
     document.querySelector('.hero').addEventListener('pointermove', e=>{
       const r = hj.getBoundingClientRect(), x = (e.clientX - (r.left+r.width/2))/r.width, y = (e.clientY - (r.top+r.height/2))/r.height;
-      hj.style.transform = `rotate(-4deg) rotateY(${x*12}deg) rotateX(${-y*10}deg)`;
+      hj.style.transform = `rotate(-4deg) rotateY(${x*14}deg) rotateX(${-y*10}deg)`;
     });
     document.querySelector('.hero').addEventListener('pointerleave', ()=>{ hj.style.transform=''; });
   }
 
   /* arriving from discover with ?plan= */
+  const hp = new URLSearchParams(location.search).get('hand');
+  if (hp){ try {
+    const d = JSON.parse(decodeURIComponent(escape(atob(hp))));
+    const items = {}; Object.keys(d.i||{}).forEach(id=>{ const p = P.byId(id); if (p) items[id] = Math.max(0, Math.min(p.max, parseInt(d.i[id],10)||0)); });
+    cart = { items, membership: P.MEMBERSHIPS[d.m] ? d.m : null, term: P.TERMS.some(t=>t.months===d.t) ? d.t : 12, ownMaterial: !!d.o };
+    P.saveCart(cart); history.replaceState(null, '', '/shop/');
+    setTimeout(openHand, 400);
+  } catch(e){} }
   const qp = new URLSearchParams(location.search).get('plan');
   if (qp && P.MEMBERSHIPS[qp]){ cart.membership = qp; P.saveCart(cart); }
 
