@@ -112,6 +112,22 @@
   .member-chip:hover{color:var(--ink); border-color:var(--ink);}
   .member-chip.is-member{background:var(--ink); color:var(--bg); border-color:var(--ink);}
   .total{display:flex; flex-direction:column; align-items:flex-end; line-height:1.2;}
+  .cur{position:relative; display:inline-block;}
+  .cur-btn{border:none; background:transparent; font-size:11px; letter-spacing:0.06em; color:var(--muted); padding:6px 4px; border-bottom:1px dotted rgba(51,53,47,0.3);}
+  .cur-btn:hover,.cur.open .cur-btn{color:var(--ink);}
+  .cur-menu{
+    position:absolute; top:calc(100% + 8px); right:-8px; z-index:120; min-width:118px; padding:6px;
+    background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 18px 40px -16px rgba(51,53,47,0.35);
+    display:flex; flex-direction:column; opacity:0; transform:translateY(-4px); pointer-events:none; transition:opacity .2s ease, transform .25s var(--ease);
+  }
+  .cur.open .cur-menu{opacity:1; transform:none; pointer-events:auto;}
+  .cur-menu button{border:none; background:transparent; text-align:left; padding:9px 10px; border-radius:9px; font-size:12.5px; color:var(--ink); letter-spacing:0.02em;}
+  .cur-menu button b{display:inline-block; min-width:30px; font-weight:400; color:var(--muted);}
+  .cur-menu button:hover{background:rgba(51,53,47,0.06);}
+  .cur-menu button[aria-selected="true"]{background:var(--ink); color:var(--bg);}
+  .cur-menu button[aria-selected="true"] b{color:rgba(244,242,236,0.6);}
+  .dh-right{display:flex; align-items:center; gap:14px;}
+  .cur-note{font-size:11.5px; color:var(--muted); padding:4px 0 0; line-height:1.5;}
   .total small{font-size:11px; color:var(--muted); text-decoration:line-through; min-height:13px;}
   .total strong{font-size:20px; font-weight:400; letter-spacing:-0.01em;}
   .hand-btn{
@@ -349,7 +365,7 @@
   }
   .drawer-head{display:flex; align-items:center; justify-content:space-between; padding:26px 28px 18px; border-bottom:1px solid var(--line);}
   .drawer-head h2{font-size:30px;}
-  .drawer-head button{background:none; border:none; font-size:28px; line-height:1; color:var(--muted);}
+  #close-hand{background:none; border:none; font-size:28px; line-height:1; color:var(--muted);}
   .drawer-body{flex:1; overflow-y:auto; padding:8px 28px 20px;}
   .dline{display:grid; grid-template-columns:40px minmax(0,1fr) auto; gap:14px; align-items:start; padding:16px 0; border-bottom:1px solid var(--line);}
   .dline .medal{width:40px; height:40px; box-shadow:0 6px 14px -6px rgba(51,53,47,0.25);}
@@ -536,6 +552,7 @@
     </div>
     <div class="bar-right">
       <a class="member-chip" id="member-chip" href="/members/">member? sign in</a>
+      <span id="cur-bar-slot"></span>
       <div class="total num" aria-live="polite"><small id="bar-was"></small><strong id="bar-total">$0</strong></div>
       <button class="hand-btn" id="open-hand" type="button">your hand <span id="hand-n"></span></button>
     </div>
@@ -606,7 +623,7 @@
 <!-- the hand -->
 <div class="drawer-bg" id="drawer-bg"></div>
 <aside class="drawer" id="drawer" aria-label="your hand" aria-hidden="true">
-  <div class="drawer-head"><h2>your hand.</h2><button type="button" id="close-hand" aria-label="close">×</button></div>
+  <div class="drawer-head"><h2>your hand.</h2><span class="dh-right"><span id="cur-hand-slot"></span><button type="button" id="close-hand" aria-label="close">×</button></span></div>
   <div class="drawer-body" id="drawer-body"></div>
   <div class="toast" id="toast" role="status"><span id="toast-msg"></span><button type="button" id="toast-undo">undo</button></div>
   <div class="drawer-foot">
@@ -628,7 +645,60 @@
 <script src="/assets/plans.js"></script>
 <script>
 (function(){
-  const P = window.PSSYCCO_PRICING, cop = P.cop;
+  const P = window.PSSYCCO_PRICING;
+  /* ---------- currency: official prices are COP; others are shown at today's rate ---------- */
+  const CURRENCIES = [
+    { code:'COP', sym:'$' }, { code:'USD', sym:'US$' }, { code:'EUR', sym:'€' },
+    { code:'GBP', sym:'£' }, { code:'CNY', sym:'¥' }
+  ];
+  // fallback rates (COP per unit) — replaced by live rates when they load
+  let RATES = { COP:1, USD:3185, EUR:3571, GBP:4219, CNY:475 };
+  let CUR = 'COP';
+  try { const c = localStorage.getItem('pssycco.currency'); if (CURRENCIES.some(x=>x.code===c)) CUR = c; } catch(e){}
+  (function loadRates(){
+    try {
+      const cached = JSON.parse(localStorage.getItem('pssycco.rates') || 'null');
+      if (cached && Date.now() - cached.t < 12*3600*1000){ RATES = cached.r; return; }
+    } catch(e){}
+    fetch('https://open.er-api.com/v6/latest/COP').then(r=>r.json()).then(d=>{
+      if (!d || !d.rates) return;
+      const r = { COP:1 }; CURRENCIES.forEach(c=>{ if (d.rates[c.code]) r[c.code] = 1 / d.rates[c.code]; });
+      RATES = Object.assign({}, RATES, r);
+      try { localStorage.setItem('pssycco.rates', JSON.stringify({ t:Date.now(), r:RATES })); } catch(e){}
+      if (CUR !== 'COP'){ renderCatalog(); window.PSSYCCO_RENDER && window.PSSYCCO_RENDER(); }
+    }).catch(()=>{});
+  })();
+  const curInfo = () => CURRENCIES.find(c=>c.code===CUR);
+  function cop(n){
+    if (CUR === 'COP') return P.cop(n);
+    const v = n / RATES[CUR], neg = v < 0, a = Math.abs(v);
+    const digits = a >= 10 ? 0 : 2;
+    const str = a.toLocaleString('en-US', { minimumFractionDigits:digits, maximumFractionDigits:digits });
+    return (neg?'−':'') + curInfo().sym + str;
+  }
+  function shortMoney(n){
+    if (n === 0) return curInfo().sym + '0';
+    const v = CUR === 'COP' ? n : n / RATES[CUR], s = curInfo().sym;
+    if (v >= 1e6) return s + (v/1e6).toFixed(2).replace(/\.?0+$/,'').replace('.', CUR==='COP'?',':'.') + 'M';
+    if (v >= 1e3) return s + (v/1e3).toFixed(v >= 1e4 ? 0 : 1).replace(/\.0$/,'').replace('.', CUR==='COP'?',':'.') + 'k';
+    return s + Math.round(v);
+  }
+  function curPicker(id){
+    return `<span class="cur" id="${id}"><button type="button" class="cur-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="currency: ${CUR}">${CUR}</button>
+      <span class="cur-menu" role="listbox">${CURRENCIES.map(c=>`<button type="button" role="option" data-cur="${c.code}" aria-selected="${c.code===CUR}"><b>${c.sym}</b> ${c.code}</button>`).join('')}</span></span>`;
+  }
+  document.addEventListener('click', e=>{
+    const pick = e.target.closest('[data-cur]');
+    if (pick){ CUR = pick.dataset.cur; try { localStorage.setItem('pssycco.currency', CUR); } catch(err){}
+      document.querySelectorAll('.cur').forEach(x=>x.classList.remove('open')); mountPickers(); renderCatalog(); render(); return; }
+    const btn = e.target.closest('.cur-btn');
+    document.querySelectorAll('.cur').forEach(x=>{ if (!btn || !x.contains(btn)) { x.classList.remove('open'); x.querySelector('.cur-btn').setAttribute('aria-expanded','false'); } });
+    if (btn){ const w = btn.parentElement; w.classList.toggle('open'); btn.setAttribute('aria-expanded', w.classList.contains('open')); }
+  });
+  function mountPickers(){
+    document.getElementById('cur-bar-slot').innerHTML = curPicker('cur-bar');
+    document.getElementById('cur-hand-slot').innerHTML = curPicker('cur-hand');
+  }
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let cart = P.loadCart();
   window.PSSYCCO_MEMBER = window.PSSYCCO_MEMBER || null; // set by firebase module below
@@ -650,7 +720,7 @@
     if (i === 'dayT') return '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2.5"/><path d="M17 10.5l4-2.5v8l-4-2.5z"/></svg>';
     return glyphSVG(i,'g');
   }
-  const shortCop = n => n === 0 ? '$0' : n >= 1e6 ? '$' + (n/1e6).toFixed(2).replace(/\.?0+$/,'').replace('.',',') + 'M' : '$' + Math.round(n/1000) + 'k';
+  const shortCop = n => shortMoney(n);
 
   /* the production layer of one piece: chips you tap to attach */
   const openLayers = new Set(), closedLayers = new Set();
@@ -961,6 +1031,7 @@
     const saved = q.productsOff + (q.membership ? q.membership.off : 0);
     if (saved) h += `<div><span>you save</span><span>${cop(saved)}</span></div>`;
     h += `<div class="grand"><span>total</span><span>${cop(q.total)}</span></div></div>`;
+    if (CUR !== 'COP') h += `<p class="cur-note">Shown in ${CUR} at today’s rate, for reference. Prices and contracts are set in Colombian pesos (COP ${P.cop(q.total).replace('$','$ ')}).</p>`;
     body.innerHTML = h;
 
     body.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click', ()=>change(b.dataset.id, +b.dataset.d)));
@@ -1043,7 +1114,7 @@
   const qp = new URLSearchParams(location.search).get('plan');
   if (qp && P.MEMBERSHIPS[qp]){ cart.membership = qp; P.saveCart(cart); }
 
-  renderCatalog(); render();
+  mountPickers(); renderCatalog(); render();
   window.PSSYCCO_RENDER = render;
 })();
 </script>
