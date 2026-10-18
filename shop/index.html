@@ -334,7 +334,8 @@
   .plan-card.chosen{box-shadow:0 0 0 2px var(--ink), 0 24px 50px -30px rgba(51,53,47,0.5);}
   .plan-card.mid.chosen{box-shadow:0 0 0 2px var(--bg), 0 0 0 4px var(--ink), 0 24px 50px -30px rgba(51,53,47,0.5);}
   .plan-card .ptag{position:absolute; top:24px; right:24px; font-size:11px; letter-spacing:0.04em; opacity:.7;}
-  .plan-card .pemoji{font-size:34px; line-height:1; margin-bottom:18px; transition:transform .35s cubic-bezier(.3,1.5,.5,1);}
+  .plan-card .pemoji{height:44px; margin-bottom:22px; color:var(--glyph,currentColor); transition:transform .35s cubic-bezier(.3,1.5,.5,1);}
+  .plan-card .pemoji svg{width:42px; height:42px; fill:currentColor;}
   .plan-card:hover .pemoji{transform:translateY(-3px) rotate(-6deg) scale(1.08);}
   .plan-card h3{font-size:30px;}
   .plan-card .psub{font-size:13px; opacity:.65; margin:8px 0 26px; line-height:1.5;}
@@ -863,7 +864,7 @@
       const monthly = m.monthly*(1-t.off), total = monthly*t.months;
       return `<article class="plan-card ${k==='ultimate'?'mid':''} ${chosen?'chosen':''}" data-plan="${k}">
         ${m.tag?`<span class="ptag">${m.tag}</span>`:''}
-        <div class="pemoji" aria-hidden="true">${m.emoji}</div>
+        <div class="pemoji" aria-hidden="true">${glyphSVG(m.mark)}</div>
         <h3>${m.name}</h3><div class="psub">${m.sub}</div>
         <div class="pprice num">${cop(monthly)} <small>/ month</small></div>
         <div class="pterm num">${cop(total)} for ${t.months} months${t.off?` · you save ${cop(m.monthly*t.months - total)}`:''}</div>

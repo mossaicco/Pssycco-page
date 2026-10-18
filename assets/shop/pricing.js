@@ -2,12 +2,12 @@
    Single source of truth for /shop/ and /shop/contrato.html. Edit prices here only. */
 (function(){
   var MEMBERSHIPS = {
-    leaders:   { emoji:'🧭', name:'leaders',   monthly:4500000, sub:'creative strategy & pre-production',
+    leaders:   { mark:'leaders', name:'leaders',   monthly:4500000, sub:'creative strategy & pre-production',
                  bullets:['annual narrative','quarterly, monthly and weekly campaigns','ai brand identity system','annual brand archive','your ai agency executes the production'] },
-    ultimate:  { emoji:'⚡', name:'ultimate',  monthly:7000000, sub:'leaders + end-to-end ai production',
+    ultimate:  { mark:'ultimate', name:'ultimate',  monthly:7000000, sub:'leaders + end-to-end ai production',
                  tag:'most popular',
                  bullets:['everything included in leaders','48 shorts · 24 photo studios / year','4 brand films / year','12 graphics + 48 clips / year','integrated ai and non-ai production'] },
-    signature: { emoji:'🎥', name:'signature', monthly:9000000, sub:'leaders + ultimate + end-to-end non-ai production',
+    signature: { mark:'signature_m', name:'signature', monthly:9000000, sub:'leaders + ultimate + end-to-end non-ai production',
                  bullets:['everything included in leaders and ultimate','12 non-ai “signature” commercials / year','one dedicated filming day per month','interviews, testimonials, events, bts','production expenses covered by the brand'] }
   };
 

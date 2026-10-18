@@ -7,3 +7,8 @@ window.PSSYCCO_GLYPHS.identity = { s:100, d:'M50 2 A34 34 0 0 1 72 62 L82 88 Q85
 window.PSSYCCO_GLYPHS.cube = { s:100, d:'M50 6 L86 26.5 L50 47 L14 26.5 Z M10 33 L46.5 53.5 L46.5 95 L10 74.5 Z M90 33 L53.5 53.5 L53.5 95 L90 74.5 Z' };
 window.PSSYCCO_GLYPHS.material = { s:100, d:'M8 32 Q8 24 16 24 H64 Q72 24 72 32 V86 Q72 94 64 94 H16 Q8 94 8 86 Z M40 45 A14 14 0 1 0 40.01 45 Z M30 6 H86 Q94 6 94 14 V64 Q94 72 86 72 H80 V32 Q80 16 64 16 H22 V14 Q22 6 30 6 Z' };
 window.glyphSVG = function(k, cls){ var g = window.PSSYCCO_GLYPHS[k]; return '<svg class="'+(cls||'glyph')+'" viewBox="0 0 '+g.s+' '+g.s+'" aria-hidden="true"><path fill-rule="evenodd" d="'+g.d+'"/></svg>'; };
+
+/* membership marks — same family as the glyphs above */
+window.PSSYCCO_GLYPHS.leaders   = { s:100, d:'M50 4 Q57 41 96 50 Q57 59 50 96 Q43 59 4 50 Q43 41 50 4 Z M50 43 A7 7 0 1 0 50.01 43 Z' };
+window.PSSYCCO_GLYPHS.ultimate  = { s:100, d:'M24 12 Q24 4 31 8 L90 43 Q98 50 90 57 L31 92 Q24 96 24 88 Z M44 50 A9 9 0 1 0 44.01 50 Z M6 30 Q6 24 12 24 Q16 24 16 30 V70 Q16 76 12 76 Q6 76 6 70 Z' };
+window.PSSYCCO_GLYPHS.signature_m = { s:100, d:'M22 6 H78 Q94 6 94 22 V78 Q94 94 78 94 H22 Q6 94 6 78 V22 Q6 6 22 6 Z M30 24 Q24 24 24 30 V70 Q24 76 30 76 H70 Q76 76 76 70 V30 Q76 24 70 24 Z M50 38 A12 12 0 1 0 50.01 38 Z' };
