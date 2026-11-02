@@ -53,6 +53,7 @@
     transition:background .3s ease, color .3s ease;
   }
   nav.topnav .site-tabs a:hover{color:var(--ink);}
+  nav.topnav .site-tabs a.off{opacity:.4; pointer-events:none; cursor:default;}
   nav.topnav .site-tabs a.active{background:var(--ink); color:var(--bg);}
   @media (max-width:900px){
     nav.topnav .links a:not(.nav-cta){display:none;}
@@ -542,7 +543,7 @@
   <a href="/"><img class="brand-logo" src="/assets/logo_glyph.png" alt="pssycco"></a>
   <a class="nav-members" href="/members/">members</a>
   <span class="site-tabs">
-    <a href="/">discover</a>
+    <a class="off" href="/" aria-disabled="true" tabindex="-1" onclick="return false">discover</a>
     <a class="active" href="/shop/" aria-current="page">shop</a>
   </span>
 </nav>
