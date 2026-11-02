@@ -60,12 +60,12 @@
     { id:'own',        name:'your own material', short:'your material', price:0, toggle:true,
       unit:['your material','your material'], icon:'material',
       text:'The default for every piece. You send the footage, photos and references you already have; we elevate them in post-production.' },
-    { id:'dayU',       name:'unconventional filming day', short:'unconventional day', price:750000, from:true, max:7,
+    { id:'dayU',       name:'unconventional filming day', short:'unconventional day', price:750000, max:7,
       unit:['unconventional day','unconventional days'], icon:'dayU',
-      text:'One photographer, light setup — for moments that need to be captured, not staged. Starting price per day; production costs are borne by the client.' },
+      text:'A filming day from the future: one photographer and one model in a green suit. No art directors, directors, assistants or large production crews — two people are enough. Fixed price per day.' },
     { id:'dayT',       name:'traditional filming day', short:'traditional day', price:1830000, from:true, max:7,
       unit:['traditional day','traditional days'], icon:'dayT',
-      text:'A full crew, anywhere in Colombia. The day rate is a starting price: all production costs — locations, talent, wardrobe, art direction, travel and permits — are borne by the client and quoted in advance.' }
+      text:'For more complex shoots with larger crews. The day rate is a starting price: all production costs — locations, talent, wardrobe, art direction, travel and permits — are borne by the client and quoted in advance.' }
   ];
 
   /* bundles work in steps: each joker takes the discount of its own place in the hand.
