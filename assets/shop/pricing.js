@@ -40,7 +40,7 @@
       text:'A condensed cinematic experience that tells a meaningful story in concise, carefully crafted cinematic language.' },
     { id:'photostudio', group:'pieces', name:'ai photo studio', price:750000, max:24,
       unit:['photo studio','photo studios'], icon:'photostudio',
-      spec:'5 images / editorial standard',
+      spec:'9 images / editorial standard',
       text:'Art direction, typography and composition combined to communicate concepts that photography alone cannot express.' },
     { id:'brandfilm',   group:'pieces', name:'ai brand film', price:5170000, max:12,
       unit:['brand film','brand films'], icon:'brandfilm',

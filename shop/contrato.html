@@ -366,7 +366,7 @@
               <table class="t"><tr><th>Entregable</th><th>Total</th><th>Promedio Mensual</th></tr>${rowsL.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table>
               <p>La producción de los activos no está incluida en esta membresía y podrá contratarse por solicitud, conforme a las tarifas vigentes de PSSYCCO.</p>`;
           } else {
-            const rowsM = [['Shorts (4 shots / 25 segundos)', 4*months, '4'], ['Photo Studios (5 imágenes)', 2*months, '2'], ['Brand Films (unlimited shots / 100 segundos)', months/3, '(cada 3 meses)'], ['Graphics (5 imágenes)', months, '1'], ['Clips (2 shots / 15 segundos)', 4*months, '4']];
+            const rowsM = [['Shorts (4 shots / 25 segundos)', 4*months, '4'], ['Photo Studios (9 imágenes)', 2*months, '2'], ['Brand Films (unlimited shots / 100 segundos)', months/3, '(cada 3 meses)'], ['Graphics (5 imágenes)', months, '1'], ['Clips (2 shots / 15 segundos)', 4*months, '4']];
             if (m.key === 'signature') rowsM.push(['Signature Commercials non-AI (1 día de rodaje)', months, '1']);
             h += `<p>EL CONTRATISTA entregará mensualmente, de forma equitativa y proporcional durante ${cnt(months)} meses, los siguientes productos, basados en los cinco (5) tipos de campañas propuestas:</p>
               <table class="t"><tr><th>Entregable</th><th>Total</th><th>Promedio Mensual</th></tr>${rowsM.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table>
