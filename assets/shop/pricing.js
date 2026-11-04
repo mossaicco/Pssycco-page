@@ -68,13 +68,13 @@
       text:'For more complex shoots with larger crews. The day rate is a starting price: all production costs — locations, talent, wardrobe, art direction, travel and permits — are borne by the client and quoted in advance.' }
     ,
     { id:'dyn2',  name:'dynamic ×2', short:'dynamic ×2', dynamic:true, only:['clip','short'], price:0,
-      priceFor:{ clip:280000, short:600000 }, shots:{ clip:4, short:8 },
+      priceFor:{ clip:150000, short:150000 }, shots:{ clip:4, short:8 },
       unit:['dynamic ×2','dynamic ×2'], icon:'dyn2',
       text:'A more dynamic version: double the shots in the same piece — a clip goes from 2 to 4 shots, a short from 4 to 8. More cuts, more rhythm, more movement.' },
     { id:'dyn3',  name:'dynamic ×3', short:'dynamic ×3', dynamic:true, only:['clip','short'], price:0,
-      priceFor:{ clip:560000, short:1200000 }, shots:{ clip:6, short:12 },
+      priceFor:{ clip:300000, short:300000 }, shots:{ clip:6, short:12 },
       unit:['dynamic ×3','dynamic ×3'], icon:'dyn3',
-      text:'The most dynamic version: triple the shots — a clip goes from 2 to 6 shots, a short from 4 to 12. Complexity grows, and so does the price, in proportion.' }
+      text:'The most dynamic version: triple the shots — a clip goes from 2 to 6 shots, a short from 4 to 12. Complexity grows, and the price grows a little with it.' }
   ];
 
   /* bundles work in steps: each joker takes the discount of its own place in the hand.
