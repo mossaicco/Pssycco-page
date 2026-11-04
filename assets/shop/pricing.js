@@ -32,11 +32,11 @@
 
     { id:'clip',        group:'pieces', name:'ai clip', price:350000, max:48,
       unit:['clip','clips'], icon:'clip',
-      spec:'2 shots / one idea / 10 seconds',
+      spec:'2 shots / one idea / 10 seconds', dyn:'also dynamic: ×2 or ×3 the shots',
       text:'The shortest of the five products. Not every story needs a beginning and an end — sometimes a single moment is enough.' },
     { id:'short',       group:'pieces', name:'ai short', price:750000, max:48,
       unit:['short','shorts'], icon:'short',
-      spec:'4 shots / compact storytelling',
+      spec:'4 shots / compact storytelling', dyn:'also dynamic: ×2 or ×3 the shots',
       text:'A condensed cinematic experience that tells a meaningful story in concise, carefully crafted cinematic language.' },
     { id:'photostudio', group:'pieces', name:'ai photo studio', price:750000, max:24,
       unit:['photo studio','photo studios'], icon:'photostudio',
@@ -66,6 +66,15 @@
     { id:'dayT',       name:'traditional filming day', short:'traditional day', price:1830000, from:true, max:7,
       unit:['traditional day','traditional days'], icon:'dayT',
       text:'For more complex shoots with larger crews. The day rate is a starting price: all production costs — locations, talent, wardrobe, art direction, travel and permits — are borne by the client and quoted in advance.' }
+    ,
+    { id:'dyn2',  name:'dynamic ×2', short:'dynamic ×2', dynamic:true, only:['clip','short'], price:0,
+      priceFor:{ clip:280000, short:600000 }, shots:{ clip:4, short:8 },
+      unit:['dynamic ×2','dynamic ×2'], icon:'dyn2',
+      text:'A more dynamic version: double the shots in the same piece — a clip goes from 2 to 4 shots, a short from 4 to 8. More cuts, more rhythm, more movement.' },
+    { id:'dyn3',  name:'dynamic ×3', short:'dynamic ×3', dynamic:true, only:['clip','short'], price:0,
+      priceFor:{ clip:560000, short:1200000 }, shots:{ clip:6, short:12 },
+      unit:['dynamic ×3','dynamic ×3'], icon:'dyn3',
+      text:'The most dynamic version: triple the shots — a clip goes from 2 to 6 shots, a short from 4 to 12. Complexity grows, and so does the price, in proportion.' }
   ];
 
   /* bundles work in steps: each joker takes the discount of its own place in the hand.
@@ -88,6 +97,8 @@
 
   /* cart = { items:{id:qty}, membership:'ultimate'|null, term:12, ownMaterial:bool }
      memberPlan = plan of a signed-in member (or null) */
+  function addonPrice(a, pid){ return (a.priceFor && a.priceFor[pid] != null) ? a.priceFor[pid] : a.price; }
+  function addonFits(a, pid){ return !a.only || a.only.indexOf(pid) > -1; }
   function addonById(id){ return ADDONS.filter(function(a){ return a.id===id; })[0]; }
 
   /* cart = { items:{id:qty}, addons:{pieceId:{own:1, dayT:2, ...}}, membership, term } */
@@ -100,7 +111,7 @@
         var att = (cart.addons && cart.addons[p.id]) || {};
         ADDONS.forEach(function(a){
           var n = att[a.id] || 0;
-          if (n > 0){ var al = { a:a, parent:p, qty:n, total:a.price*n }; line.addons.push(al); addonLines.push(al); addonSub += al.total; }
+          if (n > 0){ var pr = addonPrice(a,p.id); var al = { a:a, parent:p, qty:n, price:pr, total:pr*n }; line.addons.push(al); addonLines.push(al); addonSub += al.total; }
         });
         lines.push(line); cards += q; sub += p.price*q;
       }
@@ -158,7 +169,7 @@
   function saveCart(c){ try { localStorage.setItem(CART_KEY, JSON.stringify(c)); } catch(e){} }
 
   window.PSSYCCO_PRICING = {
-    MEMBERSHIPS:MEMBERSHIPS, TERMS:TERMS, PRODUCTS:PRODUCTS, ADDONS:ADDONS, addonById:addonById, BUNDLES:BUNDLES, HAND_MAX:HAND_MAX, rateAt:rateAt, MEMBER_OFF:MEMBER_OFF,
+    MEMBERSHIPS:MEMBERSHIPS, TERMS:TERMS, PRODUCTS:PRODUCTS, ADDONS:ADDONS, addonById:addonById, addonPrice:addonPrice, addonFits:addonFits, BUNDLES:BUNDLES, HAND_MAX:HAND_MAX, rateAt:rateAt, MEMBER_OFF:MEMBER_OFF,
     quote:quote, cop:cop, unitLabel:unitLabel, loadCart:loadCart, saveCart:saveCart,
     byId: function(id){ return PRODUCTS.filter(function(p){ return p.id===id; })[0]; }
   };

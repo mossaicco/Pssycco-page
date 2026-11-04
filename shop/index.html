@@ -475,6 +475,8 @@
   .menu .pi-name h3{font-size:19px; letter-spacing:-0.01em;}
   .menu .pi-name .spec{font-size:12.5px; color:var(--muted); margin-top:4px; min-height:2.9em; line-height:1.45;}
   .menu .pi-name .txt{display:block; font-size:12.5px; line-height:1.55; color:var(--ink); opacity:.7; margin-top:12px; max-width:34ch; min-height:11em;}
+  .menu .pi-name .dynnote{font-size:11.5px; line-height:1.5; margin-top:10px; color:var(--glyph);}
+  .menu .pi-name .dynnote b{font-weight:400;}
   @media (max-width:700px){ .menu .pi-name .txt{min-height:0; max-width:none;} }
   .menu .pi-price{margin:16px 0 18px;}
   .menu .pi-price .p{font-size:20px; letter-spacing:-0.01em;}
@@ -732,6 +734,8 @@
     if (icon === 'five')  return '<div class="medal"><span class="five">' + ['brandfilm','short','clip','photostudio','signature'].map(k=>glyphSVG(k,'g')).join('') + '</span></div>';
     if (icon === 'outline') { const g = PSSYCCO_GLYPHS.signature; return '<div class="medal"><svg class="outline" viewBox="-10 -10 '+(g.s+20)+' '+(g.s+20)+'"><path d="'+g.d+'"/></svg></div>'; }
     if (icon === 'dayU') return '<div class="medal"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>';
+    if (icon === 'dyn2') return '<div class="medal"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="12" height="8" rx="2"/><rect x="9" y="12" width="12" height="8" rx="2"/></svg></div>';
+    if (icon === 'dyn3') return '<div class="medal"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="10" height="6" rx="1.8"/><rect x="7" y="9" width="10" height="6" rx="1.8"/><rect x="12" y="15" width="10" height="6" rx="1.8"/></svg></div>';
     if (icon === 'dayT') return '<div class="medal"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2.5"/><path d="M17 10.5l4-2.5v8l-4-2.5z"/></svg></div>';
     return '<div class="medal">' + glyphSVG(icon,'g') + '</div>';
   }
@@ -740,6 +744,8 @@
     if (i === 'blank') return '<span class="blank"></span>';
     if (i === 'outline'){ const g = PSSYCCO_GLYPHS.signature; return '<svg class="outline" viewBox="-10 -10 '+(g.s+20)+' '+(g.s+20)+'"><path d="'+g.d+'"/></svg>'; }
     if (i === 'dayU') return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+    if (i === 'dyn2') return '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="12" height="8" rx="2"/><rect x="9" y="12" width="12" height="8" rx="2"/></svg>';
+    if (i === 'dyn3') return '<svg viewBox="0 0 24 24"><rect x="2" y="3" width="10" height="6" rx="1.8"/><rect x="7" y="9" width="10" height="6" rx="1.8"/><rect x="12" y="15" width="10" height="6" rx="1.8"/></svg>';
     if (i === 'dayT') return '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2.5"/><path d="M17 10.5l4-2.5v8l-4-2.5z"/></svg>';
     return glyphSVG(i,'g');
   }
@@ -755,12 +761,15 @@
     // a piece not yet in the hand shows the default: you send us your material, $0
     const att = (cart.items[pid] > 0) ? ((cart.addons && cart.addons[pid]) || {}) : { own:1 };
     let extra = 0;
-    const chips = P.ADDONS.map(a=>{
-      const n = att[a.id] || 0; extra += a.price * n;
+    const pcs = cart.items[pid] > 0 ? cart.items[pid] : 1;
+    const dynUsed = (att.dyn2||0) + (att.dyn3||0);
+    const chips = P.ADDONS.filter(a=>P.addonFits(a,pid)).map(a=>{
+      const n = att[a.id] || 0; const ap = P.addonPrice(a,pid); extra += ap * n;
+      const cap = a.dynamic ? Math.min(pcs - (dynUsed - n), pcs) : (a.max||1);
       const ic = `<span class="ci">${icon(a.icon)}</span>`;
-      if (a.toggle) return `<button type="button" class="chip ${n?'on':''}" data-pid="${pid}" data-a="${a.id}" data-op="toggle" aria-pressed="${!!n}">${ic}${a.short} <small>${shortCop(a.price)}</small></button>`;
-      if (!n) return `<button type="button" class="chip" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="attach a ${a.name}">${ic}+ ${a.short} <small>${a.from?'starting at ':''}${shortCop(a.price)}</small></button>`;
-      return `<span class="chip on">${ic}${P.unitLabel(a,n)}<span class="cq"><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="dec" aria-label="one less ${a.unit[0]}">−</button><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="one more ${a.unit[0]}" ${n>=a.max?'disabled':''}>+</button></span></span>`;
+      if (a.toggle) return `<button type="button" class="chip ${n?'on':''}" data-pid="${pid}" data-a="${a.id}" data-op="toggle" aria-pressed="${!!n}">${ic}${a.short} <small>${shortCop(ap)}</small></button>`;
+      if (!n) return `<button type="button" class="chip" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="attach ${a.name}" ${a.dynamic && dynUsed>=pcs ? 'disabled' : ''}>${ic}+ ${a.short} <small>${a.from?'starting at ':''}${a.dynamic?'+':''}${shortCop(ap)}</small></button>`;
+      return `<span class="chip on">${ic}${P.unitLabel(a,n)}<span class="cq"><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="dec" aria-label="one less ${a.unit[0]}">−</button><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="one more ${a.unit[0]}" ${n>=cap?'disabled':''}>+</button></span></span>`;
     }).join('');
     if (foldable){
       const open = openLayers.has(pid) || (foldable === 'hand' && Object.keys(att).some(k=>k!=='own') && !closedLayers.has(pid));
@@ -775,12 +784,15 @@
     cart.addons = cart.addons || {};
     const att = cart.addons[pid] = cart.addons[pid] || {};
     const cur = att[aid] || 0;
-    let next = op==='toggle' ? (cur ? 0 : 1) : op==='inc' ? Math.min(a.max||1, cur+1) : Math.max(0, cur-1);
+    const pcsNow = Math.max(1, cart.items[pid]||0); const dynOther = ((att.dyn2||0)+(att.dyn3||0)) - (a.dynamic ? cur : 0);
+    const capA = a.dynamic ? Math.max(0, pcsNow - dynOther) : (a.max||1);
+    let next = op==='toggle' ? (cur ? 0 : 1) : op==='inc' ? Math.min(capA, cur+1) : Math.max(0, cur-1);
     if (next === cur) return;
     // attaching to a piece that isn't in the hand yet adds the piece too
     openLayers.add(pid); closedLayers.delete(pid);
     if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
     if (next) att[aid] = next; else delete att[aid];
+    if (a.dynamic && next && !att.own && !att.dayU && !att.dayT) att.own = 1;
     // filming days replace your material; with no days left, your material comes back
     if ((aid === 'dayU' || aid === 'dayT') && next > 0) delete att.own;
     if (aid === 'own' && next) { delete att.dayU; delete att.dayT; }
@@ -801,7 +813,7 @@
 
   /* ---------- catalog ---------- */
   function renderCatalog(){
-    document.getElementById('how').innerHTML = P.ADDONS.map(a=>`
+    document.getElementById('how').innerHTML = P.ADDONS.filter(a=>!a.dynamic).map(a=>`
       <div class="how-item"><div class="medal">${icon(a.icon)}</div><h3>${a.name}</h3>
         <div class="hp num">${a.price ? `${a.from?'<span>starting at</span> ':''}${cop(a.price)}${a.id.startsWith('day')?' <span>/ day</span>':''}` : '$0 <span>— included</span>'}</div>
         <p>${a.text}</p></div>`).join('');
@@ -811,7 +823,7 @@
       grid.innerHTML = P.PRODUCTS.filter(p=>p.group===group).map(p=>`
         <article class="piece" data-id="${p.id}">
           ${medal(p.icon)}
-          <div class="pi-name"><h3>${p.name}</h3><div class="spec">${p.spec}</div><p class="txt">${p.text}</p></div>
+          <div class="pi-name"><h3>${p.name}</h3><div class="spec">${p.spec}</div><p class="txt">${p.text}</p>${p.dyn?`<p class="dynnote"><b>${p.dyn}</b></p>`:''}</div>
           <div class="pi-price"><span class="p num">${cop(p.price)}</span><span class="mp num"></span></div>
           <div class="count">
             <button class="minus" type="button" aria-label="remove one ${p.unit[0]}">−</button>
@@ -835,6 +847,7 @@
     const was = cart.items[id] || 0;
     if (q) cart.items[id] = q; else { delete cart.items[id]; if (cart.addons) delete cart.addons[id]; }
     if (!was && q){ cart.addons = cart.addons || {}; cart.addons[id] = Object.assign({ own:1 }, cart.addons[id] || {}); }
+    { const at = cart.addons && cart.addons[id]; if (at){ let over = (at.dyn3||0) + (at.dyn2||0) - q; if (over > 0){ const t3 = Math.min(at.dyn3||0, over); if (t3){ at.dyn3 -= t3; if(!at.dyn3) delete at.dyn3; over -= t3; } if (over > 0 && at.dyn2){ at.dyn2 = Math.max(0, at.dyn2 - over); if(!at.dyn2) delete at.dyn2; } } } }
     P.saveCart(cart);
     if (d > 0 && fromEl) fly(fromEl);
     render();
