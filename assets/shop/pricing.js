@@ -116,6 +116,8 @@
         lines.push(line); cards += q; sub += p.price*q;
       }
     });
+    lines.forEach(function(l){ l.dynTotal = l.addons.reduce(function(t,x){ return t + (x.a.dynamic ? x.total : 0); },0); });
+    var dynSub = lines.reduce(function(t,l){ return t + l.dynTotal; },0);
     var b = bundleFor(Math.min(cards, HAND_MAX));
     var units = [];
     lines.forEach(function(l){ for (var i=0;i<l.qty;i++) units.push(l.p.price); });
@@ -138,7 +140,7 @@
       m = { key:cart.membership, plan:plan, term:term, gross:gross, off:termOff, total:gross-termOff };
     }
     return {
-      lines:lines, cards:cards, subtotal:sub,
+      lines:lines, cards:cards, subtotal:sub, dynSub:dynSub,
       addonLines:addonLines, addonSub:addonSub, addonsOff:addonsOff,
       bundle:b, next: cards < HAND_MAX ? nextBundle(cards) : null, nextRate: rateAt(cards+1), handMax:HAND_MAX, over: Math.max(0, cards-HAND_MAX),
       bundleRate: sub ? bundleOff/sub : 0, memberOff:memberOff, memberSource: memberPlan ? 'account' : (cart.membership ? 'cart' : null),

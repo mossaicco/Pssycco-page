@@ -965,6 +965,7 @@
       el.querySelector('.plus').disabled = n>=p.max;
       el.querySelector('.layer-slot').innerHTML = n ? layerHTML(p.id, true) : '';
       el.querySelector('.mp').innerHTML = (member || cart.membership) ? `<b>${cop(p.price*(1-P.MEMBER_OFF))}</b> as member` : (n ? P.unitLabel(p,n) : '');
+      { const at = (cart.addons && cart.addons[p.id]) || {}; const dy = (at.dyn2||0)*P.addonPrice(P.addonById('dyn2'),p.id) + (at.dyn3||0)*P.addonPrice(P.addonById('dyn3'),p.id); if (n && dy) el.querySelector('.mp').innerHTML += ` · <b>+${cop(dy)}</b> dynamic`; }
     });
 
     // fan + track
@@ -1041,7 +1042,7 @@
         <div><div class="dn">${l.p.name}</div><div class="spec">${l.p.spec}</div>
         <div class="dq num"><button type="button" data-d="-1" data-id="${l.p.id}" aria-label="one less ${l.p.unit[0]}">−</button>${P.unitLabel(l.p,l.qty)}<button type="button" data-d="1" data-id="${l.p.id}" aria-label="one more ${l.p.unit[0]}" ${l.qty>=l.p.max?'disabled':''}>+</button><button type="button" class="rm" data-rm="${l.p.id}">remove</button></div>
         ${layerHTML(l.p.id, 'hand')}</div>
-        <div class="dp num">${cop(l.total)}<small>${cop(l.p.price)} each</small></div></div>`;
+        <div class="dp num">${cop(l.total + l.dynTotal)}<small>${l.dynTotal ? `${cop(l.p.price)} each · +${cop(l.dynTotal)} dynamic` : `${cop(l.p.price)} each`}</small></div></div>`;
     });
 
     // nudge: what the next joker is worth
@@ -1057,8 +1058,8 @@
 
     // totals
     h += '<div class="dsum num">';
-    if (q.cards) h += `<div><span>pieces · ${q.cards} ${q.cards===1?'joker':'jokers'}</span><span>${cop(q.subtotal)}</span></div>`;
-    if (q.addonLines.length) h += `<div><span>how we make it · ${q.addonLines.length} ${q.addonLines.length===1?'attachment':'attachments'}</span><span>${cop(q.addonSub)}</span></div>`;
+    if (q.cards) h += `<div><span>pieces · ${q.cards} ${q.cards===1?'joker':'jokers'}</span><span>${cop(q.subtotal + q.dynSub)}</span></div>`;
+    { const nd = q.addonLines.filter(x=>!x.a.dynamic && x.total>0); if (nd.length) h += `<div><span>how we make it · ${nd.length} ${nd.length===1?'attachment':'attachments'}</span><span>${cop(q.addonSub - q.dynSub)}</span></div>`; }
     if (q.bundleOffAmount) h += `<div><span>joker steps · ${Math.round(q.bundleRate*100)}% off your pieces</span><span>−${cop(q.bundleOffAmount)}</span></div>`;
     if (q.memberOff) h += `<div><span>member · −10%</span><span>−${cop(q.memberOffAmount)}</span></div>`;
     if (q.membership){
