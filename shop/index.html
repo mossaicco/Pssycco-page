@@ -200,7 +200,9 @@
     border:1px solid var(--ink); color:var(--ink); padding:8px 16px; border-radius:16px; transition:background .2s ease, color .2s ease;
   }
   .stack .signin:hover{background:var(--ink); color:var(--bg);}
-  .stack .signin.is-member{background:var(--ink); color:var(--bg); pointer-events:none;}
+  .stack .signin.is-member{background:var(--ink); color:var(--bg); cursor:pointer;}
+  .stack .signout{display:inline-block; margin:12px 0 0 10px; font-size:11px; color:var(--muted); background:none; border:none; padding:0; text-decoration:underline; text-underline-offset:3px; cursor:pointer;}
+  .stack .signout[hidden]{display:none;}
   @media (max-width:860px){ .bundles{grid-template-columns:1fr 1fr; gap:0 18px;} }
 
   /* ---------- catalog ---------- */
@@ -535,6 +537,22 @@
     html{scroll-behavior:auto;}
   }
 
+  /* sign-in, in place */
+  .si-panel{max-width:400px;}
+  .si-panel h3{font-size:30px; margin:0 0 6px; font-weight:300; letter-spacing:-0.01em;}
+  .si-panel p.si-sub{margin:0 0 22px; font-size:13.5px; line-height:1.55; color:var(--muted);}
+  .si-panel label{display:block; font-size:11px; letter-spacing:0.08em; text-transform:lowercase; color:var(--muted); margin:14px 0 6px;}
+  .si-panel input{width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--card); font:inherit; font-size:15px; color:var(--ink);}
+  .si-panel input:focus{outline:none; border-color:var(--ink);}
+  .si-panel .si-go{margin-top:20px; width:100%; padding:13px 18px; border-radius:999px; border:none; background:var(--ink); color:var(--bg); font:inherit; font-size:14px; letter-spacing:0.03em; cursor:pointer;}
+  .si-panel .si-go[disabled]{opacity:.55; cursor:default;}
+  .si-panel .si-msg{min-height:18px; margin-top:12px; font-size:12.5px; color:var(--muted);}
+  .si-panel .si-msg.err{color:#9a4b3c;}
+  .si-panel .si-alt{margin-top:14px; font-size:12px; color:var(--muted);} .si-panel .si-alt a{color:var(--ink);}
+  .si-panel .si-in{display:none;} .si-panel.in .si-in{display:block;} .si-panel.in .si-out{display:none;}
+  .si-panel .si-who{font-size:15px; margin:4px 0 18px; word-break:break-all;}
+  .si-panel .si-row{display:flex; gap:10px; flex-wrap:wrap;} .si-panel .si-row a,.si-panel .si-row button{flex:1; text-align:center; padding:12px 14px; border-radius:999px; border:1px solid var(--ink); background:none; color:var(--ink); font:inherit; font-size:13px; text-decoration:none; cursor:pointer;}
+
   /* background tint: press the drop, pick a colour from the palette */
   html,body,#bg-canvas-wrap{transition:background-color .7s var(--ease);}
   .tint{position:fixed; left:18px; bottom:18px; z-index:80; display:flex; align-items:center; gap:10px;}
@@ -596,7 +614,7 @@
     <div class="stack" data-tier="3"><div class="stack-cards" data-n="3"></div><div><b>11% off</b><small>jokers 3 to 5</small></div></div>
     <div class="stack" data-tier="6"><div class="stack-cards" data-n="6"></div><div><b>22% off</b><small>jokers 6 to 8</small></div></div>
     <div class="stack" data-tier="9"><div class="stack-cards" data-n="9"></div><div><b>33% off</b><small>jokers 9 to 12</small></div></div>
-    <div class="stack member-tile" data-tier="member"><div><b>+10% off</b><small id="member-note">for members, on top of everything</small><br><a class="signin" id="hero-signin" href="/members/">sign in</a></div></div>
+    <div class="stack member-tile" data-tier="member"><div><b>+10% off</b><small id="member-note">for members, on top of everything</small><br><a class="signin" id="hero-signin" href="/members/">sign in</a><button type="button" class="signout" id="hero-signout" hidden>sign out</button></div></div>
   </div>
 
   <section class="group" id="products">
@@ -658,6 +676,31 @@
 </aside>
 
 <!-- membership detail (same content as discover) -->
+
+<div id="signin-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-panel si-panel" id="si-panel">
+    <button class="modal-close" id="si-close" aria-label="close">×</button>
+    <div class="modal-body">
+      <div class="si-out">
+        <h3>sign in.</h3>
+        <p class="si-sub">With your pssycco account, 10% off is applied to everything on this page.</p>
+        <form id="si-form" autocomplete="on">
+          <label for="si-email">email</label><input id="si-email" type="email" autocomplete="username" required>
+          <label for="si-pass">password</label><input id="si-pass" type="password" autocomplete="current-password" required>
+          <button type="submit" class="si-go" id="si-go">sign in</button>
+          <div class="si-msg" id="si-msg" role="status"></div>
+        </form>
+        <p class="si-alt">new here? accounts are created from <a href="/members/">the members page</a>.</p>
+      </div>
+      <div class="si-in">
+        <h3>you’re in.</h3>
+        <p class="si-sub" id="si-plan">10% off is applied to everything on this page.</p>
+        <p class="si-who" id="si-who"></p>
+        <div class="si-row"><a href="/members/dashboard.html">my workspace</a><button type="button" id="si-out">sign out</button></div>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="plan-modal" class="modal-overlay" aria-hidden="true">
   <div class="modal-panel">
     <button class="modal-close" id="modal-close" aria-label="close">×</button>
@@ -726,7 +769,7 @@
   }
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let cart = P.loadCart();
-  window.PSSYCCO_MEMBER = window.PSSYCCO_MEMBER || null; // set by firebase module below
+  window.PSSYCCO_MEMBER = window.PSSYCCO_MEMBER || (function(){ try { return sessionStorage.getItem('pssycco.member') || null; } catch(e){ return null; } })(); // confirmed by the firebase module below
 
   /* ---------- icons ---------- */
   function medal(icon){
@@ -761,20 +804,21 @@
     // a piece not yet in the hand shows the default: you send us your material, $0
     const att = (cart.items[pid] > 0) ? ((cart.addons && cart.addons[pid]) || {}) : { own:1 };
     let extra = 0;
+    const mf = window.PSSYCCO_MEMBER ? 1 - P.MEMBER_OFF : 1;
     const pcs = cart.items[pid] > 0 ? cart.items[pid] : 1;
     const dynUsed = (att.dyn2||0) + (att.dyn3||0);
     const chips = P.ADDONS.filter(a=>P.addonFits(a,pid)).map(a=>{
       const n = att[a.id] || 0; const ap = P.addonPrice(a,pid); extra += ap * n;
       const cap = a.dynamic ? Math.min(pcs - (dynUsed - n), pcs) : (a.max||1);
       const ic = `<span class="ci">${icon(a.icon)}</span>`;
-      if (a.toggle) return `<button type="button" class="chip ${n?'on':''}" data-pid="${pid}" data-a="${a.id}" data-op="toggle" aria-pressed="${!!n}">${ic}${a.short} <small>${shortCop(ap)}</small></button>`;
-      if (!n) return `<button type="button" class="chip" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="attach ${a.name}" ${a.dynamic && dynUsed>=pcs ? 'disabled' : ''}>${ic}+ ${a.short} <small>${a.from?'starting at ':''}${a.dynamic?'+':''}${shortCop(ap)}</small></button>`;
+      if (a.toggle) return `<button type="button" class="chip ${n?'on':''}" data-pid="${pid}" data-a="${a.id}" data-op="toggle" aria-pressed="${!!n}">${ic}${a.short} <small>${shortCop(ap*mf)}</small></button>`;
+      if (!n) return `<button type="button" class="chip" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="attach ${a.name}" ${a.dynamic && dynUsed>=pcs ? 'disabled' : ''}>${ic}+ ${a.short} <small>${a.from?'starting at ':''}${a.dynamic?'+':''}${shortCop(ap*mf)}</small></button>`;
       return `<span class="chip on">${ic}${P.unitLabel(a,n)}<span class="cq"><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="dec" aria-label="one less ${a.unit[0]}">−</button><button type="button" data-pid="${pid}" data-a="${a.id}" data-op="inc" aria-label="one more ${a.unit[0]}" ${n>=cap?'disabled':''}>+</button></span></span>`;
     }).join('');
     if (foldable){
       const open = openLayers.has(pid) || (foldable === 'hand' && Object.keys(att).some(k=>k!=='own') && !closedLayers.has(pid));
       return `<div class="layer fold ${open?'open':''}"><button type="button" class="layer-toggle" data-fold="${pid}" aria-expanded="${open}">
-          <span>how we make it</span><span class="ls">${layerSummary(att)}${extra?` · <b class="num">+${shortCop(extra)}</b>`:''}</span><i aria-hidden="true">+</i></button>
+          <span>how we make it</span><span class="ls">${layerSummary(att)}${extra?` · <b class="num">+${shortCop(extra*mf)}</b>`:''}</span><i aria-hidden="true">+</i></button>
         <div class="chips">${chips}</div></div>`;
     }
     return `<div class="layer"><div class="layer-label"><span>how we make it</span>${extra?`<b class="num">+${cop(extra)}</b>`:''}</div><div class="chips">${chips}</div></div>`;
@@ -964,7 +1008,8 @@
       el.querySelector('.minus').disabled = n===0;
       el.querySelector('.plus').disabled = n>=p.max;
       el.querySelector('.layer-slot').innerHTML = n ? layerHTML(p.id, true) : '';
-      el.querySelector('.mp').innerHTML = (member || cart.membership) ? `<b>${cop(p.price*(1-P.MEMBER_OFF))}</b> as member` : (n ? P.unitLabel(p,n) : '');
+      el.querySelector('.p').textContent = cop(p.price * (member ? 1 - P.MEMBER_OFF : 1));
+      el.querySelector('.mp').innerHTML = member ? `<s>${cop(p.price)}</s> · member −10%${n ? ' · ' + P.unitLabel(p,n) : ''}` : (cart.membership ? `<b>${cop(p.price*(1-P.MEMBER_OFF))}</b> as member` : (n ? P.unitLabel(p,n) : ''));
       { const at = (cart.addons && cart.addons[p.id]) || {}; const dy = (at.dyn2||0)*P.addonPrice(P.addonById('dyn2'),p.id) + (at.dyn3||0)*P.addonPrice(P.addonById('dyn3'),p.id); if (n && dy) el.querySelector('.mp').innerHTML += ` · <b>+${cop(dy)}</b> dynamic`; }
     });
 
@@ -995,8 +1040,9 @@
 
     // member chip
     const chip = document.getElementById('member-chip');
-    if (member){ chip.textContent = member + ' member · 10% off'; chip.classList.add('is-member'); chip.href = '/members/dashboard.html';
-      document.getElementById('member-note').textContent = `you’re a ${member} member`; const si = document.getElementById('hero-signin'); si.textContent = '10% applied'; si.classList.add('is-member'); }
+    if (member){ chip.textContent = (member==='member' ? 'member' : member + ' member') + ' · 10% off'; chip.classList.add('is-member'); chip.href = '/members/dashboard.html';
+      document.getElementById('member-note').textContent = member==='member' ? 'you’re signed in as a member' : `you’re a ${member} member`; const si = document.getElementById('hero-signin'); si.textContent = '10% applied ✓'; si.classList.add('is-member'); }
+    else { chip.classList.remove('is-member'); chip.textContent = 'member? sign in'; chip.href = '/members/'; document.getElementById('member-note').textContent = 'for members, on top of everything'; const si = document.getElementById('hero-signin'); si.textContent = 'sign in'; si.classList.remove('is-member'); }
 
     renderTerms(); renderPlans(); renderDrawer(q);
   }
@@ -1160,7 +1206,7 @@
 <!-- members: if you're signed in, the shop knows your membership -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
   import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
   const app = initializeApp({
     apiKey: "AIzaSyClZ8vQRjpavUCovCKkm7G2TKlDtu-ROo8",
@@ -1171,18 +1217,66 @@
     appId: "1:965119942981:web:b72072ed543fe3282f5e2c"
   });
   const auth = getAuth(app), db = getFirestore(app);
+  const msgOf = (e)=>{ const c = (e && e.code) || '';
+    if (/invalid-credential|wrong-password|user-not-found|invalid-email/.test(c)) return 'that email or password isn’t right.';
+    if (/too-many/.test(c)) return 'too many attempts — try again in a moment.';
+    if (/network/.test(c)) return 'no connection — check your internet and try again.';
+    return 'something went wrong. please try again.'; };
+  window.PSSYCCO_AUTH = {
+    signIn: (email, pass)=>signInWithEmailAndPassword(auth, email, pass),
+    signOut: ()=>signOut(auth),
+    msgOf
+  };
   onAuthStateChanged(auth, async (user)=>{
-    if (!user) return;
+    if (!user){
+      window.PSSYCCO_MEMBER = null; window.PSSYCCO_USER = null;
+      try { sessionStorage.removeItem('pssycco.member'); } catch(e){}
+      window.PSSYCCO_RENDER && window.PSSYCCO_RENDER(); window.PSSYCCO_SIGNIN_STATE && window.PSSYCCO_SIGNIN_STATE();
+      return;
+    }
+    // any signed-in pssycco account is a member (accounts are created with the members code); the plan, if set, just gives it a name
+    let plan = 'member';
     try{
       const snap = await getDoc(doc(db, "members", user.email.toLowerCase()));
-      const plan = snap.exists() ? (snap.data().plan || '') : '';
-      if (['leaders','ultimate','signature'].includes(plan)){
-        window.PSSYCCO_MEMBER = plan;
-        try { sessionStorage.setItem('pssycco.member', plan); } catch(e){}
-        window.PSSYCCO_RENDER && window.PSSYCCO_RENDER();
-      }
+      const pl = snap.exists() ? (snap.data().plan || '') : '';
+      if (['leaders','ultimate','signature'].includes(pl)) plan = pl;
     }catch(e){}
+    window.PSSYCCO_MEMBER = plan; window.PSSYCCO_USER = user.email;
+    try { sessionStorage.setItem('pssycco.member', plan); } catch(e){}
+    window.PSSYCCO_RENDER && window.PSSYCCO_RENDER(); window.PSSYCCO_SIGNIN_STATE && window.PSSYCCO_SIGNIN_STATE();
   });
+</script>
+
+<script>
+(function(){
+  var modal=document.getElementById('signin-modal'), panel=document.getElementById('si-panel'), form=document.getElementById('si-form');
+  var msg=document.getElementById('si-msg'), go=document.getElementById('si-go');
+  function open(){ sync(); modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; setTimeout(function(){ var f=document.getElementById(window.PSSYCCO_USER?'si-out':'si-email'); f&&f.focus(); },120); }
+  function close(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  function sync(){
+    var m=window.PSSYCCO_MEMBER, u=window.PSSYCCO_USER;
+    panel.classList.toggle('in', !!u);
+    var out=document.getElementById('hero-signout'); if(out) out.hidden = !u;
+    if(u){ document.getElementById('si-who').textContent=u; document.getElementById('si-plan').textContent = (m && m!=='member' ? 'your '+m+' membership is active. ' : '') + '10% off is applied to everything on this page.'; }
+  }
+  window.PSSYCCO_SIGNIN_STATE = function(){ sync(); if(window.PSSYCCO_USER && modal.classList.contains('open') && !form.dataset.keep) { /* stay open to show confirmation */ } };
+  ['hero-signin','member-chip'].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener('click', function(e){ if(el.classList.contains('is-member') && id==='member-chip') return; e.preventDefault(); open(); }); });
+  document.getElementById('hero-signout').addEventListener('click', function(){ window.PSSYCCO_AUTH && window.PSSYCCO_AUTH.signOut(); });
+  document.getElementById('si-out').addEventListener('click', function(){ window.PSSYCCO_AUTH && window.PSSYCCO_AUTH.signOut().then(close); });
+  document.getElementById('si-close').addEventListener('click', close);
+  modal.addEventListener('click', function(e){ if(e.target===modal) close(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && modal.classList.contains('open')) close(); });
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!window.PSSYCCO_AUTH){ msg.className='si-msg err'; msg.textContent='still loading — try again in a second.'; return; }
+    go.disabled=true; msg.className='si-msg'; msg.textContent='signing in…';
+    window.PSSYCCO_AUTH.signIn(document.getElementById('si-email').value.trim().toLowerCase(), document.getElementById('si-pass').value)
+      .then(function(){ msg.textContent=''; form.reset(); setTimeout(function(){ sync(); }, 400); setTimeout(close, 1100); })
+      .catch(function(err){ msg.className='si-msg err'; msg.textContent=window.PSSYCCO_AUTH.msgOf(err); })
+      .then(function(){ go.disabled=false; });
+  });
+  sync();
+})();
 </script>
 
 <div class="tint" id="tint">
