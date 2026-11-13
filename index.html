@@ -3,6 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* Discover is switched off for now: the front door opens the Shop.
+   To work on Discover, open pssycco.com/?discover  (remembered for this tab).
+   To switch it back on, set OPEN = true. */
+(function(){
+  var OPEN = false;
+  if (OPEN) return;
+  try {
+    if (/[?&]discover\b/.test(location.search)) sessionStorage.setItem('pssycco.discover','1');
+    if (sessionStorage.getItem('pssycco.discover') === '1') return;
+  } catch(e){}
+  document.documentElement.style.visibility = 'hidden';
+  location.replace('/shop/');
+})();
+</script>
 <title>pssycco — AI Studios</title>
 <link rel="stylesheet" href="/assets/plans.css">
 <style>
