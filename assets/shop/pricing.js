@@ -60,12 +60,9 @@
     { id:'own',        name:'your own material', short:'your material', price:0, toggle:true,
       unit:['your material','your material'], icon:'material',
       text:'The default for every piece. You send the footage, photos and references you already have; we elevate them in post-production.' },
-    { id:'dayU',       name:'unconventional filming day', short:'unconventional day', price:750000, max:7,
-      unit:['unconventional day','unconventional days'], icon:'dayU',
-      text:'A filming day from the future: one photographer and one model in a green suit. No art directors, directors, assistants or large production crews — two people are enough. Fixed price per day.' },
-    { id:'dayT',       name:'traditional filming day', short:'traditional day', price:1830000, from:true, max:7,
-      unit:['traditional day','traditional days'], icon:'dayT',
-      text:'For more complex shoots with larger crews. The day rate is a starting price: all production costs — locations, talent, wardrobe, art direction, travel and permits — are borne by the client and quoted in advance.' }
+    { id:'dayT',       name:'production day', short:'production day', price:1830000, from:true, max:7,
+      unit:['production day','production days'], icon:'dayT',
+      text:'A filming day for your piece, with our direction and crew. The day rate is a starting price: all production costs — locations, talent, wardrobe, art direction, travel and permits — are borne by the client and quoted in advance.' }
     ,
     { id:'dyn2',  name:'dynamic ×2', short:'dynamic ×2', dynamic:true, only:['clip','short'], price:0,
       priceFor:{ clip:250000, short:250000 }, shots:{ clip:4, short:8 },

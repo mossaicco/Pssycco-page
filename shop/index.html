@@ -637,10 +637,10 @@
     </div>
     <div class="how" id="how"></div>
     <div class="how-demo">
-      <p>Example: an <b>ai short</b> filmed with your team — swap <b>your material</b> for one <b>traditional day</b>, and we shoot it with you.</p>
+      <p>Example: an <b>ai short</b> filmed with your team — swap <b>your material</b> for one <b>production day</b>, and we shoot it with you.</p>
       <div class="chips" aria-hidden="true">
         <span class="chip"><span class="ci" data-ic="own"></span>your material</span>
-        <span class="chip on"><span class="ci" data-ic="dayT"></span>1 traditional day</span>
+        <span class="chip on"><span class="ci" data-ic="dayT"></span>1 production day</span>
       </div>
     </div>
   </section>
@@ -836,11 +836,11 @@
     openLayers.add(pid); closedLayers.delete(pid);
     if (next > cur && !(cart.items[pid] > 0)){ cart.items[pid] = 1; const card = document.querySelector(`.piece[data-id="${pid}"] .medal`); if (card) fly(card); }
     if (next) att[aid] = next; else delete att[aid];
-    if (a.dynamic && next && !att.own && !att.dayU && !att.dayT) att.own = 1;
+    if (a.dynamic && next && !att.own && !att.dayT) att.own = 1;
     // filming days replace your material; with no days left, your material comes back
-    if ((aid === 'dayU' || aid === 'dayT') && next > 0) delete att.own;
-    if (aid === 'own' && next) { delete att.dayU; delete att.dayT; }
-    if ((aid === 'dayU' || aid === 'dayT') && !att.dayU && !att.dayT && !att.own && cart.items[pid] > 0) att.own = 1;
+    if (aid === 'dayT' && next > 0) delete att.own;
+    if (aid === 'own' && next) { delete att.dayT; }
+    if (aid === 'dayT' && !att.dayT && !att.own && cart.items[pid] > 0) att.own = 1;
     if (!Object.keys(att).length) delete cart.addons[pid];
     P.saveCart(cart); render();
     const again = document.querySelector(`.piece[data-id="${pid}"] .chip[data-a="${aid}"], .piece[data-id="${pid}"] .chip.on [data-a="${aid}"]`);
