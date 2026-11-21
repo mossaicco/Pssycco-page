@@ -11,8 +11,12 @@
                  bullets:['everything included in leaders and ultimate','12 non-ai “signature” commercials / year','one dedicated filming day per month','interviews, testimonials, events, bts','production expenses covered by the brand'] }
   };
 
-  /* pay ahead: minimum term is 3 months */
-  var TERMS = [ { months:3, off:0 }, { months:6, off:0.05 }, { months:12, off:0.10 } ];
+  /* memberships are billed monthly, on the first Friday of each month.
+     1 month = individual, at list price. discounts start with the 3-month term.
+     the AI brand identity system is included (not charged) from the 3-month term. */
+  var TERMS = [ { months:1, off:0 }, { months:3, off:0.05 }, { months:6, off:0.10 } ];
+  var IDENTITY_FREE_FROM = 3;
+  function normTerm(t){ t = +t; if (TERMS.some(function(x){ return x.months===t; })) return t; return t >= 12 ? 6 : 3; }
 
   /* every unit of a product is one joker card */
   var PRODUCTS = [
@@ -22,7 +26,7 @@
       text:'The creative direction of one campaign: concept, scripts, storyboards, visual references and AI prompts, ready to produce.' },
     { id:'identity',    group:'ideas', name:'ai brand identity system', price:5000000, max:3,
       unit:['system','systems'], icon:'identity',
-      spec:'your brand’s proprietary ai system',
+      spec:'your brand’s proprietary ai system', inc:'included at no cost in any membership of 3 months or more',
       text:'The documentation of your brand’s AI methodology: creative standards, visual language, prompting system, character consistency and production workflows.' },
 
     { id:'register3d',  group:'ideas', name:'3d product register', price:1800000, max:12,
@@ -101,23 +105,26 @@
   /* cart = { items:{id:qty}, addons:{pieceId:{own:1, dayT:2, ...}}, membership, term } */
   function quote(cart, memberPlan){
     var lines = [], cards = 0, sub = 0, addonLines = [], addonSub = 0;
+    var mTermM = (cart.membership && MEMBERSHIPS[cart.membership]) ? ((TERMS.filter(function(t){ return t.months === cart.term; })[0] || TERMS[1]).months) : 0;
+    var idFree = mTermM >= IDENTITY_FREE_FROM;
     PRODUCTS.forEach(function(p){
       var q = (cart.items && cart.items[p.id]) || 0;
       if (q > 0){
-        var line = { p:p, qty:q, total:p.price*q, addons:[] };
+        var inc = (idFree && p.id === 'identity') ? 1 : 0;
+        var line = { p:p, qty:q, included:inc, total:p.price*(q-inc), addons:[] };
         var att = (cart.addons && cart.addons[p.id]) || {};
         ADDONS.forEach(function(a){
           var n = att[a.id] || 0;
           if (n > 0){ var pr = addonPrice(a,p.id); var al = { a:a, parent:p, qty:n, price:pr, total:pr*n }; line.addons.push(al); addonLines.push(al); addonSub += al.total; }
         });
-        lines.push(line); cards += q; sub += p.price*q;
+        lines.push(line); cards += (q-inc); sub += p.price*(q-inc);
       }
     });
     lines.forEach(function(l){ l.dynTotal = l.addons.reduce(function(t,x){ return t + (x.a.dynamic ? x.total : 0); },0); });
     var dynSub = lines.reduce(function(t,l){ return t + l.dynTotal; },0);
     var b = bundleFor(Math.min(cards, HAND_MAX));
     var units = [];
-    lines.forEach(function(l){ for (var i=0;i<l.qty;i++) units.push(l.p.price); });
+    lines.forEach(function(l){ for (var i=0;i<l.qty-l.included;i++) units.push(l.p.price); });
     units.sort(function(a,b){ return b-a; });
     var bundleOff = 0;
     units.forEach(function(price, i){ bundleOff += price * rateAt(i+1); });
@@ -131,10 +138,10 @@
     var m = null;
     if (cart.membership && MEMBERSHIPS[cart.membership]){
       var plan = MEMBERSHIPS[cart.membership];
-      var term = TERMS.filter(function(t){ return t.months === cart.term; })[0] || TERMS[2];
+      var term = TERMS.filter(function(t){ return t.months === cart.term; })[0] || TERMS[1];
       var gross = plan.monthly * term.months;
       var termOff = Math.round(gross * term.off);
-      m = { key:cart.membership, plan:plan, term:term, gross:gross, off:termOff, total:gross-termOff };
+      m = { key:cart.membership, plan:plan, term:term, gross:gross, off:termOff, total:gross-termOff, monthly:Math.round((gross-termOff)/term.months), identityIncluded: idFree };
     }
     return {
       lines:lines, cards:cards, subtotal:sub, dynSub:dynSub,
@@ -159,16 +166,16 @@
       var c = JSON.parse(localStorage.getItem(CART_KEY));
       if (c && c.items){
         Object.keys(c.items).forEach(function(id){ if (!PRODUCTS.some(function(p){ return p.id===id; })) delete c.items[id]; });
-        c.addons = c.addons || {}; delete c.ownMaterial;
+        c.addons = c.addons || {}; delete c.ownMaterial; c.term = normTerm(c.term);
         return c;
       }
     } catch(e){}
-    return { items:{}, addons:{}, membership:null, term:12 };
+    return { items:{}, addons:{}, membership:null, term:3 };
   }
   function saveCart(c){ try { localStorage.setItem(CART_KEY, JSON.stringify(c)); } catch(e){} }
 
   window.PSSYCCO_PRICING = {
-    MEMBERSHIPS:MEMBERSHIPS, TERMS:TERMS, PRODUCTS:PRODUCTS, ADDONS:ADDONS, addonById:addonById, addonPrice:addonPrice, addonFits:addonFits, BUNDLES:BUNDLES, HAND_MAX:HAND_MAX, rateAt:rateAt, MEMBER_OFF:MEMBER_OFF,
+    MEMBERSHIPS:MEMBERSHIPS, TERMS:TERMS, normTerm:normTerm, IDENTITY_FREE_FROM:IDENTITY_FREE_FROM, PRODUCTS:PRODUCTS, ADDONS:ADDONS, addonById:addonById, addonPrice:addonPrice, addonFits:addonFits, BUNDLES:BUNDLES, HAND_MAX:HAND_MAX, rateAt:rateAt, MEMBER_OFF:MEMBER_OFF,
     quote:quote, cop:cop, unitLabel:unitLabel, loadCart:loadCart, saveCart:saveCart,
     byId: function(id){ return PRODUCTS.filter(function(p){ return p.id===id; })[0]; }
   };
