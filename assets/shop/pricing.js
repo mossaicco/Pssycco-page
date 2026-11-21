@@ -14,9 +14,9 @@
   /* memberships are billed monthly, on the first Friday of each month.
      1 month = individual, at list price. discounts start with the 3-month term.
      the AI brand identity system is included (not charged) from the 3-month term. */
-  var TERMS = [ { months:1, off:0 }, { months:3, off:0.05 }, { months:6, off:0.10 } ];
+  var TERMS = [ { months:1, off:0 }, { months:3, off:0.05 }, { months:6, off:0.10 }, { months:12, off:0.15 } ];
   var IDENTITY_FREE_FROM = 3;
-  function normTerm(t){ t = +t; if (TERMS.some(function(x){ return x.months===t; })) return t; return t >= 12 ? 6 : 3; }
+  function normTerm(t){ t = +t; if (TERMS.some(function(x){ return x.months===t; })) return t; return t >= 12 ? 12 : (t >= 6 ? 6 : 3); }
 
   /* every unit of a product is one joker card */
   var PRODUCTS = [
