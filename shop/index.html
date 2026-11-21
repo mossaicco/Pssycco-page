@@ -947,7 +947,7 @@
         <div class="pemoji" aria-hidden="true">${glyphSVG(m.mark)}</div>
         <h3>${m.name}</h3><div class="psub">${m.sub}</div>
         <div class="pprice num">${cop(monthly)} <small>/ month</small></div>
-        <div class="pterm num">${t.months===1?'1 month · list price':`${cop(total)} for ${t.months} months`+(t.off?` · you save ${cop(m.monthly*t.months - total)}`:'')}</div>
+        <div class="pterm num">${t.months===1?'1 month · list price':`${t.months}-month term · −${Math.round(t.off*100)}% · you save ${cop(m.monthly - monthly)} / month`}</div>
         <div class="pbill">billed on the first Friday of each month${t.months>=P.IDENTITY_FREE_FROM?' · identity system included':''}</div>
         <ul>${m.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>
         <div class="plan-actions">
@@ -1035,8 +1035,14 @@
 
     // totals
     const gross = q.subtotal + q.addonSub + (q.membership ? q.membership.gross : 0);
-    document.getElementById('bar-total').textContent = cop(q.total);
-    document.getElementById('bar-was').textContent = gross > q.total ? cop(gross) : '';
+    if (q.membership){
+      const one = q.total - q.membership.total, oneGross = gross - q.membership.gross;
+      document.getElementById('bar-total').textContent = (one > 0 ? cop(one) + ' + ' : '') + cop(q.membership.monthly) + ' / month';
+      document.getElementById('bar-was').textContent = oneGross > one ? cop(oneGross) : '';
+    } else {
+      document.getElementById('bar-total').textContent = cop(q.total);
+      document.getElementById('bar-was').textContent = gross > q.total ? cop(gross) : '';
+    }
     const count = q.cards + (q.membership?1:0);
     document.getElementById('hand-n').textContent = count ? '· ' + count : '';
 
@@ -1083,7 +1089,7 @@
       const m = q.membership;
       h += `<div class="dline member" data-line="m"><div class="medal"><span class="mini-mem"></span></div>
         <div><div class="dn">${m.plan.name} membership</div><div class="dq">${P.TERMS.map(t=>`<button type="button" data-term="${t.months}" aria-pressed="${t.months===m.term.months}" style="width:auto;padding:0 8px;border-radius:12px;${t.months===m.term.months?'background:var(--ink);color:var(--bg);border-color:var(--ink)':''}">${t.months}m</button>`).join('')}<button type="button" class="rm" data-rm-m>remove</button></div></div>
-        <div class="dp num">${cop(m.total)}<small>${cop(m.monthly)} / month · first Friday${m.off?` · −${Math.round(m.term.off*100)}%`:''}</small></div></div>`;
+        <div class="dp num">${cop(m.monthly)}<small>/ month · first Friday${m.off?` · −${Math.round(m.term.off*100)}%`:''}</small></div></div>`;
     }
     q.lines.forEach(l=>{
       h += `<div class="dline" data-line="${l.p.id}">${medal(l.p.icon)}
@@ -1111,14 +1117,17 @@
     if (q.bundleOffAmount) h += `<div><span>joker steps · ${Math.round(q.bundleRate*100)}% off your pieces</span><span>−${cop(q.bundleOffAmount)}</span></div>`;
     if (q.memberOff) h += `<div><span>member · −10%</span><span>−${cop(q.memberOffAmount)}</span></div>`;
     if (q.membership){
-      h += `<div><span>${q.membership.plan.name} · ${q.membership.term.months} × ${cop(q.membership.plan.monthly)}</span><span>${cop(q.membership.gross)}</span></div>`;
-      if (q.membership.off) h += `<div><span>${q.membership.term.months}-month term · −${Math.round(q.membership.term.off*100)}%</span><span>−${cop(q.membership.off)}</span></div>`;
-      h += `<div><span>billed monthly · first Friday of each month</span><span>${cop(q.membership.monthly)} / month</span></div>`;
+      h += `<div><span>${q.membership.plan.name} · ${q.membership.term.months===1?'1 month':q.membership.term.months+'-month term'}</span><span>${cop(q.membership.plan.monthly)} / month</span></div>`;
+      if (q.membership.off) h += `<div><span>term discount · −${Math.round(q.membership.term.off*100)}%</span><span>−${cop(q.membership.off/q.membership.term.months)} / month</span></div>`;
     }
-    const saved = q.productsOff + (q.membership ? q.membership.off : 0);
+    const saved = q.productsOff;
     if (saved) h += `<div><span>you save</span><span>${cop(saved)}</span></div>`;
-    h += `<div class="grand"><span>total</span><span>${cop(q.total)}</span></div></div>`;
-    if (CUR !== 'COP') h += `<p class="cur-note">Shown in ${CUR} at today’s rate, for reference. Prices and contracts are set in Colombian pesos (COP ${P.cop(q.total).replace('$','$ ')}).</p>`;
+    const oneoff = q.total - (q.membership ? q.membership.total : 0);
+    if (q.membership){
+      if (oneoff > 0) h += `<div class="grand"><span>pieces · total</span><span>${cop(oneoff)}</span></div>`;
+      h += `<div class="grand"><span>membership · first Friday of each month</span><span>${cop(q.membership.monthly)} / month</span></div></div>`;
+    } else h += `<div class="grand"><span>total</span><span>${cop(q.total)}</span></div></div>`;
+    if (CUR !== 'COP') h += `<p class="cur-note">Shown in ${CUR} at today’s rate, for reference. Prices and contracts are set in Colombian pesos (COP ${P.cop(q.membership ? oneoff : q.total).replace('$','$ ')}${q.membership ? ' + ' + P.cop(q.membership.monthly).replace('$','$ ') + ' / month' : ''}).</p>`;
     body.innerHTML = h;
 
     body.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click', ()=>change(b.dataset.id, +b.dataset.d)));
